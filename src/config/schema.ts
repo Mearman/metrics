@@ -114,7 +114,19 @@ const PluginsConfig = Zod.object({
     ]),
     indepth: Zod.boolean().default(false),
   }).optional(),
-  // TODO: remaining 19 plugin schemas
+  stargazers: Zod.object({
+    limit: Zod.int().min(1).max(30).default(8),
+  }).optional(),
+  people: Zod.object({
+    limit: Zod.int().min(0).max(100).default(24),
+    size: Zod.int().min(8).max(64).default(28),
+    types: Zod.array(Zod.enum(["followers", "following"])).default([
+      "followers",
+      "following",
+    ]),
+  }).optional(),
+  gists: Zod.object({}).optional(),
+  // TODO: remaining 15 plugin schemas
 }).loose();
 
 // ---------------------------------------------------------------------------

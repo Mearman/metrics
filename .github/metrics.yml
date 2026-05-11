@@ -39,3 +39,9 @@ outputs:
         limit: 4
       followup:
         sections: [repositories]
+      stargazers:
+        limit: 8
+      people:
+        limit: 20
+        types: [followers]
+      gists: {}

@@ -15,6 +15,9 @@ import { repositoriesPlugin } from "./repositories/plugin.ts";
 import { activityPlugin } from "./activity/plugin.ts";
 import { starsPlugin } from "./stars/plugin.ts";
 import { followupPlugin } from "./followup/plugin.ts";
+import { stargazersPlugin } from "./stargazers/plugin.ts";
+import { peoplePlugin } from "./people/plugin.ts";
+import { gistsPlugin } from "./gists/plugin.ts";
 
 export function registerAllPlugins(): void {
   registerPlugin(basePlugin);
@@ -27,4 +30,7 @@ export function registerAllPlugins(): void {
   registerPlugin(activityPlugin);
   registerPlugin(starsPlugin);
   registerPlugin(followupPlugin);
+  registerPlugin(stargazersPlugin);
+  registerPlugin(peoplePlugin);
+  registerPlugin(gistsPlugin);
 }
