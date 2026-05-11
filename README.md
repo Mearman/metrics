@@ -225,7 +225,7 @@ Three built-in themes: `classic` (dark), `light`, `terminal` (monospace green on
 
 ## Plugins
 
-6 plugins implemented. 19 remaining from the original's 29 GitHub plugins.
+13 plugins implemented. 14 remaining from the original's 29 GitHub plugins.
 
 | Plugin       | ID              | Status | Description                            |
 |--------------|-----------------|--------|----------------------------------------|
@@ -239,6 +239,9 @@ Three built-in themes: `classic` (dark), `light`, `terminal` (monospace green on
 | Activity     | `activity`      | ✅     | Recent events timeline                 |
 | Stars        | `stars`         | ✅     | Recently starred repositories          |
 | Followup     | `followup`      | ✅     | Issue/PR status progress bars          |
+| Stargazers   | `stargazers`    | ✅     | Per-repo star count bar chart          |
+| People       | `people`        | ✅     | Followers/following avatar grid        |
+| Gists        | `gists`         | ✅     | Gist statistics card                   |
 | Activity     | `activity`      | 🔲     | Recent events feed                     |
 | Calendar     | `calendar`      | 🔲     | Flat contribution calendar             |
 | Code         | `code`          | 🔲     | Random code snippet                    |
