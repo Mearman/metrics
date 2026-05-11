@@ -34,7 +34,7 @@ jobs:
       - name: Generate metrics
         run: node src/cli.ts --user "${{ github.repository_owner }}"
         env:
-          GITHUB_TOKEN: ${{ secrets.METRICS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.METRICS_TOKEN || github.token }}
 
       - uses: actions/upload-pages-artifact@v5
         with:

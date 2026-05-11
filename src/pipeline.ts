@@ -72,14 +72,23 @@ export async function runPipeline(
       }
 
       // Fetch data
-      const data = await plugin.source.fetch(
-        {
-          api,
-          user: username,
-          signal: controller.signal,
-        },
-        pluginConfig,
-      );
+      let data: unknown;
+      try {
+        data = await plugin.source.fetch(
+          {
+            api,
+            user: username,
+            signal: controller.signal,
+          },
+          pluginConfig,
+        );
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.warn(
+          `Plugin "${pluginId}" fetch failed: ${message} — skipping`,
+        );
+        continue;
+      }
 
       // Render
       const result = plugin.renderer.render(data, pluginConfig, {
