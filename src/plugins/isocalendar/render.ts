@@ -2,9 +2,10 @@
  * Isocalendar plugin — renderer.
  *
  * Renders a contribution heatmap calendar grid.
+ * Cell size is computed to fit within the available content width.
  */
 
-import { rect, text } from "../../render/svg/builder.ts";
+import { rect, text, g } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { IsocalendarData } from "./source.ts";
 
@@ -18,8 +19,14 @@ export function renderIsocalendar(
 ): RenderResult {
   void _config;
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
-  const cellSize = 10;
+
+  const weeks = data.weeks.length;
+  const rows = 7;
   const cellGap = 2;
+
+  // Compute cell size to fit all weeks within content width
+  const availableWidth = ctx.contentWidth - (weeks - 1) * cellGap;
+  const cellSize = Math.max(Math.floor(availableWidth / weeks), 2);
   const cellStep = cellSize + cellGap;
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
@@ -40,27 +47,36 @@ export function renderIsocalendar(
     ),
   );
 
-  // Calendar grid
+  // Calendar grid — wrap cells in a group
   const gridY = titleY + 12;
+  const cells: import("../../render/svg/builder.ts").SvgElement[] = [];
 
-  for (const week of data.weeks) {
-    const weekIndex = data.weeks.indexOf(week);
-    const x = padding + weekIndex * cellStep;
+  for (let weekIndex = 0; weekIndex < data.weeks.length; weekIndex++) {
+    const week = data.weeks[weekIndex];
+    if (week === undefined) continue;
+    const x = weekIndex * cellStep;
 
-    for (const day of week.contributionDays) {
-      const dayIndex = week.contributionDays.indexOf(day);
+    for (
+      let dayIndex = 0;
+      dayIndex < week.contributionDays.length;
+      dayIndex++
+    ) {
+      const day = week.contributionDays[dayIndex];
+      if (day === undefined) continue;
       const y = gridY + dayIndex * cellStep;
 
-      elements.push(
+      cells.push(
         rect(x, y, cellSize, cellSize, {
           fill: day.count === 0 ? colours.calendar.L0 : day.colour,
-          rx: 2,
+          rx: 1,
         }),
       );
     }
   }
 
-  const gridHeight = 7 * cellStep;
+  elements.push(g({ transform: `translate(${String(padding)},0)` }, ...cells));
+
+  const gridHeight = rows * cellStep;
   const totalHeight = gridY + gridHeight + padding;
 
   return { height: totalHeight, elements };

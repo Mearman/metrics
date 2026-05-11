@@ -1,18 +1,58 @@
 /**
- * SVG output — write SVG files with optional SVGO optimisation.
+ * SVG output — serialise, optimise, write.
  */
 
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
+import { optimize } from "svgo";
 
 /**
- * Write an SVG string to a file.
+ * Write an SVG string to a file with SVGO optimisation.
  *
  * Creates parent directories if needed.
- * TODO: Wire up SVGO optimisation before writing.
  */
 export async function writeSvg(path: string, content: string): Promise<void> {
   await mkdir(dirname(path), { recursive: true });
-  // TODO: Run SVGO optimisation
-  await writeFile(path, content, "utf-8");
+
+  const result = optimize(content, {
+    plugins: [
+      "cleanupAttrs",
+      "removeDoctype",
+      "removeXMLProcInst",
+      "removeComments",
+      "removeMetadata",
+      "removeTitle",
+      "removeDesc",
+      "removeUselessDefs",
+      "removeEditorsNSData",
+      "removeEmptyAttrs",
+      "removeHiddenElems",
+      "removeEmptyText",
+      "removeEmptyContainers",
+      "removeViewBox",
+      "cleanupEnableBackground",
+      "minifyStyles",
+      "convertStyleToAttrs",
+      "convertColors",
+      "convertPathData",
+      "convertTransform",
+      "removeUnknownsAndDefaults",
+      "removeNonInheritableGroupAttrs",
+      "removeUselessStrokeAndFill",
+      "removeUnusedNS",
+      "cleanupIds",
+      "cleanupNumericValues",
+      "cleanupListOfValues",
+      "moveElemsAttrsToGroup",
+      "moveGroupAttrsToElems",
+      "collapseGroups",
+      "removeRasterImages",
+      "mergePaths",
+      "convertShapeToPath",
+      "sortAttrs",
+      "sortDefsChildren",
+    ],
+  });
+
+  await writeFile(path, result.data, "utf-8");
 }

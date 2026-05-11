@@ -7,9 +7,6 @@
  * 3. For each output, fetches plugin data, renders SVG, writes file
  */
 
-import { mkdir, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
-
 import type { RootConfig } from "./config/schema.ts";
 import { createClient } from "./api/client.ts";
 import { serialise } from "./render/svg/serialise.ts";
@@ -139,8 +136,8 @@ export async function runPipeline(
     const svgContent = serialise(root);
 
     if (!dryRun) {
-      await mkdir(dirname(output.path), { recursive: true });
-      await writeFile(output.path, svgContent, "utf-8");
+      const { writeSvg } = await import("./output/svg.ts");
+      await writeSvg(output.path, svgContent);
     }
 
     results.push({
