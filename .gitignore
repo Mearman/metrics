@@ -14,6 +14,9 @@ coverage/
 # Generated output (root level)
 /output/
 
+# TypeScript incremental build info
+.tsbuildinfo
+
 # Environment files
 .env
 .env.local
