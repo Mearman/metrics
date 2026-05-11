@@ -18,7 +18,6 @@ export const achievementsPlugin: Plugin<
   AchievementsData
 > = {
   id: "achievements",
-  tokenScope: "user",
   source: {
     id: "achievements",
     configSchema: AchievementsPluginConfig,

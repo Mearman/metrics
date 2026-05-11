@@ -2,6 +2,7 @@
  * Achievements plugin — data source.
  *
  * Fetches user statistics used to derive achievements and badges.
+ * Uses only fields accessible with github.token (repository-scoped).
  */
 
 const ACHIEVEMENTS_QUERY = `
@@ -15,8 +16,6 @@ const ACHIEVEMENTS_QUERY = `
       pullRequests { totalCount }
       contributionsCollection {
         totalCommitContributions
-        totalPullRequestReviewContributions
-        totalRepositoryContributions
       }
       starredRepositories { totalCount }
       watching { totalCount }
@@ -32,8 +31,6 @@ export interface AchievementStats {
   issues: number;
   pullRequests: number;
   totalCommits: number;
-  totalReviews: number;
-  totalRepoContributions: number;
   starred: number;
   watching: number;
 }
@@ -61,8 +58,6 @@ interface GraphQLResponse {
     pullRequests: { totalCount: number };
     contributionsCollection: {
       totalCommitContributions: number;
-      totalPullRequestReviewContributions: number;
-      totalRepositoryContributions: number;
     };
     starredRepositories: { totalCount: number };
     watching: { totalCount: number };
@@ -73,7 +68,6 @@ interface GraphQLResponse {
 function deriveAchievements(stats: AchievementStats): Achievement[] {
   const achievements: Achievement[] = [];
 
-  // Commit milestones
   if (stats.totalCommits >= 10000)
     achievements.push({
       id: "commits-10k",
@@ -99,7 +93,6 @@ function deriveAchievements(stats: AchievementStats): Achievement[] {
       tier: "A",
     });
 
-  // Stars
   if (stats.starred >= 1000)
     achievements.push({
       id: "starer-1k",
@@ -117,7 +110,6 @@ function deriveAchievements(stats: AchievementStats): Achievement[] {
       tier: "A",
     });
 
-  // Followers
   if (stats.followers >= 100)
     achievements.push({
       id: "followers-100",
@@ -135,7 +127,6 @@ function deriveAchievements(stats: AchievementStats): Achievement[] {
       tier: "A",
     });
 
-  // Pull Requests
   if (stats.pullRequests >= 100)
     achievements.push({
       id: "pr-100",
@@ -153,7 +144,6 @@ function deriveAchievements(stats: AchievementStats): Achievement[] {
       tier: "A",
     });
 
-  // Repositories
   if (stats.publicRepos >= 100)
     achievements.push({
       id: "repos-100",
@@ -168,6 +158,23 @@ function deriveAchievements(stats: AchievementStats): Achievement[] {
       title: "Repo Builder",
       description: `${String(stats.publicRepos)} public repos`,
       icon: "repo",
+      tier: "A",
+    });
+
+  if (stats.issues >= 100)
+    achievements.push({
+      id: "issues-100",
+      title: "Issue Tracker",
+      description: `${String(stats.issues)} issues opened`,
+      icon: "issue-opened",
+      tier: "S",
+    });
+  else if (stats.issues >= 10)
+    achievements.push({
+      id: "issues-10",
+      title: "Issue Opener",
+      description: `${String(stats.issues)} issues opened`,
+      icon: "issue-opened",
       tier: "A",
     });
 
@@ -197,9 +204,6 @@ export async function fetchAchievements(
     issues: u.issues.totalCount,
     pullRequests: u.pullRequests.totalCount,
     totalCommits: u.contributionsCollection.totalCommitContributions,
-    totalReviews: u.contributionsCollection.totalPullRequestReviewContributions,
-    totalRepoContributions:
-      u.contributionsCollection.totalRepositoryContributions,
     starred: u.starredRepositories.totalCount,
     watching: u.watching.totalCount,
   };
