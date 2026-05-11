@@ -11,6 +11,8 @@ import { isocalendarPlugin } from "./isocalendar/plugin.ts";
 import { habitsPlugin } from "./habits/plugin.ts";
 import { achievementsPlugin } from "./achievements/plugin.ts";
 import { linesPlugin } from "./lines/plugin.ts";
+import { repositoriesPlugin } from "./repositories/plugin.ts";
+import { activityPlugin } from "./activity/plugin.ts";
 
 export function registerAllPlugins(): void {
   registerPlugin(basePlugin);
@@ -19,4 +21,6 @@ export function registerAllPlugins(): void {
   registerPlugin(habitsPlugin);
   registerPlugin(achievementsPlugin);
   registerPlugin(linesPlugin);
+  registerPlugin(repositoriesPlugin);
+  registerPlugin(activityPlugin);
 }

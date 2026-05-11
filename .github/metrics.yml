@@ -30,3 +30,8 @@ outputs:
         sections: [base]
         repositories_limit: 4
         history_limit: 1
+      repositories:
+        pinned: 6
+      activity:
+        limit: 5
+        days: 14

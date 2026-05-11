@@ -323,5 +323,16 @@ export default defineConfig(
     },
   },
 
+  // Unavoidable type assertion: object → Record<string, unknown>
+  // This is the single location where the cast is needed (TS object type
+  // has no index signature). All property access on unknown values goes
+  // through this utility.
+  {
+    files: ["src/util/props.ts"],
+    rules: {
+      "@typescript-eslint/consistent-type-assertions": "off",
+    },
+  },
+
   eslintConfigPrettier,
 );

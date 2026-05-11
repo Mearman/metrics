@@ -62,6 +62,40 @@ const LinesPluginConfig = Zod.object({
   history_limit: Zod.int().min(1).default(1),
 });
 
+const RepositoriesPluginConfig = Zod.object({
+  pinned: Zod.int().min(0).max(6).default(0),
+  featured: Zod.array(Zod.string().trim()).default([]),
+  starred: Zod.int().min(0).max(100).default(0),
+  order: Zod.array(Zod.enum(["featured", "pinned", "starred"])).default([
+    "featured",
+    "pinned",
+    "starred",
+  ]),
+});
+
+const ActivityPluginConfig = Zod.object({
+  limit: Zod.int().min(1).max(100).default(5),
+  load: Zod.int().min(100).max(1000).default(300),
+  days: Zod.int().min(0).max(365).default(14),
+  filter: Zod.array(
+    Zod.enum([
+      "all",
+      "push",
+      "issue",
+      "pr",
+      "review",
+      "comment",
+      "release",
+      "fork",
+      "star",
+      "wiki",
+      "ref/create",
+      "ref/delete",
+    ]),
+  ).default(["all"]),
+  timestamps: Zod.boolean().default(false),
+});
+
 // Plugin configs are keyed by plugin ID, all optional.
 // .loose() allows plugins we haven't defined schemas for yet.
 const PluginsConfig = Zod.object({
@@ -71,7 +105,9 @@ const PluginsConfig = Zod.object({
   habits: HabitsPluginConfig.optional(),
   achievements: AchievementsPluginConfig.optional(),
   lines: LinesPluginConfig.optional(),
-  // TODO: remaining 23 plugin schemas
+  repositories: RepositoriesPluginConfig.optional(),
+  activity: ActivityPluginConfig.optional(),
+  // TODO: remaining 21 plugin schemas
 }).loose();
 
 // ---------------------------------------------------------------------------
