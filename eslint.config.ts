@@ -287,6 +287,8 @@ export default defineConfig(
     rules: {
       "@typescript-eslint/no-floating-promises": "off",
       "@typescript-eslint/consistent-type-assertions": "off",
+      "@typescript-eslint/no-unnecessary-condition": "off",
+      "@typescript-eslint/require-await": "off",
     },
   },
 
