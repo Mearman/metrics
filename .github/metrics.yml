@@ -45,3 +45,8 @@ outputs:
         limit: 20
         types: [followers]
       gists: {}
+      discussions:
+        categories: true
+      notable:
+        from: 5
+      # calendar:  # disabled — adds many API calls per year

@@ -126,7 +126,18 @@ const PluginsConfig = Zod.object({
     ]),
   }).optional(),
   gists: Zod.object({}).optional(),
-  // TODO: remaining 15 plugin schemas
+  discussions: Zod.object({
+    categories: Zod.boolean().default(true),
+    limit: Zod.int().min(1).max(20).default(5),
+  }).optional(),
+  notable: Zod.object({
+    indepth: Zod.boolean().default(false),
+    from: Zod.int().min(1).default(5),
+  }).optional(),
+  calendar: Zod.object({
+    years: Zod.int().min(1).max(10).default(3),
+  }).optional(),
+  // TODO: remaining 11 plugin schemas
 }).loose();
 
 // ---------------------------------------------------------------------------
