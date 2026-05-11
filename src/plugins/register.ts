@@ -21,6 +21,9 @@ import { gistsPlugin } from "./gists/plugin.ts";
 import { discussionsPlugin } from "./discussions/plugin.ts";
 import { notablePlugin } from "./notable/plugin.ts";
 import { calendarPlugin } from "./calendar/plugin.ts";
+import { introductionPlugin } from "./introduction/plugin.ts";
+import { reactionsPlugin } from "./reactions/plugin.ts";
+import { contributorsPlugin } from "./contributors/plugin.ts";
 
 export function registerAllPlugins(): void {
   registerPlugin(basePlugin);
@@ -39,4 +42,7 @@ export function registerAllPlugins(): void {
   registerPlugin(discussionsPlugin);
   registerPlugin(notablePlugin);
   registerPlugin(calendarPlugin);
+  registerPlugin(introductionPlugin);
+  registerPlugin(reactionsPlugin);
+  registerPlugin(contributorsPlugin);
 }

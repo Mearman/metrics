@@ -225,7 +225,7 @@ Three built-in themes: `classic` (dark), `light`, `terminal` (monospace green on
 
 ## Plugins
 
-16 plugins implemented. 11 remaining.
+19 plugins implemented. 8 remaining.
 
 | Plugin       | ID              | Status | Description                            |
 |--------------|-----------------|--------|----------------------------------------|
@@ -245,12 +245,12 @@ Three built-in themes: `classic` (dark), `light`, `terminal` (monospace green on
 | Discussions | `discussions`   | ✅     | Discussion stats with category bars    |
 | Notable      | `notable`       | ✅     | Notable contribution orgs              |
 | Calendar     | `calendar`      | ✅     | Yearly contribution calendars          |
+| Introduction | `introduction`  | ✅     | User bio and introduction card         |
+| Reactions    | `reactions`     | ✅     | Comment reaction stats                 |
+| Contributors | `contributors`  | ✅     | Per-repo contributor breakdown         |
 | Code         | `code`          | 🔲     | Random code snippet                    |
-| Contributors | `contributors`  | 🔲     | Per-repo contributor breakdown         |
-| Introduction | `introduction`  | 🔲     | User bio and introduction card         |
 | Licences     | `licenses`      | 🔲     | Repository licence breakdown           |
 | Projects     | `projects`      | 🔲     | GitHub Projects boards                 |
-| Reactions    | `reactions`     | 🔲     | Comment reaction stats                 |
 | Skyline      | `skyline`       | 🔲     | GitHub Skyline 3D visualisation        |
 | Sponsors     | `sponsors`      | 🔲     | Sponsor card                           |
 | Sponsorships | `sponsorships`  | 🔲     | Active sponsorships                    |
