@@ -3,9 +3,9 @@
   "version": "0.0.0-development",
   "description": "Generate GitHub metrics as SVG — fork of lowlighter/metrics, overhauled",
   "type": "module",
-  "main": "src/index.ts",
+  "main": "src/cli.ts",
   "bin": {
-    "metrics": "src/index.ts"
+    "metrics": "src/cli.ts"
   },
   "scripts": {
     "dev": "node --watch src/index.ts --config .github/metrics.yml",

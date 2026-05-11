@@ -22,9 +22,6 @@ const noIndexFiles: Rule.RuleModule = {
   create(context) {
     const filename = context.filename;
 
-    // Allow the top-level CLI entry point — it's a genuine entry, not a barrel.
-    if (/(?:^|\/)src\/index\.ts$/.test(filename)) return {};
-
     if (/(?:^|\/)index\.(?:ts|js|mts|mjs)$/.test(filename)) {
       context.report({
         loc: { line: 1, column: 0 },
@@ -34,6 +31,104 @@ const noIndexFiles: Rule.RuleModule = {
     }
 
     return {};
+  },
+};
+
+/** Extract the exported name from an export specifier. */
+function getExportedName(specifier: {
+  exported: { type: string; name?: string; value?: string };
+}): string {
+  const e = specifier.exported;
+  if (e.type === "Identifier" && e.name !== undefined) return e.name;
+  if (e.value !== undefined) return e.value;
+  return "unknown";
+}
+
+/**
+ * Bans re-exports of any form.
+ *
+ * Catches:
+ *   export * from "./module"
+ *   export { foo } from "./module"
+ *   export { default } from "./module"
+ *   import { foo } from "./module"; export { foo }  (import-then-export)
+ */
+const noReexports: Rule.RuleModule = {
+  meta: {
+    type: "problem",
+    messages: {
+      starReexport:
+        "Star re-exports are banned. Import and re-export specific names, or import directly from the source.",
+      namedReexport:
+        "Re-exports are banned. Import '{{ name }}' directly from its source module instead.",
+      reexportWithoutSource:
+        "Re-exporting imported identifiers is banned. Consumers should import '{{ name }}' directly from its source module.",
+    },
+  },
+  create(context) {
+    // Track identifiers that were imported (not locally defined)
+    const importedIdentifiers = new Map<
+      string,
+      { source: string; node: Rule.Node }
+    >();
+
+    return {
+      // Track imports: import { foo } from "./bar"
+      ImportDeclaration(node) {
+        if (
+          node.source.type !== "Literal" ||
+          typeof node.source.value !== "string"
+        )
+          return;
+        const source: string = node.source.value;
+
+        for (const specifier of node.specifiers) {
+          importedIdentifiers.set(specifier.local.name, {
+            source,
+            node: specifier,
+          });
+        }
+      },
+
+      // Catch: export * from "./module"
+      ExportAllDeclaration(node) {
+        context.report({
+          node,
+          messageId: "starReexport",
+        });
+      },
+
+      // Catch: export { foo } from "./module"
+      // Catch: export { foo }  (where foo was imported)
+      ExportNamedDeclaration(node) {
+        // export { foo } from "./module" — re-export with source
+        if (node.source !== null && node.source !== undefined) {
+          for (const specifier of node.specifiers) {
+            const name = getExportedName(specifier);
+            context.report({
+              node: specifier,
+              messageId: "namedReexport",
+              data: { name },
+            });
+          }
+          return;
+        }
+
+        // export { foo } — check if foo was imported (not locally defined)
+        for (const specifier of node.specifiers) {
+          const localName = specifier.local.name;
+          const imported = importedIdentifiers.get(localName);
+          if (imported !== undefined) {
+            const name = getExportedName(specifier);
+            context.report({
+              node: specifier,
+              messageId: "reexportWithoutSource",
+              data: { name },
+            });
+          }
+        }
+      },
+    };
   },
 };
 
@@ -140,6 +235,7 @@ const sharedPlugins = {
     rules: {
       "no-index-files": noIndexFiles,
       "no-pointless-reassignments": noPointlessReassignments,
+      "no-reexports": noReexports,
     },
   },
   prettier: eslintPluginPrettier,
@@ -148,6 +244,7 @@ const sharedPlugins = {
 const sharedRules = {
   "custom/no-index-files": "error",
   "custom/no-pointless-reassignments": "error",
+  "custom/no-reexports": "error",
   "prettier/prettier": "error",
   "@typescript-eslint/consistent-type-assertions": [
     "error",
@@ -194,6 +291,7 @@ export default defineConfig(
   },
 
   // Config files — no tsconfig, use allowDefaultProject
+  // Relax type-checked rules that clash with ESLint AST node handling
   {
     files: configFiles,
     extends: [
@@ -208,7 +306,13 @@ export default defineConfig(
       },
     },
     plugins: sharedPlugins,
-    rules: sharedRules,
+    rules: {
+      ...sharedRules,
+      "@typescript-eslint/no-unnecessary-condition": "off",
+      "@typescript-eslint/no-unnecessary-type-conversion": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-argument": "off",
+    },
   },
 
   // Disable inline config in source/test — all rules come from this file
