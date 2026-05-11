@@ -13,6 +13,7 @@ coverage/
 
 # Generated output (root level)
 /output/
+*.svg
 
 # TypeScript incremental build info
 .tsbuildinfo
