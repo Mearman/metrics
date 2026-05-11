@@ -16,6 +16,7 @@ export const isocalendarPlugin: Plugin<
   IsocalendarData
 > = {
   id: "isocalendar",
+  tokenScope: "user",
   source: {
     id: "isocalendar",
     configSchema: IsocalendarPluginConfig,

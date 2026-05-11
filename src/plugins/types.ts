@@ -78,6 +78,8 @@ export interface Plugin<TConfig, TData> {
   source: DataSource<TConfig, TData>;
   /** Visual rendering logic */
   renderer: Renderer<TData, TConfig>;
+  /** Token scope required beyond github.token */
+  tokenScope?: "user";
 }
 
 // ---------------------------------------------------------------------------
