@@ -1,20 +1,18 @@
 /**
- * SVG optimisation (SVGO) and file writing.
+ * SVG output — write SVG files with optional SVGO optimisation.
  */
 
-import { writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname } from "node:path";
 
 /**
- * Optimise an SVG string using SVGO and write to disk.
+ * Write an SVG string to a file.
  *
- * TODO: Wire up SVGO once the rendering pipeline is functional.
+ * Creates parent directories if needed.
+ * TODO: Wire up SVGO optimisation before writing.
  */
-export async function writeSvg(
-  svgContent: string,
-  outputPath: string,
-): Promise<void> {
-  const resolved = resolve(outputPath);
+export async function writeSvg(path: string, content: string): Promise<void> {
+  await mkdir(dirname(path), { recursive: true });
   // TODO: Run SVGO optimisation
-  await writeFile(resolved, svgContent, "utf-8");
+  await writeFile(path, content, "utf-8");
 }

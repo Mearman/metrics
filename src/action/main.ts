@@ -8,10 +8,11 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
 import { loadConfig } from "../config/schema.ts";
+import { runPipeline } from "../pipeline.ts";
 
 async function run(): Promise<void> {
   const configPath = core.getInput("config") || undefined;
-  const _token = core.getInput("token");
+  const token = core.getInput("token");
   const dryRun = core.getBooleanInput("dry-run");
 
   const config = await loadConfig(configPath, {
@@ -20,14 +21,14 @@ async function run(): Promise<void> {
 
   const userDisplay = config.user ?? "unknown";
   core.info(`Generating metrics for user "${userDisplay}"`);
-  core.info(`Outputs: ${String(config.outputs.length)}`);
-  core.info(`Dry run: ${String(dryRun)}`);
 
-  // TODO: Implement fetch → render → write pipeline
-  void _token;
-  core.warning("Pipeline not yet implemented.");
+  const result = await runPipeline(config, token, { dryRun });
 
-  core.setOutput("generated", "false");
+  for (const output of result.outputs) {
+    core.info(`  → ${output.path} (${String(output.byteSize)} bytes)`);
+  }
+
+  core.setOutput("generated", String(result.outputs.length > 0));
 }
 
 run().catch((error: unknown) => {
