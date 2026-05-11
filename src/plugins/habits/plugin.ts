@@ -19,7 +19,6 @@ export const habitsPlugin: Plugin<
   HabitsData
 > = {
   id: "habits",
-  tokenScope: "user",
   source: {
     id: "habits",
     configSchema: HabitsPluginConfig,
