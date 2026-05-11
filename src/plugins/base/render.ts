@@ -4,7 +4,7 @@
  * Renders avatar, name, bio, and key stats as an SVG section.
  */
 
-import { text, image, rect } from "../../render/svg/builder.ts";
+import { text, image } from "../../render/svg/builder.ts";
 import type { SvgElement } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { UserProfile } from "./source.ts";
@@ -29,27 +29,11 @@ export function renderProfile(
 
   const elements: SvgElement[] = [];
 
-  // Section background
-  elements.push(
-    rect(0, ctx.cursor.y, ctx.theme.width, 0, {
-      fill: colours.background,
-      rx: 6,
-    }),
-  );
-
-  // Avatar
-  elements.push(
-    image(
-      padding,
-      ctx.cursor.y + padding,
-      avatarSize,
-      avatarSize,
-      profile.avatarUrl,
-    ),
-  );
+  // Avatar — at top of section, no top padding (pipeline handles margin)
+  elements.push(image(padding, 0, avatarSize, avatarSize, profile.avatarUrl));
 
   // Name
-  const nameY = ctx.cursor.y + padding + 24;
+  const nameY = 24;
   elements.push(
     text(contentX, nameY, profile.name, {
       fill: colours.text,
@@ -101,16 +85,8 @@ export function renderProfile(
     }),
   );
 
-  const totalHeight = statsY - ctx.cursor.y + padding + 8;
-
-  // Update the background rect height
-  const bg = elements[0];
-  if (bg === undefined) {
-    throw new Error("Background rect not found in elements array");
-  }
-  bg.attrs.height = totalHeight;
-
-  ctx.cursor.y += totalHeight;
+  // Section height: bottom of stats + padding
+  const totalHeight = statsY + padding;
 
   return { height: totalHeight, elements };
 }

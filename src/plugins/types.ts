@@ -34,8 +34,6 @@ export interface RenderContext {
   theme: Theme;
   /** Octicon SVG path lookup */
   icons: IconLookup;
-  /** Current Y position in the vertical stack */
-  cursor: { y: number };
   /** Available content width in px */
   contentWidth: number;
 }
@@ -86,13 +84,13 @@ export interface Plugin<TConfig, TData> {
 // Placeholder types — fleshed out in their own modules
 // ---------------------------------------------------------------------------
 
-/** API client abstraction (GraphQL + REST). TODO: define in src/api/client.ts */
+/** API client abstraction over Octokit. */
 export interface ApiClient {
   graphql<T>(query: string, variables?: Record<string, unknown>): Promise<T>;
-  rest: object;
+  rest: import("@octokit/rest").Octokit;
 }
 
-/** Text measurement utility. TODO: define in src/render/layout/measure.ts */
+/** Text measurement utility. */
 export interface Measure {
   textWidth(content: string, fontSize: number, fontWeight?: number): number;
   textBlockHeight(
@@ -102,7 +100,7 @@ export interface Measure {
   ): number;
 }
 
-/** Theme definition. TODO: define in src/render/template/types.ts */
+/** Theme definition. */
 export interface Theme {
   width: number;
   sectionPadding: number;
@@ -128,7 +126,7 @@ export interface Theme {
   };
 }
 
-/** Octicon SVG path lookup. TODO: define in src/render/svg/icons.ts */
+/** Octicon SVG path lookup. */
 export interface IconLookup {
   get(name: string): string;
 }

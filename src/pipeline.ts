@@ -86,7 +86,6 @@ export async function runPipeline(
         measure,
         theme,
         icons,
-        cursor: { y: 0 },
         contentWidth,
       });
 
