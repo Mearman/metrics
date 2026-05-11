@@ -1,13 +1,17 @@
 name: Metrics embed
 author: Joseph Mearman
-description: Generate GitHub metrics as SVG — fork of lowlighter/metrics, overhauled
+description: >-
+  Generate GitHub metrics as SVG — fork of lowlighter/metrics, overhauled.
+  Pure SVG output, no Puppeteer, no browser dependency.
 branding:
   icon: user-check
   color: gray-dark
 
 inputs:
   token:
-    description: GitHub token (PAT or github.token)
+    description: >-
+      GitHub token. Use github.token for public data, or a PAT with
+      public_repo scope for higher rate limits.
     default: ${{ github.token }}
   config:
     description: Path to YAML config file
@@ -15,7 +19,24 @@ inputs:
   dry-run:
     description: Generate without writing output
     default: "false"
+  node-version:
+    description: Node.js version for native TypeScript execution
+    default: "26"
 
 runs:
-  using: node26
-  main: src/action/main.ts
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v6
+
+    - uses: actions/setup-node@v6
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - shell: bash
+      run: pnpm install --frozen-lockfile
+
+    - name: Generate metrics
+      shell: bash
+      run: node src/cli.ts --config "${{ inputs.config }}"
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}

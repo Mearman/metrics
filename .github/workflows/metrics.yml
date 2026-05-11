@@ -2,9 +2,14 @@ name: Metrics
 on:
   schedule: [{ cron: "0 * * * *" }]
   workflow_dispatch:
+  push:
+    paths:
+      - "src/**"
+      - "fonts/**"
+      - ".github/metrics.yml"
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
@@ -13,26 +18,34 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  metrics:
+  generate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      # Sync from upstream — keeps fork current when using `uses: ./`
-      # Configured via `sync` section in .github/metrics.yml
-      - name: Sync from upstream
-        run: |
-          git remote add upstream https://github.com/Mearman/metrics.git
-          git fetch upstream main
-          git merge upstream/main --no-edit || true
-          git push
+      - uses: pnpm/action-setup@v6
 
-      # To use your customised fork instead of upstream, change to: uses: ./
-      - uses: Mearman/metrics@latest
+      - uses: actions/setup-node@v6
         with:
-          token: ${{ secrets.METRICS_TOKEN || github.token }}
+          node-version: 26
 
-      - uses: actions/upload-pages-artifact@v4
+      - run: pnpm install --frozen-lockfile
+
+      - name: Generate metrics
+        run: node src/cli.ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.METRICS_TOKEN || github.token }}
+
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: output
-      - uses: actions/deploy-pages@v4
+
+  deploy:
+    needs: generate
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v5
+        id: deployment

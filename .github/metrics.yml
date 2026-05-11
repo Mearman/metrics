@@ -4,7 +4,7 @@ timezone: Europe/London
 template: classic
 
 outputs:
-  - path: github-metrics.svg
+  - path: output/github-metrics.svg
     format: svg
     plugins:
       base:
