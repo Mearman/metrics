@@ -18,6 +18,7 @@ const DEFAULT_FONT_PATH = resolve(
   import.meta.dirname,
   "..",
   "..",
+  "..",
   "fonts",
   "Roboto-Regular.ttf",
 );
