@@ -13,6 +13,8 @@ import { achievementsPlugin } from "./achievements/plugin.ts";
 import { linesPlugin } from "./lines/plugin.ts";
 import { repositoriesPlugin } from "./repositories/plugin.ts";
 import { activityPlugin } from "./activity/plugin.ts";
+import { starsPlugin } from "./stars/plugin.ts";
+import { followupPlugin } from "./followup/plugin.ts";
 
 export function registerAllPlugins(): void {
   registerPlugin(basePlugin);
@@ -23,4 +25,6 @@ export function registerAllPlugins(): void {
   registerPlugin(linesPlugin);
   registerPlugin(repositoriesPlugin);
   registerPlugin(activityPlugin);
+  registerPlugin(starsPlugin);
+  registerPlugin(followupPlugin);
 }

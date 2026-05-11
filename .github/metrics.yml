@@ -35,3 +35,7 @@ outputs:
       activity:
         limit: 5
         days: 14
+      stars:
+        limit: 4
+      followup:
+        sections: [repositories]

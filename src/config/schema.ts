@@ -107,7 +107,14 @@ const PluginsConfig = Zod.object({
   lines: LinesPluginConfig.optional(),
   repositories: RepositoriesPluginConfig.optional(),
   activity: ActivityPluginConfig.optional(),
-  // TODO: remaining 21 plugin schemas
+  stars: Zod.object({ limit: Zod.int().min(1).max(100).default(4) }).optional(),
+  followup: Zod.object({
+    sections: Zod.array(Zod.enum(["repositories", "user"])).default([
+      "repositories",
+    ]),
+    indepth: Zod.boolean().default(false),
+  }).optional(),
+  // TODO: remaining 19 plugin schemas
 }).loose();
 
 // ---------------------------------------------------------------------------
