@@ -13,8 +13,13 @@ import { dirname } from "node:path";
 import type { RootConfig } from "./config/schema.ts";
 import { createClient } from "./api/client.ts";
 import { serialise } from "./render/svg/serialise.ts";
-import { svg } from "./render/svg/builder.ts";
-import type { SvgElement } from "./render/svg/builder.ts";
+import { svg, rect } from "./render/svg/builder.ts";
+import { getPlugin } from "./plugins/registry.ts";
+import { registerAllPlugins } from "./plugins/register.ts";
+import { createMeasure } from "./render/layout/measure.ts";
+import { resolveTheme } from "./render/template/themes.ts";
+import { createIconLookup } from "./render/svg/icons.ts";
+import type { RenderResult } from "./plugins/types.ts";
 
 // ---------------------------------------------------------------------------
 // Pipeline
@@ -29,6 +34,9 @@ export interface OutputResult {
   byteSize: number;
 }
 
+// Register all known plugins on module load
+registerAllPlugins();
+
 /**
  * Run the full metrics generation pipeline.
  *
@@ -41,30 +49,82 @@ export async function runPipeline(
   token: string,
   options?: { dryRun?: boolean },
 ): Promise<PipelineResult> {
-  const _api = createClient(token);
+  const api = createClient(token);
   const dryRun = options?.dryRun ?? false;
+  const measure = createMeasure();
+  const icons = createIconLookup();
   const results: OutputResult[] = [];
 
-  for (const output of config.outputs) {
-    const sections: SvgElement[] = [];
-    const totalHeight = 0;
+  const username = config.user ?? "unknown";
 
-    // TODO: For each plugin in output.plugins, resolve the DataSource and Renderer,
-    // call source.fetch(), then renderer.render(), collect sections.
-    void _api;
+  for (const output of config.outputs) {
+    const theme = resolveTheme(config.template);
+    const contentWidth = theme.width - theme.margin * 2;
+    const renderResults: RenderResult[] = [];
+    const controller = new AbortController();
+
+    // Fetch + render each enabled plugin
+    for (const [pluginId, pluginConfig] of Object.entries(output.plugins)) {
+      const plugin = getPlugin(pluginId);
+      if (plugin === undefined) {
+        console.warn(`Unknown plugin "${pluginId}" — skipping`);
+        continue;
+      }
+
+      // Fetch data
+      const data = await plugin.source.fetch(
+        {
+          api,
+          user: username,
+          signal: controller.signal,
+        },
+        pluginConfig,
+      );
+
+      // Render
+      const result = plugin.renderer.render(data, pluginConfig, {
+        measure,
+        theme,
+        icons,
+        cursor: { y: 0 },
+        contentWidth,
+      });
+
+      renderResults.push(result);
+    }
+
+    // Layout: stack sections vertically
+    const totalHeight = renderResults.reduce(
+      (sum, r) => sum + r.height,
+      theme.margin * 2,
+    );
+
+    const sections = renderResults.flatMap((result, index) => {
+      const yOffset = renderResults
+        .slice(0, index)
+        .reduce((sum, r) => sum + r.height, theme.margin);
+
+      // Offset each section's elements by its Y position in the stack
+      return result.elements.map((element) =>
+        offsetElement(element, 0, yOffset),
+      );
+    });
 
     // Wrap in root SVG element
-    const width = 480;
-    const height = Math.max(totalHeight, 1);
     const root = svg(
       {
         xmlns: "http://www.w3.org/2000/svg",
-        width,
-        height,
-        viewBox: `0 0 ${String(width)} ${String(height)}`,
+        width: theme.width,
+        height: totalHeight,
+        viewBox: `0 0 ${String(theme.width)} ${String(totalHeight)}`,
         role: "img",
-        "aria-label": `Metrics for ${config.user ?? "unknown"}`,
+        "aria-label": `Metrics for ${username}`,
       },
+      // Background
+      rect(0, 0, theme.width, totalHeight, {
+        fill: theme.colours.background,
+        rx: 6,
+      }),
       ...sections,
     );
 
@@ -82,4 +142,25 @@ export async function runPipeline(
   }
 
   return { outputs: results };
+}
+
+/**
+ * Deep-offset an SvgElement tree by (dx, dy).
+ *
+ * Adds a `transform="translate(dx,dy)"` to the top-level element.
+ */
+function offsetElement(
+  element: import("./render/svg/builder.ts").SvgElement,
+  dx: number,
+  dy: number,
+): import("./render/svg/builder.ts").SvgElement {
+  if (dx === 0 && dy === 0) return element;
+
+  return {
+    ...element,
+    attrs: {
+      ...element.attrs,
+      transform: `translate(${String(dx)},${String(dy)})`,
+    },
+  };
 }
