@@ -32,7 +32,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Generate metrics
-        run: node src/cli.ts
+        run: node src/cli.ts --user "${{ github.repository_owner }}"
         env:
           GITHUB_TOKEN: ${{ secrets.METRICS_TOKEN || github.token }}
 
