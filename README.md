@@ -225,7 +225,7 @@ Three built-in themes: `classic` (dark), `light`, `terminal` (monospace green on
 
 ## Plugins
 
-13 plugins implemented. 14 remaining from the original's 29 GitHub plugins.
+16 plugins implemented. 11 remaining.
 
 | Plugin       | ID              | Status | Description                            |
 |--------------|-----------------|--------|----------------------------------------|
@@ -242,26 +242,19 @@ Three built-in themes: `classic` (dark), `light`, `terminal` (monospace green on
 | Stargazers   | `stargazers`    | ✅     | Per-repo star count bar chart          |
 | People       | `people`        | ✅     | Followers/following avatar grid        |
 | Gists        | `gists`         | ✅     | Gist statistics card                   |
-| Activity     | `activity`      | 🔲     | Recent events feed                     |
-| Calendar     | `calendar`      | 🔲     | Flat contribution calendar             |
+| Discussions | `discussions`   | ✅     | Discussion stats with category bars    |
+| Notable      | `notable`       | ✅     | Notable contribution orgs              |
+| Calendar     | `calendar`      | ✅     | Yearly contribution calendars          |
 | Code         | `code`          | 🔲     | Random code snippet                    |
 | Contributors | `contributors`  | 🔲     | Per-repo contributor breakdown         |
-| Discussions  | `discussions`   | 🔲     | Discussion stats                       |
-| Follow-up    | `followup`      | 🔲     | Issue/PR status tracking               |
-| Gists        | `gists`         | 🔲     | User's gists                           |
 | Introduction | `introduction`  | 🔲     | User bio and introduction card         |
 | Licences     | `licenses`      | 🔲     | Repository licence breakdown           |
-| Notable      | `notable`       | 🔲     | Notable contributions                  |
-| People       | `people`        | 🔲     | Followers, following, sponsors         |
 | Projects     | `projects`      | 🔲     | GitHub Projects boards                 |
 | Reactions    | `reactions`     | 🔲     | Comment reaction stats                 |
-| Repositories | `repositories`  | 🔲     | Featured/pinned repositories           |
 | Skyline      | `skyline`       | 🔲     | GitHub Skyline 3D visualisation        |
 | Sponsors     | `sponsors`      | 🔲     | Sponsor card                           |
 | Sponsorships | `sponsorships`  | 🔲     | Active sponsorships                    |
-| Stargazers   | `stargazers`    | 🔲     | Star history charts                    |
 | Star lists   | `starlists`     | 🔲     | Repositories from starred lists        |
-| Stars        | `stars`         | 🔲     | Recently starred repositories           |
 | Topics       | `topics`        | 🔲     | Starred topics                         |
 | Traffic      | `traffic`       | 🔲     | Repository traffic                     |
 
