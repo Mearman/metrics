@@ -1,0 +1,21 @@
+name: Metrics embed
+author: Joseph Mearman
+description: Generate GitHub metrics as SVG — fork of lowlighter/metrics, overhauled
+branding:
+  icon: user-check
+  color: gray-dark
+
+inputs:
+  token:
+    description: GitHub token (PAT or github.token)
+    default: ${{ github.token }}
+  config:
+    description: Path to YAML config file
+    default: .github/metrics.yml
+  dry-run:
+    description: Generate without writing output
+    default: "false"
+
+runs:
+  using: node26
+  main: src/action/main.ts

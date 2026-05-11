@@ -1,0 +1,38 @@
+name: Metrics
+on:
+  schedule: [{ cron: "0 * * * *" }]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  metrics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Sync from upstream — keeps fork current when using `uses: ./`
+      # Configured via `sync` section in .github/metrics.yml
+      - name: Sync from upstream
+        run: |
+          git remote add upstream https://github.com/Mearman/metrics.git
+          git fetch upstream main
+          git merge upstream/main --no-edit || true
+          git push
+
+      # To use your customised fork instead of upstream, change to: uses: ./
+      - uses: Mearman/metrics@latest
+        with:
+          token: ${{ secrets.METRICS_TOKEN || github.token }}
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: output
+      - uses: actions/deploy-pages@v4

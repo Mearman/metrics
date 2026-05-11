@@ -1,0 +1,32 @@
+# Omit `user` to auto-detect from the repository owner (fork mode)
+# user: Mearman
+timezone: Europe/London
+template: classic
+
+outputs:
+  - path: github-metrics.svg
+    format: svg
+    plugins:
+      base:
+        sections: [header, activity, community, repositories, metadata]
+        indepth: true
+      isocalendar:
+        duration: full-year
+      languages:
+        limit: 8
+        threshold: 5
+        categories: [markup, programming]
+        recent_days: 14
+      habits:
+        days: 14
+        from: 200
+        charts: true
+        facts: true
+      achievements:
+        display: detailed
+        secrets: true
+        threshold: C
+      lines:
+        sections: base
+        repositories_limit: 4
+        history_limit: 1
