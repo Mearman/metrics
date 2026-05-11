@@ -6,8 +6,10 @@
 
 import { registerPlugin } from "./registry.ts";
 import { basePlugin } from "./base/plugin.ts";
+import { languagesPlugin } from "./languages/plugin.ts";
 
 export function registerAllPlugins(): void {
   registerPlugin(basePlugin);
-  // TODO: Register remaining 28 plugins
+  registerPlugin(languagesPlugin);
+  // TODO: Register remaining 27 plugins
 }
