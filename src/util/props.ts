@@ -9,7 +9,6 @@
  * All `as` casts are isolated here — consumers use only `in` narrowing.
  */
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 function propOf(obj: object, key: string): unknown {
   return (obj as Record<string, unknown>)[key];
 }
