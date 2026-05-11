@@ -7,17 +7,14 @@
 
 import * as core from "@actions/core";
 import * as github from "@actions/github";
-import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
 import { loadConfig } from "../config/schema.ts";
 
 async function run(): Promise<void> {
-  const configPath = core.getInput("config");
+  const configPath = core.getInput("config") || undefined;
   const _token = core.getInput("token");
   const dryRun = core.getBooleanInput("dry-run");
 
-  const raw = await readFile(resolve(configPath), "utf-8");
-  const config = loadConfig(raw, {
+  const config = await loadConfig(configPath, {
     user: github.context.repo.owner,
   });
 

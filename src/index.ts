@@ -4,26 +4,23 @@
  * CLI entry point for metrics generation.
  *
  * Usage:
- *   GITHUB_TOKEN=ghp_... node src/index.ts --config .github/metrics.yml
+ *   GITHUB_TOKEN=ghp_... node src/index.ts
+ *   GITHUB_TOKEN=ghp_... node src/index.ts --config path/to/config.yml
  */
 
-import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { loadConfig } from "./config/schema.ts";
 
 const { values } = parseArgs({
   options: {
-    config: { type: "string", default: ".github/metrics.yml" },
+    config: { type: "string" },
     "dry-run": { type: "boolean", default: false },
   },
   strict: true,
 });
 
 async function main(): Promise<void> {
-  const configPath = resolve(values.config);
-  const raw = await readFile(configPath, "utf-8");
-  const config = loadConfig(raw);
+  const config = await loadConfig(values.config);
 
   const userDisplay = config.user ?? "unknown";
   console.log(`Metrics: loaded config for user "${userDisplay}"`);

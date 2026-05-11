@@ -3,76 +3,84 @@
  *
  * Single source of truth: Zod schema → inferred type → runtime validation.
  * The schema is the canonical definition of all configuration.
+ *
+ * Config is loaded via cosmiconfig, which searches for:
+ *   - .github/metrics.yml
+ *   - .github/metrics.yaml
+ *   - .github/metrics.json
+ *   - .metricsrc (JSON/YAML)
+ *   - .metricsrc.yml / .metricsrc.yaml / .metricsrc.json
+ *   - metrics.config.ts / metrics.config.js / metrics.config.mjs
+ *   - "metrics" key in package.json
  */
 
-import * as z from "zod";
+import { cosmiconfig } from "cosmiconfig";
+import * as Zod from "zod";
 
 // ---------------------------------------------------------------------------
 // Plugin config schemas — each plugin defines its own
 // ---------------------------------------------------------------------------
 
-const BasePluginConfig = z.object({
-  sections: z
-    .array(
-      z.enum(["header", "activity", "community", "repositories", "metadata"]),
-    )
-    .default(["header", "activity", "community", "repositories", "metadata"]),
-  indepth: z.boolean().default(false),
+const BasePluginConfig = Zod.object({
+  sections: Zod.array(
+    Zod.enum(["header", "activity", "community", "repositories", "metadata"]),
+  ).default(["header", "activity", "community", "repositories", "metadata"]),
+  indepth: Zod.boolean().default(false),
 });
 
-const IsocalendarPluginConfig = z.object({
-  duration: z.enum(["half-year", "full-year"]).default("full-year"),
+const IsocalendarPluginConfig = Zod.object({
+  duration: Zod.enum(["half-year", "full-year"]).default("full-year"),
 });
 
-const LanguagesPluginConfig = z.object({
-  limit: z.int().min(1).max(20).default(8),
-  threshold: z.number().min(0).max(100).default(5),
-  categories: z
-    .array(z.enum(["markup", "programming"]))
-    .default(["markup", "programming"]),
-  recent_days: z.int().min(1).default(14),
-  recent_load: z.int().min(1).default(300),
+const LanguagesPluginConfig = Zod.object({
+  limit: Zod.int().min(1).max(20).default(8),
+  threshold: Zod.number().min(0).max(100).default(5),
+  categories: Zod.array(Zod.enum(["markup", "programming"])).default([
+    "markup",
+    "programming",
+  ]),
+  recent_days: Zod.int().min(1).default(14),
+  recent_load: Zod.int().min(1).default(300),
 });
 
-const HabitsPluginConfig = z.object({
-  days: z.int().min(1).default(14),
-  from: z.int().min(1).default(200),
-  charts: z.boolean().default(false),
-  facts: z.boolean().default(false),
+const HabitsPluginConfig = Zod.object({
+  days: Zod.int().min(1).default(14),
+  from: Zod.int().min(1).default(200),
+  charts: Zod.boolean().default(false),
+  facts: Zod.boolean().default(false),
 });
 
-const AchievementsPluginConfig = z.object({
-  display: z.enum(["compact", "detailed"]).default("detailed"),
-  secrets: z.boolean().default(false),
-  threshold: z.enum(["C", "B", "A", "S", "X"]).default("C"),
+const AchievementsPluginConfig = Zod.object({
+  display: Zod.enum(["compact", "detailed"]).default("detailed"),
+  secrets: Zod.boolean().default(false),
+  threshold: Zod.enum(["C", "B", "A", "S", "X"]).default("C"),
 });
 
-const LinesPluginConfig = z.object({
-  sections: z.array(z.enum(["base", "history"])).default(["base"]),
-  repositories_limit: z.int().min(1).default(4),
-  history_limit: z.int().min(1).default(1),
+const LinesPluginConfig = Zod.object({
+  sections: Zod.array(Zod.enum(["base", "history"])).default(["base"]),
+  repositories_limit: Zod.int().min(1).default(4),
+  history_limit: Zod.int().min(1).default(1),
 });
 
-// Plugin configs are keyed by plugin ID, all optional
-const PluginsConfig = z
-  .object({
-    base: BasePluginConfig.optional(),
-    isocalendar: IsocalendarPluginConfig.optional(),
-    languages: LanguagesPluginConfig.optional(),
-    habits: HabitsPluginConfig.optional(),
-    achievements: AchievementsPluginConfig.optional(),
-    lines: LinesPluginConfig.optional(),
-    // TODO: remaining 23 plugin schemas
-  })
-  .loose();
+// Plugin configs are keyed by plugin ID, all optional.
+// .loose() allows plugins we haven't defined schemas for yet.
+const PluginsConfig = Zod.object({
+  base: BasePluginConfig.optional(),
+  isocalendar: IsocalendarPluginConfig.optional(),
+  languages: LanguagesPluginConfig.optional(),
+  habits: HabitsPluginConfig.optional(),
+  achievements: AchievementsPluginConfig.optional(),
+  lines: LinesPluginConfig.optional(),
+  // TODO: remaining 23 plugin schemas
+}).loose();
 
 // ---------------------------------------------------------------------------
 // Output schema
 // ---------------------------------------------------------------------------
 
-const OutputConfig = z.object({
-  path: z.string().trim().min(1),
-  format: z.enum(["svg", "png"]).default("svg"),
+const OutputConfig = Zod.object({
+  path: Zod.string().trim().min(1),
+  format: Zod.enum(["svg", "png"]).default("svg"),
   plugins: PluginsConfig,
 });
 
@@ -80,45 +88,70 @@ const OutputConfig = z.object({
 // Sync schema (fork upstream sync)
 // ---------------------------------------------------------------------------
 
-const SyncConfig = z.object({
-  upstream: z.string().trim().default("Mearman/metrics"),
-  branch: z.string().trim().default("main"),
-  auto_merge: z.boolean().default(true),
+const SyncConfig = Zod.object({
+  upstream: Zod.string().trim().default("Mearman/metrics"),
+  branch: Zod.string().trim().default("main"),
+  auto_merge: Zod.boolean().default(true),
 });
 
 // ---------------------------------------------------------------------------
 // Root schema
 // ---------------------------------------------------------------------------
 
-export const RootConfig = z.object({
-  user: z.string().trim().optional(),
-  timezone: z.string().trim().default("UTC"),
-  template: z.string().trim().default("classic"),
+export const RootConfig = Zod.object({
+  user: Zod.string().trim().optional(),
+  timezone: Zod.string().trim().default("UTC"),
+  template: Zod.string().trim().default("classic"),
   sync: SyncConfig.optional(),
-  outputs: z.array(OutputConfig).min(1),
+  outputs: Zod.array(OutputConfig).min(1),
 });
 
-export type RootConfig = z.infer<typeof RootConfig>;
+export type RootConfig = Zod.infer<typeof RootConfig>;
 
 // ---------------------------------------------------------------------------
 // Loader
 // ---------------------------------------------------------------------------
 
+const explorer = cosmiconfig("metrics", {
+  searchPlaces: [
+    ".github/metrics.yml",
+    ".github/metrics.yaml",
+    ".github/metrics.json",
+    ".metricsrc",
+    ".metricsrc.yml",
+    ".metricsrc.yaml",
+    ".metricsrc.json",
+    "metrics.config.ts",
+    "metrics.config.js",
+    "metrics.config.mjs",
+  ],
+});
+
 /**
- * Parse and validate a YAML config string.
+ * Search for and load a metrics config file.
+ *
+ * Uses cosmiconfig to search standard locations. If `configPath` is provided,
+ * loads that specific file instead of searching.
  *
  * Accepts optional overrides (e.g. user from GITHUB_REPOSITORY_OWNER).
- * Throws ZodError on invalid config — callers should surface this.
+ * Throws ZodError on invalid config.
  */
-export function loadConfig(
-  raw: string,
+export async function loadConfig(
+  configPath?: string,
   overrides?: { user?: string },
-): RootConfig {
-  // YAML is parsed by the `yaml` package — but for the scaffold, JSON.parse
-  // works too since YAML is a superset of JSON.
-  // TODO: Use `yaml` package for proper YAML parsing
-  const parsed: unknown = JSON.parse(raw);
-  const config = RootConfig.parse(parsed);
+): Promise<RootConfig> {
+  const result =
+    configPath !== undefined
+      ? await explorer.load(configPath)
+      : await explorer.search();
+
+  if (result === null || result.isEmpty) {
+    throw new Error(
+      "No metrics config found. Create .github/metrics.yml or specify a config path.",
+    );
+  }
+
+  const config = RootConfig.parse(result.config);
 
   // Apply overrides — user from GITHUB_REPOSITORY_OWNER in fork mode
   if (overrides?.user && !config.user) {

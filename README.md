@@ -511,10 +511,9 @@ All 23 remaining plugins from the table above.
 | `zod`              | Config and API response validation |
 | `@octokit/graphql` | GitHub GraphQL API client          |
 | `@octokit/rest`    | GitHub REST API client             |
+| `cosmiconfig`      | Config file discovery and parsing  |
 | `opentype.js`      | Font loading and text measurement  |
-| `@resvg/resvg-js`  | Optional SVG → PNG conversion      |
 | `svgo`             | SVG optimisation                   |
-| `yaml`             | YAML config parsing                |
 | `@actions/core`    | GitHub Action I/O                  |
 | `@actions/github`  | GitHub Action context              |
 
