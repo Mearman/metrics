@@ -1,3 +1,9 @@
+## [1.6.1](https://github.com/Mearman/metrics/compare/v1.6.0...v1.6.1) (2026-05-12)
+
+### Tests
+
+* add private repo filtering test for stargazers renderer ([c3fff0e](https://github.com/Mearman/metrics/commit/c3fff0e2765b3c875c47bb07ba73f72d352df91c))
+
 ## [1.6.0](https://github.com/Mearman/metrics/compare/v1.5.0...v1.6.0) (2026-05-12)
 
 ### Features
