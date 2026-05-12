@@ -1,3 +1,10 @@
+## [1.17.0](https://github.com/Mearman/metrics/compare/v1.16.0...v1.17.0) (2026-05-12)
+
+### Features
+
+* global users_ignored option, notable contribution types, reactions display ([c922aa7](https://github.com/Mearman/metrics/commit/c922aa713763c541f0ecd1bbbaa15b271dec364d))
+* **plugins:** add customisation options to reactions, notable, projects ([724ed94](https://github.com/Mearman/metrics/commit/724ed94e34e6638788970c0aa6e8d408ab286174))
+
 ## [1.16.0](https://github.com/Mearman/metrics/compare/v1.15.0...v1.16.0) (2026-05-12)
 
 ### Features
