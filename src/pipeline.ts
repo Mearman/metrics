@@ -70,6 +70,12 @@ export async function runPipeline(
         continue;
       }
 
+      // Parse plugin config through its Zod schema to apply defaults
+      const parsedConfig = plugin.source.configSchema.safeParse(pluginConfig);
+      const resolvedConfig = parsedConfig.success
+        ? parsedConfig.data
+        : pluginConfig;
+
       // Fetch data
       let data: unknown;
       try {
@@ -78,8 +84,9 @@ export async function runPipeline(
             api,
             user: username,
             signal: controller.signal,
+            token,
           },
-          pluginConfig,
+          resolvedConfig,
         );
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
@@ -90,7 +97,7 @@ export async function runPipeline(
       }
 
       // Render
-      const result = plugin.renderer.render(data, pluginConfig, {
+      const result = plugin.renderer.render(data, resolvedConfig, {
         measure,
         theme,
         icons,

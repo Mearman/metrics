@@ -24,6 +24,8 @@ export interface FetchContext {
   user: string;
   /** Abort signal for cancellation */
   signal: AbortSignal;
+  /** GitHub token — needed by data sources that clone repos */
+  token: string;
 }
 
 /** Context passed to every renderer. */

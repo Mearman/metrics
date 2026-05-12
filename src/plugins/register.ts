@@ -27,6 +27,7 @@ import { contributorsPlugin } from "./contributors/plugin.ts";
 import { codePlugin } from "./code/plugin.ts";
 import { topicsPlugin } from "./topics/plugin.ts";
 import { licencesPlugin } from "./licenses/plugin.ts";
+import { locPlugin } from "./loc/plugin.ts";
 
 export function registerAllPlugins(): void {
   registerPlugin(basePlugin);
@@ -51,4 +52,5 @@ export function registerAllPlugins(): void {
   registerPlugin(codePlugin);
   registerPlugin(topicsPlugin);
   registerPlugin(licencesPlugin);
+  registerPlugin(locPlugin);
 }

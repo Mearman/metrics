@@ -53,4 +53,6 @@ outputs:
         limit: 15
       licenses:
         limit: 8
+      loc:
+        limit: 4
       # calendar:  # disabled — adds many API calls per year
