@@ -1,3 +1,9 @@
+## [1.13.3](https://github.com/Mearman/metrics/compare/v1.13.2...v1.13.3) (2026-05-12)
+
+### Bug Fixes
+
+* **plugins:** skyline smil animation instead of css ([8731c92](https://github.com/Mearman/metrics/commit/8731c92b24848b3051d782016979ebb912224044))
+
 ## [1.13.2](https://github.com/Mearman/metrics/compare/v1.13.1...v1.13.2) (2026-05-12)
 
 ### Bug Fixes
