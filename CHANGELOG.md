@@ -1,3 +1,13 @@
+## [1.13.0](https://github.com/Mearman/metrics/compare/v1.12.1...v1.13.0) (2026-05-12)
+
+### Features
+
+* **plugins:** skyline — 3D isometric contribution cityscape ([60f471d](https://github.com/Mearman/metrics/commit/60f471d43067bfeec95324312d67ad3c096c4fa3))
+
+### CI
+
+* enable skyline plugin in CI config ([905007d](https://github.com/Mearman/metrics/commit/905007d2188219525114856c554717460f0bdf6f))
+
 ## [1.12.1](https://github.com/Mearman/metrics/compare/v1.12.0...v1.12.1) (2026-05-12)
 
 ### Bug Fixes
