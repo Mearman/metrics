@@ -1,3 +1,9 @@
+## [1.13.4](https://github.com/Mearman/metrics/compare/v1.13.3...v1.13.4) (2026-05-12)
+
+### Bug Fixes
+
+* **plugins:** correct skyline rotation centre y coordinate ([b42077b](https://github.com/Mearman/metrics/commit/b42077b496691b8c38ced36b4d6d17e9d24b5bbd))
+
 ## [1.13.3](https://github.com/Mearman/metrics/compare/v1.13.2...v1.13.3) (2026-05-12)
 
 ### Bug Fixes
