@@ -1,3 +1,9 @@
+## [1.6.2](https://github.com/Mearman/metrics/compare/v1.6.1...v1.6.2) (2026-05-12)
+
+### Documentation
+
+* add repository filtering section to README ([f8e3619](https://github.com/Mearman/metrics/commit/f8e36199e2c2382c687ca8e0bd1a4c037597dfc4))
+
 ## [1.6.1](https://github.com/Mearman/metrics/compare/v1.6.0...v1.6.1) (2026-05-12)
 
 ### Tests
