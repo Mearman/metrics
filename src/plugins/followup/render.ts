@@ -4,7 +4,7 @@
  * Renders issue and PR status as progress bars.
  */
 
-import { text, rect } from "../../render/svg/builder.ts";
+import { text, rect, g } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { FollowupData } from "./source.ts";
 
@@ -85,7 +85,8 @@ export function renderFollowup(
       yCursor += 18;
     }
 
-    // PRs progress bar
+    // PRs progress bar — uses clipPath to give segments the
+    // track's rounded shape without gaps between segments
     const totalPRs =
       section.pullRequests.open +
       section.pullRequests.merged +
@@ -96,23 +97,37 @@ export function renderFollowup(
       const mergedWidth = barWidth * mergedRatio;
       const closedWidth = barWidth * closedRatio;
 
+      const clipId = `pr-clip-${String(yCursor)}`;
+
+      elements.push({
+        tag: "defs",
+        attrs: {},
+        children: [
+          {
+            tag: "clipPath",
+            attrs: { id: clipId },
+            children: [rect(padding, 0, barWidth, barHeight, { rx: 4 })],
+          },
+        ],
+      });
+
       elements.push(
-        rect(padding, yCursor, barWidth, barHeight, {
-          fill: colours.border,
-          rx: 4,
-        }),
-      );
-      elements.push(
-        rect(padding, yCursor, mergedWidth, barHeight, {
-          fill: "#a371f7",
-          rx: 4,
-        }),
-      );
-      elements.push(
-        rect(padding + mergedWidth, yCursor, closedWidth, barHeight, {
-          fill: "#f85149",
-          rx: 4,
-        }),
+        g(
+          { transform: `translate(0,${String(yCursor)})` },
+          rect(padding, 0, barWidth, barHeight, {
+            fill: colours.border,
+            rx: 4,
+          }),
+          g(
+            { "clip-path": `url(#${clipId})` },
+            rect(padding, 0, mergedWidth, barHeight, {
+              fill: "#a371f7",
+            }),
+            rect(padding + mergedWidth, 0, closedWidth, barHeight, {
+              fill: "#f85149",
+            }),
+          ),
+        ),
       );
       yCursor += barHeight + 6;
 
