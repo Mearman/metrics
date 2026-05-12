@@ -168,6 +168,9 @@ const PluginsConfig = z
 const OutputConfig = z.object({
   path: z.string().trim().min(1),
   format: z.enum(["svg", "png"]).default("svg"),
+  /** Explicit plugin rendering order. If set, plugins are rendered in this
+   *  order; any plugins not listed are appended in their YAML key order. */
+  order: z.array(z.string().trim()).default([]),
   plugins: PluginsConfig,
 });
 

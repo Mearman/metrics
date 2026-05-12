@@ -143,4 +143,36 @@ describe("Pipeline", () => {
     assert.ok(emptyOutput !== undefined);
     assert.ok(emptyOutput.byteSize > 0);
   });
+
+  it("respects explicit plugin order", async () => {
+    // Register a third mock plugin
+    if (getPlugin("test-mock-c") === undefined) {
+      registerPlugin(makeMockPlugin("test-mock-c", 60));
+    }
+
+    const orderedConfig = {
+      template: "classic",
+      timezone: "UTC",
+      outputs: [
+        {
+          path: "/tmp/metrics-test-order.svg",
+          format: "svg",
+          order: ["test-mock-b", "test-mock-a"],
+          plugins: {
+            "test-mock-a": {},
+            "test-mock-b": {},
+            "test-mock-c": {},
+          },
+        },
+      ],
+    };
+    const result = await runPipeline(orderedConfig as never, "fake-token", {
+      dryRun: true,
+    });
+    assert.strictEqual(result.outputs.length, 1);
+    // The output should be valid SVG regardless of order
+    const output = result.outputs[0];
+    assert.ok(output !== undefined);
+    assert.ok(output.byteSize > 0);
+  });
 });

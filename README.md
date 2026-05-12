@@ -169,6 +169,27 @@ repos:
 
 This means `repos: { fetch: all }` with no rules is safe — private repos boost your language stats and totals without revealing their names.
 
+### Plugin ordering
+
+By default, plugins render in the order they appear in your YAML. To control section order explicitly:
+
+```yaml
+outputs:
+  - path: output/github-metrics.svg
+    format: svg
+    order:                # Render these plugins first, in this order
+      - isocalendar
+      - languages
+      - base
+    plugins:
+      base: {}
+      isocalendar: { duration: full-year }
+      languages: { limit: 8 }
+      habits: { charts: true }   # not in `order`, so rendered after
+```
+
+Plugins listed in `order` render first (in that order). Any plugins not listed are appended in their YAML key order.
+
 ---
 
 ## Token tiers

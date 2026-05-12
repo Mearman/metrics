@@ -13,6 +13,42 @@ import { serialise } from "./render/svg/serialise.ts";
 import { svg, rect, line } from "./render/svg/builder.ts";
 import { getPlugin } from "./plugins/registry.ts";
 import { registerAllPlugins } from "./plugins/register.ts";
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Reorder plugin entries according to an explicit order list.
+ *
+ * Plugins named in `order` come first (in that order);
+ * any plugins not listed are appended in their original key order.
+ */
+function reorderPlugins(
+  entries: [string, unknown][],
+  order: string[] | undefined,
+): [string, unknown][] {
+  if (order === undefined || order.length === 0) return entries;
+
+  const entryMap = new Map(entries);
+  const result: [string, unknown][] = [];
+
+  // Add plugins in the specified order
+  for (const id of order) {
+    const config = entryMap.get(id);
+    if (config !== undefined) {
+      result.push([id, config]);
+      entryMap.delete(id);
+    }
+  }
+
+  // Append remaining plugins in their original order
+  for (const [id, config] of entryMap) {
+    result.push([id, config]);
+  }
+
+  return result;
+}
 import { createMeasure } from "./render/layout/measure.ts";
 import { resolveTheme } from "./render/template/themes.ts";
 import { createIconLookup } from "./render/svg/icons.ts";
@@ -62,8 +98,12 @@ export async function runPipeline(
     const renderResults: RenderResult[] = [];
     const controller = new AbortController();
 
+    // Reorder plugins if an explicit order is set
+    const pluginEntries = Object.entries(output.plugins);
+    const orderedEntries = reorderPlugins(pluginEntries, output.order);
+
     // Fetch + render each enabled plugin
-    for (const [pluginId, pluginConfig] of Object.entries(output.plugins)) {
+    for (const [pluginId, pluginConfig] of orderedEntries) {
       const plugin = getPlugin(pluginId);
       if (plugin === undefined) {
         console.warn(`Unknown plugin "${pluginId}" — skipping`);
