@@ -1,3 +1,9 @@
+## [1.13.2](https://github.com/Mearman/metrics/compare/v1.13.1...v1.13.2) (2026-05-12)
+
+### Bug Fixes
+
+* **output:** cdata wrapper for style elements ([31aa72f](https://github.com/Mearman/metrics/commit/31aa72f604481b830ae30c06f94f91cc4a9fa4f2))
+
 ## [1.13.1](https://github.com/Mearman/metrics/compare/v1.13.0...v1.13.1) (2026-05-12)
 
 ### Bug Fixes
