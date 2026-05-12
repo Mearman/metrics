@@ -29,6 +29,9 @@ importers:
       fontkit:
         specifier: 2.0.4
         version: 2.0.4
+      minimatch:
+        specifier: 10.2.5
+        version: 10.2.5
       svgo:
         specifier: ^4.0.1
         version: 4.0.1

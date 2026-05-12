@@ -16,6 +16,7 @@
 
 import { cosmiconfig } from "cosmiconfig";
 import * as z from "zod";
+import { ReposConfigSchema } from "../repos/filter.ts";
 
 // ---------------------------------------------------------------------------
 // Plugin config schemas — each plugin defines its own
@@ -190,6 +191,8 @@ export const RootConfig = z.object({
   template: z.string().trim().default("classic"),
   /** Embed font data in SVG for cross-host rendering. Default true. */
   embed_fonts: z.boolean().default(true),
+  /** Repository fetching and filtering rules */
+  repos: ReposConfigSchema.default({ fetch: "public", rules: [] }),
   sync: SyncConfig.optional(),
   outputs: z.array(OutputConfig).min(1),
 });

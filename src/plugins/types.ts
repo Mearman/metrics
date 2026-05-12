@@ -26,6 +26,8 @@ export interface FetchContext {
   signal: AbortSignal;
   /** GitHub token — needed by data sources that clone repos */
   token: string;
+  /** Repository fetching and filtering rules */
+  repos: import("../repos/filter.ts").ReposConfig;
 }
 
 /** Context passed to every renderer. */

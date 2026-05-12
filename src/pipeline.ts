@@ -85,6 +85,7 @@ export async function runPipeline(
             user: username,
             signal: controller.signal,
             token,
+            repos: config.repos,
           },
           resolvedConfig,
         );
