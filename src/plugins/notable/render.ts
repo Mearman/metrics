@@ -53,14 +53,13 @@ export function renderNotable(
     const x = col * step;
     const y = row * (avatarSize + 22);
 
-    const displayName = truncateText(org.name, step, 10, ctx.measure);
+    const displayName = truncateText(org.name, step - 4, 10, ctx.measure);
     avatarElements.push(image(x, y, avatarSize, avatarSize, org.avatarUrl));
     avatarElements.push(
-      text(x + avatarSize / 2, y + avatarSize + 12, displayName, {
+      text(x, y + avatarSize + 12, displayName, {
         fill: colours.textTertiary,
         "font-size": 10,
         "font-family": fontStack,
-        "text-anchor": "middle",
       }),
     );
     i++;
