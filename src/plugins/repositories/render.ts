@@ -6,6 +6,7 @@
  */
 
 import { g, rect, text, circle } from "../../render/svg/builder.ts";
+import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { RepositoriesData } from "./source.ts";
 
@@ -16,27 +17,6 @@ function formatCount(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
   return String(n);
-}
-
-/**
- * Truncate text to fit within a maximum pixel width.
- */
-function truncateText(
-  content: string,
-  maxWidth: number,
-  fontSize: number,
-  ctx: RenderContext,
-): string {
-  if (ctx.measure.textWidth(content, fontSize) <= maxWidth) return content;
-
-  let truncated = content;
-  while (truncated.length > 0) {
-    truncated = truncated.slice(0, -1);
-    if (ctx.measure.textWidth(`${truncated}…`, fontSize) <= maxWidth) {
-      return `${truncated}…`;
-    }
-  }
-  return "…";
 }
 
 /**
@@ -138,7 +118,7 @@ export function renderRepositories(
         repo.description,
         maxDescWidth,
         12,
-        ctx,
+        ctx.measure,
       );
       cardElements.push(
         text(padding + cardPadding, innerY + 12, truncatedDesc, {

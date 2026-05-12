@@ -5,6 +5,7 @@
  */
 
 import { text, rect } from "../../render/svg/builder.ts";
+import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { StargazersData } from "./source.ts";
 
@@ -45,9 +46,15 @@ export function renderStargazers(
   for (const repo of data.repos) {
     const y = startY + row * (barHeight + barGap);
 
-    // Repo name (left)
+    // Repo name (left, truncated to fit label area)
+    const displayName = truncateText(
+      repo.name,
+      labelWidth - 8,
+      11,
+      ctx.measure,
+    );
     elements.push(
-      text(padding, y + barHeight - 2, repo.name, {
+      text(padding, y + barHeight - 2, displayName, {
         fill: colours.textSecondary,
         "font-size": 11,
         "font-family": fontStack,

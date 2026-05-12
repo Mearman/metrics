@@ -7,6 +7,7 @@
  */
 
 import { text, image } from "../../render/svg/builder.ts";
+import { wrapText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { IntroductionData } from "./source.ts";
 
@@ -69,27 +70,8 @@ export function renderIntroduction(
 
   // Bio
   if (bio !== null && bio.length > 0) {
-    // Word-wrap bio to content width
     const maxWidth = ctx.contentWidth - padding;
-    const words = bio.split(" ");
-    const lines: string[] = [];
-    let currentLine = "";
-
-    for (const word of words) {
-      const test = currentLine.length === 0 ? word : `${currentLine} ${word}`;
-      if (
-        ctx.measure.textWidth(test, 12) > maxWidth &&
-        currentLine.length > 0
-      ) {
-        lines.push(currentLine);
-        currentLine = word;
-      } else {
-        currentLine = test;
-      }
-    }
-    if (currentLine.length > 0) {
-      lines.push(currentLine);
-    }
+    const lines = wrapText(bio, maxWidth, 12, ctx.measure);
 
     for (const line of lines) {
       elements.push(

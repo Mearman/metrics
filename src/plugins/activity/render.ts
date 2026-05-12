@@ -5,6 +5,7 @@
  */
 
 import { text, rect } from "../../render/svg/builder.ts";
+import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { ActivityData } from "./source.ts";
 
@@ -71,8 +72,9 @@ export function renderActivity(
       }),
     );
 
-    // Repo name (right-aligned)
-    const repoText = event.repo;
+    // Repo name (right-aligned, truncated if too long)
+    const maxRepoWidth = 180;
+    const repoText = truncateText(event.repo, maxRepoWidth, 11, ctx.measure);
     const repoWidth = ctx.measure.textWidth(repoText, 11);
     elements.push(
       text(ctx.theme.width - padding - repoWidth, yCursor + 8, repoText, {

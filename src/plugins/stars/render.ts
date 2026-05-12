@@ -5,6 +5,7 @@
  */
 
 import { text, rect } from "../../render/svg/builder.ts";
+import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { StarsData } from "./source.ts";
 
@@ -69,7 +70,12 @@ export function renderStars(
     // Description (truncated)
     if (repo.description) {
       const maxDescWidth = ctx.contentWidth - 16;
-      const truncated = truncateText(repo.description, maxDescWidth, 11, ctx);
+      const truncated = truncateText(
+        repo.description,
+        maxDescWidth,
+        11,
+        ctx.measure,
+      );
       elements.push(
         text(padding + 16, yCursor, truncated, {
           fill: colours.textSecondary,
@@ -101,21 +107,4 @@ export function renderStars(
   }
 
   return { height: yCursor + padding, elements };
-}
-
-function truncateText(
-  content: string,
-  maxWidth: number,
-  fontSize: number,
-  ctx: RenderContext,
-): string {
-  if (ctx.measure.textWidth(content, fontSize) <= maxWidth) return content;
-  let truncated = content;
-  while (truncated.length > 0) {
-    truncated = truncated.slice(0, -1);
-    if (ctx.measure.textWidth(`${truncated}…`, fontSize) <= maxWidth) {
-      return `${truncated}…`;
-    }
-  }
-  return "…";
 }
