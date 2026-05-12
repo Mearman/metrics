@@ -29,6 +29,9 @@ import { topicsPlugin } from "./topics/plugin.ts";
 import { licencesPlugin } from "./licenses/plugin.ts";
 import { locPlugin } from "./loc/plugin.ts";
 import { projectsPlugin } from "./projects/plugin.ts";
+import { sponsorsPlugin } from "./sponsors/plugin.ts";
+import { sponsorshipsPlugin } from "./sponsorships/plugin.ts";
+import { trafficPlugin } from "./traffic/plugin.ts";
 
 export function registerAllPlugins(): void {
   registerPlugin(basePlugin);
@@ -55,4 +58,7 @@ export function registerAllPlugins(): void {
   registerPlugin(licencesPlugin);
   registerPlugin(locPlugin);
   registerPlugin(projectsPlugin);
+  registerPlugin(sponsorsPlugin);
+  registerPlugin(sponsorshipsPlugin);
+  registerPlugin(trafficPlugin);
 }
