@@ -10,6 +10,8 @@
  */
 
 import { parseArgs } from "node:util";
+import { writeFile, mkdir } from "node:fs/promises";
+import { dirname, join } from "node:path";
 import { loadConfig } from "./config/schema.ts";
 import { runPipeline } from "./pipeline.ts";
 import { createClient } from "./api/client.ts";
@@ -50,6 +52,12 @@ async function main(): Promise<void> {
 
   for (const output of result.outputs) {
     console.log(`  → ${output.path} (${String(output.byteSize)} bytes)`);
+
+    // Write robots.txt alongside the SVG to prevent search engine indexing
+    const outputDir = dirname(output.path);
+    const robotsPath = join(outputDir, "robots.txt");
+    await mkdir(outputDir, { recursive: true });
+    await writeFile(robotsPath, "User-agent: *\nDisallow: /\n", "utf-8");
   }
 }
 
