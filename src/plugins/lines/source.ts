@@ -33,6 +33,7 @@ const REPO_LANGUAGES_QUERY = `
               size
               node {
                 name
+                color
               }
             }
           }
@@ -73,6 +74,7 @@ const ResponseSchema = z.object({
                 size: z.number(),
                 node: z.object({
                   name: z.string().trim(),
+                  color: z.string().trim().nullable(),
                 }),
               }),
             ),
@@ -90,7 +92,7 @@ const ResponseSchema = z.object({
 export interface RepoLines {
   name: string;
   totalBytes: number;
-  languages: { name: string; bytes: number }[];
+  languages: { name: string; bytes: number; colour: string }[];
 }
 
 export interface LinesData {
@@ -139,6 +141,7 @@ export async function fetchLines(
       const languages = repo.languages.edges.map((edge) => ({
         name: edge.node.name,
         bytes: edge.size,
+        colour: edge.node.color ?? "#8b949e",
       }));
       const repoTotal = languages.reduce((sum, l) => sum + l.bytes, 0);
 

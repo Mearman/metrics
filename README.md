@@ -234,7 +234,7 @@ Three built-in themes: `classic` (dark), `light`, `terminal` (monospace green on
 | Isocalendar  | `isocalendar`   | ✅     | Contribution heatmap calendar          |
 | Habits       | `habits`        | ✅     | Commit timing stats with activity bars |
 | Achievements | `achievements`  | ✅     | Derived badges with tier indicators    |
-| Lines        | `lines`         | ✅     | Per-repo lines of code breakdown       |
+| Lines        | `lines`         | ✅     | Per-repo code size breakdown            |
 | Repositories | `repositories`  | ✅     | Pinned/featured repository cards       |
 | Activity     | `activity`      | ✅     | Recent events timeline                 |
 | Stars        | `stars`         | ✅     | Recently starred repositories          |
