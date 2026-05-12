@@ -8,6 +8,7 @@
 
 import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
+import { repoPrivacyFilter } from "../../repos/graphql.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -53,7 +54,7 @@ query($login: String!) {
 const COUNT_QUERY = `
 query($login: String!) {
   user(login: $login) {
-    repositories(first: 100, privacy: PUBLIC, ownerAffiliations: [OWNER]) {
+    repositories(first: 100, __PRIVACY__, ownerAffiliations: [OWNER]) {
       nodes {
         discussions(first: 1) {
           totalCount
@@ -100,12 +101,17 @@ export async function fetchDiscussions(
   ctx: FetchContext,
   config: DiscussionsConfig,
 ): Promise<DiscussionsData> {
+  const query = QUERY.replace("__PRIVACY__", repoPrivacyFilter(ctx.repos));
+  const countQuery = COUNT_QUERY.replace(
+    "__PRIVACY__",
+    repoPrivacyFilter(ctx.repos),
+  );
   // Get categories (only works on user-level, may fail gracefully)
   let categories: DiscussionCategory[] = [];
 
   if (config.categories) {
     try {
-      const raw = await ctx.api.graphql(QUERY, { login: ctx.user });
+      const raw = await ctx.api.graphql(query, { login: ctx.user });
       const parsed = CategoriesResponseSchema.safeParse(raw);
       if (parsed.success) {
         categories = parsed.data.user.repositoryDiscussionCategories.nodes
@@ -118,7 +124,7 @@ export async function fetchDiscussions(
   }
 
   // Count total discussions across repos
-  const rawCount = await ctx.api.graphql(COUNT_QUERY, { login: ctx.user });
+  const rawCount = await ctx.api.graphql(countQuery, { login: ctx.user });
   const parsedCount = CountResponseSchema.safeParse(rawCount);
   if (!parsedCount.success) {
     throw new Error(

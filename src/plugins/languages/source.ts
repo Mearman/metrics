@@ -8,6 +8,8 @@
 
 import * as z from "zod";
 import type { DataSource } from "../types.ts";
+import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import type { ReposConfig } from "../../repos/filter.ts";
 
 // ---------------------------------------------------------------------------
 // GraphQL query
@@ -19,7 +21,7 @@ const LANGUAGES_QUERY = `
       repositories(
         first: $first
         after: $after
-        privacy: PUBLIC
+        __PRIVACY__
         ownerAffiliations: OWNER
         orderBy: { field: UPDATED_AT, direction: DESC }
       ) {
@@ -118,15 +120,18 @@ export async function fetchLanguages(
     ): Promise<unknown>;
   },
   user: string,
+  repos: ReposConfig,
   options?: { limit?: number },
 ): Promise<LanguagesData> {
+  const privacyFilter = repoPrivacyFilter(repos);
+  const query = LANGUAGES_QUERY.replace("__PRIVACY__", privacyFilter);
   const repoLimit = options?.limit ?? 300;
   const aggregated = new Map<string, { size: number; colour: string }>();
   let hasNextPage = true;
   let cursor: string | null = null;
 
   while (hasNextPage) {
-    const raw = await api.graphql(LANGUAGES_QUERY, {
+    const raw = await api.graphql(query, {
       login: user,
       first: Math.min(repoLimit, 100),
       after: cursor,
@@ -177,6 +182,6 @@ export const languagesSource: DataSource<LanguagesConfig, LanguagesData> = {
   id: "languages",
   configSchema: LanguagesConfig,
   async fetch(ctx) {
-    return await fetchLanguages(ctx.api, ctx.user);
+    return await fetchLanguages(ctx.api, ctx.user, ctx.repos);
   },
 };

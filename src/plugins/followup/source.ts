@@ -8,6 +8,7 @@
 
 import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
+import { repoPrivacyFilter } from "../../repos/graphql.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -43,7 +44,7 @@ query($login: String!, $limit: Int!) {
   user(login: $login) {
     repositories(
       first: $limit
-      privacy: PUBLIC
+      __PRIVACY__
       ownerAffiliations: [OWNER]
       orderBy: { field: UPDATED_AT, direction: DESC }
     ) {
@@ -109,10 +110,18 @@ export async function fetchFollowup(
   ctx: FetchContext,
   config: FollowupConfig,
 ): Promise<FollowupData> {
+  const reposQuery = REPOS_QUERY.replace(
+    "__PRIVACY__",
+    repoPrivacyFilter(ctx.repos),
+  );
+  const userQuery = USER_QUERY.replace(
+    "__PRIVACY__",
+    repoPrivacyFilter(ctx.repos),
+  );
   const sections: FollowupSection[] = [];
 
   if (config.sections.includes("repositories")) {
-    const raw = await ctx.api.graphql(REPOS_QUERY, {
+    const raw = await ctx.api.graphql(reposQuery, {
       login: ctx.user,
       limit: 100,
     });
@@ -145,7 +154,7 @@ export async function fetchFollowup(
   }
 
   if (config.sections.includes("user")) {
-    const raw = await ctx.api.graphql(USER_QUERY, { login: ctx.user });
+    const raw = await ctx.api.graphql(userQuery, { login: ctx.user });
     const parsed = UserResponseSchema.safeParse(raw);
     if (!parsed.success) {
       throw new Error(

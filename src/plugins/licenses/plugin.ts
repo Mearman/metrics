@@ -17,7 +17,7 @@ export const licencesPlugin: Plugin<LicencesConfigType, LicencesData> = {
     id: "licenses",
     configSchema: LicencesConfig,
     async fetch(ctx, config) {
-      return await fetchLicences(ctx.api, ctx.user, config.limit);
+      return await fetchLicences(ctx.api, ctx.user, config.limit, ctx.repos);
     },
   },
   renderer: {

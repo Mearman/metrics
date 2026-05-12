@@ -8,6 +8,8 @@
 
 import * as z from "zod";
 import type { DataSource } from "../types.ts";
+import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import type { ReposConfig } from "../../repos/filter.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -64,7 +66,7 @@ const QUERY = `
       repositories(
         first: $first
         after: $after
-        privacy: PUBLIC
+        __PRIVACY__
         ownerAffiliations: OWNER
         orderBy: { field: UPDATED_AT, direction: DESC }
       ) {
@@ -97,13 +99,15 @@ export async function fetchTopics(
   },
   user: string,
   limit: number,
+  repos: ReposConfig,
 ): Promise<TopicsData> {
+  const query = QUERY.replace("__PRIVACY__", repoPrivacyFilter(repos));
   const counts = new Map<string, number>();
   let hasNextPage = true;
   const cursor: string | null = null;
 
   while (hasNextPage) {
-    const raw = await api.graphql(QUERY, {
+    const raw = await api.graphql(query, {
       login: user,
       first: 100,
       after: cursor,
@@ -145,6 +149,6 @@ export const topicsSource: DataSource<TopicsConfig, TopicsData> = {
   id: "topics",
   configSchema: TopicsConfig,
   async fetch(ctx, config) {
-    return await fetchTopics(ctx.api, ctx.user, config.limit);
+    return await fetchTopics(ctx.api, ctx.user, config.limit, ctx.repos);
   },
 };

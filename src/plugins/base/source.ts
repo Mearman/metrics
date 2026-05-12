@@ -10,6 +10,8 @@
 
 import * as z from "zod";
 import type { DataSource } from "../types.ts";
+import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import type { ReposConfig } from "../../repos/filter.ts";
 
 // ---------------------------------------------------------------------------
 // GraphQL query
@@ -31,7 +33,7 @@ const PROFILE_QUERY = `
       following {
         totalCount
       }
-      repositories(privacy: PUBLIC, ownerAffiliations: OWNER) {
+      repositories(__PRIVACY__, ownerAffiliations: OWNER) {
         totalCount
       }
       issues {
@@ -131,8 +133,10 @@ export async function fetchProfile(
     ): Promise<unknown>;
   },
   user: string,
+  repos: ReposConfig,
 ): Promise<UserProfile> {
-  const raw = await api.graphql(PROFILE_QUERY, { login: user });
+  const query = PROFILE_QUERY.replace("__PRIVACY__", repoPrivacyFilter(repos));
+  const raw = await api.graphql(query, { login: user });
   const parsed = ProfileResponseSchema.safeParse(raw);
   if (!parsed.success) {
     throw new Error(
@@ -171,6 +175,6 @@ export const baseSource: DataSource<BasePluginConfig, UserProfile> = {
   id: "base",
   configSchema: BasePluginConfig,
   async fetch(ctx) {
-    return await fetchProfile(ctx.api, ctx.user);
+    return await fetchProfile(ctx.api, ctx.user, ctx.repos);
   },
 };

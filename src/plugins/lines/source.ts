@@ -7,6 +7,8 @@
 
 import * as z from "zod";
 import type { DataSource } from "../types.ts";
+import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import type { ReposConfig } from "../../repos/filter.ts";
 
 // ---------------------------------------------------------------------------
 // GraphQL query
@@ -18,7 +20,7 @@ const REPO_LANGUAGES_QUERY = `
       repositories(
         first: $first
         after: $after
-        privacy: PUBLIC
+        __PRIVACY__
         ownerAffiliations: OWNER
         orderBy: { field: UPDATED_AT, direction: DESC }
       ) {
@@ -116,16 +118,21 @@ export async function fetchLines(
   },
   user: string,
   limit = 4,
+  repos: ReposConfig,
 ): Promise<LinesData> {
-  const repos: RepoLines[] = [];
+  const query = REPO_LANGUAGES_QUERY.replace(
+    "__PRIVACY__",
+    repoPrivacyFilter(repos),
+  );
+  const repoResults: RepoLines[] = [];
   let hasNextPage = true;
   let cursor: string | null = null;
   let totalBytes = 0;
 
-  while (hasNextPage && repos.length < limit) {
-    const raw = await api.graphql(REPO_LANGUAGES_QUERY, {
+  while (hasNextPage && repoResults.length < limit) {
+    const raw = await api.graphql(query, {
       login: user,
-      first: Math.min(limit - repos.length, 100),
+      first: Math.min(limit - repoResults.length, 100),
       after: cursor,
     });
     const parsed = ResponseSchema.safeParse(raw);
@@ -146,7 +153,7 @@ export async function fetchLines(
       const repoTotal = languages.reduce((sum, l) => sum + l.bytes, 0);
 
       if (repoTotal > 0) {
-        repos.push({ name: repo.name, totalBytes: repoTotal, languages });
+        repoResults.push({ name: repo.name, totalBytes: repoTotal, languages });
         totalBytes += repoTotal;
       }
     }
@@ -155,7 +162,7 @@ export async function fetchLines(
     cursor = result.pageInfo.endCursor;
   }
 
-  return { repos: repos.slice(0, limit), totalBytes };
+  return { repos: repoResults.slice(0, limit), totalBytes };
 }
 
 // ---------------------------------------------------------------------------
@@ -166,6 +173,6 @@ export const linesSource: DataSource<LinesConfig, LinesData> = {
   id: "lines",
   configSchema: LinesConfig,
   async fetch(ctx, config) {
-    return await fetchLines(ctx.api, ctx.user, config.limit);
+    return await fetchLines(ctx.api, ctx.user, config.limit, ctx.repos);
   },
 };

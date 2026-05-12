@@ -7,6 +7,7 @@
 
 import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
+import { repoPrivacyFilter } from "../../repos/graphql.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -42,7 +43,7 @@ query($login: String!, $limit: Int!) {
   user(login: $login) {
     repositories(
       first: $limit
-      privacy: PUBLIC
+      __PRIVACY__
       ownerAffiliations: [OWNER]
       orderBy: { field: STARGAZERS, direction: DESC }
     ) {
@@ -79,7 +80,8 @@ export async function fetchStargazers(
   ctx: FetchContext,
   config: StargazersConfig,
 ): Promise<StargazersData> {
-  const raw = await ctx.api.graphql(QUERY, {
+  const query = QUERY.replace("__PRIVACY__", repoPrivacyFilter(ctx.repos));
+  const raw = await ctx.api.graphql(query, {
     login: ctx.user,
     limit: config.limit,
   });

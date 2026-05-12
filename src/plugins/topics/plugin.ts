@@ -17,7 +17,7 @@ export const topicsPlugin: Plugin<TopicsConfigType, TopicsData> = {
     id: "topics",
     configSchema: TopicsConfig,
     async fetch(ctx, config) {
-      return await fetchTopics(ctx.api, ctx.user, config.limit);
+      return await fetchTopics(ctx.api, ctx.user, config.limit, ctx.repos);
     },
   },
   renderer: {

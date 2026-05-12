@@ -22,7 +22,7 @@ export const achievementsPlugin: Plugin<
     id: "achievements",
     configSchema: AchievementsPluginConfig,
     async fetch(ctx) {
-      return await fetchAchievements(ctx.api, ctx.user);
+      return await fetchAchievements(ctx.api, ctx.user, ctx.repos);
     },
   },
   renderer: {

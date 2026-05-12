@@ -26,7 +26,7 @@ export const languagesPlugin: Plugin<
     id: "languages",
     configSchema: LanguagesPluginConfig,
     async fetch(ctx, config) {
-      return await fetchLanguages(ctx.api, ctx.user, {
+      return await fetchLanguages(ctx.api, ctx.user, ctx.repos, {
         limit: config.recent_load,
       });
     },

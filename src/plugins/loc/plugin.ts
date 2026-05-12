@@ -23,6 +23,7 @@ export const locPlugin: Plugin<LocConfigType, LocData> = {
         config.limit,
         config.repositories,
         ctx.token,
+        ctx.repos,
       );
     },
   },

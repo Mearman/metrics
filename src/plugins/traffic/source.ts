@@ -7,6 +7,8 @@
 
 import * as z from "zod";
 import type { DataSource } from "../types.ts";
+import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import type { ReposConfig } from "../../repos/filter.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -55,7 +57,7 @@ const REPOS_QUERY = `
     user(login: $login) {
       repositories(
         first: $first
-        privacy: PUBLIC
+        __PRIVACY__
         ownerAffiliations: OWNER
         orderBy: { field: UPDATED_AT, direction: DESC }
       ) {
@@ -81,8 +83,10 @@ export async function fetchTraffic(
   },
   user: string,
   limit: number,
+  repos: ReposConfig,
 ): Promise<TrafficData> {
-  const raw = await api.graphql(REPOS_QUERY, { login: user, first: 100 });
+  const query = REPOS_QUERY.replace("__PRIVACY__", repoPrivacyFilter(repos));
+  const raw = await api.graphql(query, { login: user, first: 100 });
   const parsed = ReposResponseSchema.safeParse(raw);
   if (!parsed.success) {
     throw new Error(
@@ -90,7 +94,7 @@ export async function fetchTraffic(
     );
   }
 
-  const repos = parsed.data.user.repositories.nodes.map((n) => {
+  const repoList = parsed.data.user.repositories.nodes.map((n) => {
     const slashIndex = n.nameWithOwner.indexOf("/");
     return {
       owner: n.nameWithOwner.slice(0, slashIndex),
@@ -103,7 +107,7 @@ export async function fetchTraffic(
   let totalViews = 0;
   let totalUniques = 0;
 
-  for (const repo of repos) {
+  for (const repo of repoList) {
     try {
       const response = await api.rest.repos.getViews({
         owner: repo.owner,
@@ -140,6 +144,6 @@ export const trafficSource: DataSource<TrafficConfig, TrafficData> = {
   id: "traffic",
   configSchema: TrafficConfig,
   async fetch(ctx, config) {
-    return await fetchTraffic(ctx.api, ctx.user, config.limit);
+    return await fetchTraffic(ctx.api, ctx.user, config.limit, ctx.repos);
   },
 };

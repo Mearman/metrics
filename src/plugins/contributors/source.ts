@@ -7,6 +7,8 @@
 
 import * as z from "zod";
 import type { ApiClient } from "../types.ts";
+import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import type { ReposConfig } from "../../repos/filter.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -51,7 +53,7 @@ const QUERY = `
       repositories(
         first: $first
         after: $after
-        privacy: PUBLIC
+        __PRIVACY__
         ownerAffiliations: OWNER
         orderBy: { field: STARGAZERS, direction: DESC }
       ) {
@@ -110,10 +112,12 @@ export async function fetchContributors(
   api: ApiClient,
   user: string,
   config: ContributorsConfig,
+  repos: ReposConfig,
 ): Promise<ContributorsData> {
-  const repos: RepoContributors[] = [];
+  const reposQuery = QUERY.replace("__PRIVACY__", repoPrivacyFilter(repos));
+  const reposResult: RepoContributors[] = [];
 
-  const raw = await api.graphql(QUERY, {
+  const raw = await api.graphql(reposQuery, {
     login: user,
     first: config.limit,
   });
@@ -138,12 +142,12 @@ export async function fetchContributors(
     }
 
     if (contributors.length > 0) {
-      repos.push({
+      reposResult.push({
         repository: repo.nameWithOwner,
         contributors: contributors.slice(0, config.contributors_per_repo),
       });
     }
   }
 
-  return { repos };
+  return { repos: reposResult };
 }

@@ -22,7 +22,12 @@ export const linesPlugin: Plugin<
     id: "lines",
     configSchema: LinesPluginConfig,
     async fetch(ctx, config) {
-      return await fetchLines(ctx.api, ctx.user, config.repositories_limit);
+      return await fetchLines(
+        ctx.api,
+        ctx.user,
+        config.repositories_limit,
+        ctx.repos,
+      );
     },
   },
   renderer: {

@@ -28,7 +28,7 @@ export const basePlugin: Plugin<
     id: "base",
     configSchema: BasePluginConfig,
     async fetch(ctx) {
-      return await fetchProfile(ctx.api, ctx.user);
+      return await fetchProfile(ctx.api, ctx.user, ctx.repos);
     },
   },
   renderer: {

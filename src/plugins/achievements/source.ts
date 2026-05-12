@@ -7,13 +7,15 @@
  */
 
 import * as z from "zod";
+import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import type { ReposConfig } from "../../repos/filter.ts";
 
 const ACHIEVEMENTS_QUERY = `
   query($login: String!) {
     user(login: $login) {
       followers { totalCount }
       following { totalCount }
-      repositories(privacy: PUBLIC, ownerAffiliations: OWNER) { totalCount }
+      repositories(__PRIVACY__, ownerAffiliations: OWNER) { totalCount }
       gists { totalCount }
       issues { totalCount }
       pullRequests { totalCount }
@@ -197,8 +199,13 @@ export async function fetchAchievements(
     ): Promise<unknown>;
   },
   user: string,
+  repos: ReposConfig,
 ): Promise<AchievementsData> {
-  const raw = await api.graphql(ACHIEVEMENTS_QUERY, { login: user });
+  const query = ACHIEVEMENTS_QUERY.replace(
+    "__PRIVACY__",
+    repoPrivacyFilter(repos),
+  );
+  const raw = await api.graphql(query, { login: user });
   const parsed = ResponseSchema.safeParse(raw);
   if (!parsed.success) {
     throw new Error(

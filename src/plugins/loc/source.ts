@@ -14,6 +14,8 @@ import * as path from "node:path";
 import * as os from "node:os";
 import { execFileSync } from "node:child_process";
 import type { DataSource } from "../types.ts";
+import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import type { ReposConfig } from "../../repos/filter.ts";
 import { detectLanguage, shouldSkip, shouldSkipDir } from "./languages.ts";
 
 // ---------------------------------------------------------------------------
@@ -66,7 +68,7 @@ const REPOS_QUERY = `
     user(login: $login) {
       repositories(
         first: $first
-        privacy: PUBLIC
+        __PRIVACY__
         ownerAffiliations: OWNER
         orderBy: { field: UPDATED_AT, direction: DESC }
       ) {
@@ -188,6 +190,7 @@ export async function fetchLoc(
   limit: number,
   explicitRepos: string[],
   token: string,
+  reposConfig: ReposConfig,
 ): Promise<LocData> {
   // Resolve repo list
   let repos: { name: string; url: string }[];
@@ -203,7 +206,11 @@ export async function fetchLoc(
       };
     });
   } else {
-    const raw = await api.graphql(REPOS_QUERY, {
+    const reposQuery = REPOS_QUERY.replace(
+      "__PRIVACY__",
+      repoPrivacyFilter(reposConfig),
+    );
+    const raw = await api.graphql(reposQuery, {
       login: user,
       first: limit,
     });
@@ -263,6 +270,7 @@ export const locSource: DataSource<LocConfig, LocData> = {
       config.limit,
       config.repositories,
       ctx.token,
+      ctx.repos,
     );
   },
 };

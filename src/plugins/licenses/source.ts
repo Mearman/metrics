@@ -7,6 +7,8 @@
 
 import * as z from "zod";
 import type { DataSource } from "../types.ts";
+import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import type { ReposConfig } from "../../repos/filter.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -65,7 +67,7 @@ const QUERY = `
       repositories(
         first: $first
         after: $after
-        privacy: PUBLIC
+        __PRIVACY__
         ownerAffiliations: OWNER
         orderBy: { field: UPDATED_AT, direction: DESC }
       ) {
@@ -97,14 +99,16 @@ export async function fetchLicences(
   },
   user: string,
   limit: number,
+  repos: ReposConfig,
 ): Promise<LicencesData> {
+  const query = QUERY.replace("__PRIVACY__", repoPrivacyFilter(repos));
   const counts = new Map<string, { name: string; count: number }>();
   let totalRepos = 0;
   let hasNextPage = true;
   const cursor: string | null = null;
 
   while (hasNextPage) {
-    const raw = await api.graphql(QUERY, {
+    const raw = await api.graphql(query, {
       login: user,
       first: 100,
       after: cursor,
@@ -151,6 +155,6 @@ export const licencesSource: DataSource<LicencesConfig, LicencesData> = {
   id: "licenses",
   configSchema: LicencesConfig,
   async fetch(ctx, config) {
-    return await fetchLicences(ctx.api, ctx.user, config.limit);
+    return await fetchLicences(ctx.api, ctx.user, config.limit, ctx.repos);
   },
 };

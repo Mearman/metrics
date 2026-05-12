@@ -17,7 +17,7 @@ export const trafficPlugin: Plugin<TrafficConfigType, TrafficData> = {
     id: "traffic",
     configSchema: TrafficConfig,
     async fetch(ctx, config) {
-      return await fetchTraffic(ctx.api, ctx.user, config.limit);
+      return await fetchTraffic(ctx.api, ctx.user, config.limit, ctx.repos);
     },
   },
   renderer: {

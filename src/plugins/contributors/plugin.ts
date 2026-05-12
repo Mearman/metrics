@@ -20,7 +20,7 @@ export const contributorsPlugin: Plugin<
     id: "contributors",
     configSchema: ContributorsConfig,
     async fetch(ctx, config) {
-      return await fetchContributors(ctx.api, ctx.user, config);
+      return await fetchContributors(ctx.api, ctx.user, config, ctx.repos);
     },
   },
   renderer: {
