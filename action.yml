@@ -201,6 +201,17 @@ inputs:
       Requires PAT with repo scope (push access).
     default: "false"
 
+  plugin_skyline:
+    description: >-
+      Enable skyline: 3D isometric contribution calendar cityscape.
+    default: "false"
+  plugin_skyline_year:
+    description: "Year to display (0 = current year)"
+    default: "0"
+  plugin_skyline_max_height:
+    description: "Maximum building height in pixels"
+    default: "100"
+
   # ── Misc ─────────────────────────────────────────────────────────────
   dry-run:
     description: Generate without writing output files.
@@ -263,11 +274,14 @@ runs:
         METRICS_PLUGIN_SPONSORS: ${{ inputs.plugin_sponsors }}
         METRICS_PLUGIN_SPONSORSHIPS: ${{ inputs.plugin_sponsorships }}
         METRICS_PLUGIN_TRAFFIC: ${{ inputs.plugin_traffic }}
+        METRICS_PLUGIN_SKYLINE: ${{ inputs.plugin_skyline }}
+        METRICS_PLUGIN_SKYLINE_YEAR: ${{ inputs.plugin_skyline_year }}
+        METRICS_PLUGIN_SKYLINE_MAX_HEIGHT: ${{ inputs.plugin_skyline_max_height }}
       run: |
         if [ ! -f "${{ inputs.config }}" ]; then
           # Build plugins section from enabled inputs
           plugins=""
-          for p in base isocalendar languages habits achievements lines activity stars followup stargazers people topics licenses introduction repositories gists discussions notable calendar reactions contributors code projects loc sponsors sponsorships traffic; do
+          for p in base isocalendar languages habits achievements lines activity stars followup stargazers people topics licenses introduction repositories gists discussions notable calendar reactions contributors code projects loc sponsors sponsorships traffic skyline; do
             env_name="METRICS_PLUGIN_$(echo "$p" | tr '[:lower:]' '[:upper:]')"
             enabled="${!env_name}"
             if [ "$enabled" = "true" ]; then

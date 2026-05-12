@@ -334,7 +334,7 @@ Three built-in themes: `classic` (dark), `light`, `terminal` (monospace green on
 | Licences     | `licenses`      | ✅     | Repository licence breakdown           |
 | LoC          | `loc`           | ✅     | Actual lines of code per repo          |
 | Projects     | `projects`      | ✅     | GitHub Projects v2 boards              |
-| Skyline      | `skyline`       | 🔲     | Requires 3D mesh generation             |
+| Skyline      | `skyline`       | ✅     | 3D isometric contribution cityscape    |
 | Sponsors     | `sponsors`      | ✅     | GitHub Sponsors card (needs PAT)       |
 | Sponsorships | `sponsorships`  | ✅     | Active sponsorships (needs PAT)        |
 | Star lists   | `starlists`     | ❌     | Not available in GitHub API            |
