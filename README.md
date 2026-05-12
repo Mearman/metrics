@@ -342,15 +342,241 @@ Three built-in themes: `classic` (dark), `light`, `terminal` (monospace green on
 | Star lists   | `starlists`     | ❌     | Not available in GitHub API            |
 | Starred topics| `starred-topics`| ❌     | Covered by `topics` plugin             |
 
-### Skyline config
+### Plugin config reference
+
+All plugin options are set in the `plugins` block of your output config. Every option has a sensible default — you only need to specify what you want to change.
+
+#### base
+
+```yaml
+base:
+  sections: [header, activity, community, repositories, metadata]  # which sections to show
+  indepth: false        # include detailed stats
+```
+
+#### isocalendar
+
+```yaml
+isocalendar:
+  duration: full-year   # full-year | half-year
+```
+
+#### languages
+
+```yaml
+languages:
+  limit: 8               # top N languages (1–20)
+  threshold: 1           # minimum percentage to show (0–100)
+  sections: [markup, programming]  # language categories
+```
+
+#### habits
+
+```yaml
+habits:
+  days: 14              # lookback period (1–365)
+```
+
+#### achievements
+
+```yaml
+achievements:
+  display: detailed     # detailed | compact
+  secrets: false         # include secret achievements
+  threshold: C          # minimum tier: C, B, A, S, X
+```
+
+#### lines (code size)
+
+```yaml
+lines:
+  limit: 4              # top N repos (1–20)
+  repositories: []      # specific repos (empty = auto)
+  sections: [repositories]  # what to show
+```
+
+#### repositories
+
+```yaml
+repositories:
+  pinned: 0             # show N pinned repos (0–6)
+  featured: []          # specific repos by name
+  starred: 0             # show N starred repos (0–100)
+  order: [featured, pinned, starred]  # display order
+```
+
+#### activity
+
+```yaml
+activity:
+  limit: 5              # number of events (1–100)
+  load: 300             # events to fetch (100–1000)
+  days: 14              # lookback period (0–365)
+  filter: [all]         # event types (all, push, issue, pr, review, comment, release, fork, star, wiki)
+  timestamps: false     # show event timestamps
+```
+
+#### stars
+
+```yaml
+stars:
+  limit: 4              # recently starred repos (1–100)
+```
+
+#### followup
+
+```yaml
+followup:
+  sections: [repositories]  # repositories | user
+  indepth: false        # per-repo breakdown
+```
+
+#### stargazers
+
+```yaml
+stargazers:
+  limit: 8              # top repos by stars (1–30)
+```
+
+#### people
+
+```yaml
+people:
+  limit: 24             # max avatars (0–100)
+  size: 28              # avatar size in px (8–64)
+  types: [followers, following]  # which lists
+```
+
+#### gists
+
+```yaml
+gists: {}               # no options
+```
+
+#### discussions
+
+```yaml
+discussions:
+  categories: true      # show category breakdown
+  limit: 5              # max categories (1–20)
+```
+
+#### notable
+
+```yaml
+notable:
+  indepth: false        # detailed org info
+  from: 5              # organisations to fetch (1+)
+```
+
+#### calendar
+
+```yaml
+calendar:
+  years: 3              # number of yearly calendars (1–10)
+```
+
+#### introduction
+
+```yaml
+introduction: {}        # no options
+```
+
+#### reactions
+
+```yaml
+reactions:
+  days: 30              # lookback period (1–365)
+  limit: 10             # top reactions (1–20)
+```
+
+#### contributors
+
+```yaml
+contributors:
+  limit: 6              # top repos (1–20)
+  contributors_per_repo: 8  # avatars per repo (1–50)
+  threshold: 1          # min contributions per contributor
+```
+
+#### code
+
+```yaml
+code:
+  max_length: 200       # snippet max chars (20–500)
+  scan_limit: 20        # events to scan (1–50)
+```
+
+#### topics
+
+```yaml
+topics:
+  limit: 20             # max topics (1–50)
+```
+
+#### licenses
+
+```yaml
+licenses:
+  limit: 8              # max licence types (1–20)
+```
+
+#### loc (lines of code)
+
+```yaml
+loc:
+  limit: 4              # top repos (1–20)
+  repositories: []      # specific repos (empty = auto)
+  cache_dir: ""         # clone cache path (e.g. ~/.cache/metrics-loc)
+```
+
+Requires `git` — clones repos with `git clone --depth 1`. Significantly increases CI time. Use `cache_dir` to persist clones between runs.
+
+#### projects
+
+```yaml
+projects:
+  limit: 6              # max projects (1–20)
+```
+
+#### sponsors
+
+```yaml
+sponsors:
+  sections: [goal, list] # goal = funding target, list = sponsor avatars
+  size: 28              # avatar size (8–64)
+```
+
+Requires PAT with `read:user, read:org` scope. Skips gracefully with `github.token`.
+
+#### sponsorships
+
+```yaml
+sponsorships:
+  size: 28              # avatar size (8–64)
+  limit: 20             # max sponsored accounts (1–100)
+```
+
+Requires PAT with `read:user, read:org` scope. Skips gracefully with `github.token`.
+
+#### traffic
+
+```yaml
+traffic:
+  limit: 8              # top repos by views (1–20)
+```
+
+Requires PAT with `repo` scope (push access). Skips gracefully with `github.token`.
+
+#### skyline
 
 ```yaml
 skyline:
-  year: 0          # 0 = current rolling year; set e.g. 2024 for a specific calendar year
-  max_height: 100  # Maximum building height in pixels (20–200)
+  year: 0               # 0 = current rolling year; set e.g. 2024 for a specific calendar year
+  max_height: 100       # maximum building height in px (20–200)
 ```
 
-The skyline renders the same contribution data as isocalendar, but as a 3D isometric cityscape. Each day's contributions become a building whose height is proportional to its count. A gentle rocking animation conveys 3D depth.
+3D isometric contribution cityscape. Each day's contributions become a building whose height is proportional to its count. A gentle SMIL rocking animation conveys 3D depth.
 
 ---
 
