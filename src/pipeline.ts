@@ -194,7 +194,9 @@ export async function runPipeline(
 /**
  * Deep-offset an SvgElement tree by (dx, dy).
  *
- * Adds a `transform="translate(dx,dy)"` to the top-level element.
+ * Composes with any existing transform rather than overwriting.
+ * SVG transforms are applied right-to-left, so existing transform
+ * runs first, then the offset.
  */
 function offsetElement(
   element: import("./render/svg/builder.ts").SvgElement,
@@ -203,11 +205,18 @@ function offsetElement(
 ): import("./render/svg/builder.ts").SvgElement {
   if (dx === 0 && dy === 0) return element;
 
+  const existing = element.attrs.transform;
+  const offset = `translate(${String(dx)},${String(dy)})`;
+  const transform =
+    existing !== undefined && typeof existing === "string"
+      ? `${offset} ${existing}`
+      : offset;
+
   return {
     ...element,
     attrs: {
       ...element.attrs,
-      transform: `translate(${String(dx)},${String(dy)})`,
+      transform,
     },
   };
 }
