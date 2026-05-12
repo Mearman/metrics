@@ -5,11 +5,13 @@
  * coloured by language.
  */
 
+import * as z from "zod";
 import { text, rect } from "../../render/svg/builder.ts";
 import { truncateText } from "../../render/layout/text.ts";
 import { shouldEnumerate } from "../../repos/filter.ts";
 import type { RepoProperties } from "../../repos/filter.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
+import { LocConfig } from "./source.ts";
 import type { LocData } from "./source.ts";
 
 // ---------------------------------------------------------------------------
@@ -71,10 +73,9 @@ const MAX_LEGEND_LANGUAGES = 8;
 
 export function renderLoc(
   data: LocData,
-  _config: Record<string, unknown>,
+  config: z.input<typeof LocConfig>,
   ctx: RenderContext,
 ): RenderResult {
-  void _config;
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
   const contentWidth = ctx.contentWidth;
 

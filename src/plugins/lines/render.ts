@@ -79,10 +79,9 @@ const MAX_LEGEND_LANGUAGES = 8;
  */
 export function renderLines(
   data: LinesData,
-  _config: { sections?: string[]; repositories_limit?: number },
+  config: { sections?: string[]; repositories_limit?: number },
   ctx: RenderContext,
 ): RenderResult {
-  void _config;
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
   const contentWidth = ctx.contentWidth;
 

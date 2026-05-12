@@ -4,19 +4,20 @@
  * Renders repository view counts as a horizontal bar chart.
  */
 
+import * as z from "zod";
 import { text, rect } from "../../render/svg/builder.ts";
 import { truncateText } from "../../render/layout/text.ts";
 import { shouldEnumerate } from "../../repos/filter.ts";
 import type { RepoProperties } from "../../repos/filter.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
+import { TrafficConfig } from "./source.ts";
 import type { TrafficData } from "./source.ts";
 
 export function renderTraffic(
   data: TrafficData,
-  _config: Record<string, unknown>,
+  config: z.input<typeof TrafficConfig>,
   ctx: RenderContext,
 ): RenderResult {
-  void _config;
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   if (data.repos.length === 0) {

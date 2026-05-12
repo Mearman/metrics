@@ -1,3 +1,4 @@
+import * as z from "zod";
 /**
  * Contributors plugin — renderer.
  *
@@ -8,6 +9,7 @@ import { text, image } from "../../render/svg/builder.ts";
 import { shouldEnumerate } from "../../repos/filter.ts";
 import type { RepoProperties } from "../../repos/filter.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
+import { ContributorsConfig } from "./source.ts";
 import type { ContributorsData } from "./source.ts";
 
 /**
@@ -15,10 +17,9 @@ import type { ContributorsData } from "./source.ts";
  */
 export function renderContributors(
   data: ContributorsData,
-  _config: Record<string, unknown>,
+  config: z.input<typeof ContributorsConfig>,
   ctx: RenderContext,
 ): RenderResult {
-  void _config;
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 

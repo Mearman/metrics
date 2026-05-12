@@ -1,3 +1,4 @@
+import * as z from "zod";
 /**
  * Notable plugin — renderer.
  *
@@ -7,6 +8,7 @@
 import { text, image, g } from "../../render/svg/builder.ts";
 import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
+import { NotableConfig } from "./source.ts";
 import type { NotableData } from "./source.ts";
 
 /**
@@ -14,10 +16,9 @@ import type { NotableData } from "./source.ts";
  */
 export function renderNotable(
   data: NotableData,
-  _config: Record<string, unknown>,
+  config: z.input<typeof NotableConfig>,
   ctx: RenderContext,
 ): RenderResult {
-  void _config;
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   if (data.contributions.length === 0) {

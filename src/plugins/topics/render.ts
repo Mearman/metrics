@@ -1,3 +1,4 @@
+import * as z from "zod";
 /**
  * Topics plugin — renderer.
  *
@@ -7,6 +8,7 @@
 import { text, rect, g } from "../../render/svg/builder.ts";
 import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
+import { TopicsConfig } from "./source.ts";
 import type { TopicsData } from "./source.ts";
 
 /**
@@ -14,10 +16,9 @@ import type { TopicsData } from "./source.ts";
  */
 export function renderTopics(
   data: TopicsData,
-  _config: Record<string, unknown>,
+  config: z.input<typeof TopicsConfig>,
   ctx: RenderContext,
 ): RenderResult {
-  void _config;
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   if (data.topics.length === 0) {

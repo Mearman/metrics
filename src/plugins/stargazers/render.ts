@@ -4,11 +4,13 @@
  * Renders a horizontal bar chart of star counts per repo.
  */
 
+import * as z from "zod";
 import { text, rect } from "../../render/svg/builder.ts";
 import { truncateText } from "../../render/layout/text.ts";
 import { shouldEnumerate } from "../../repos/filter.ts";
 import type { RepoProperties } from "../../repos/filter.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
+import { StargazersConfig } from "./source.ts";
 import type { StargazersData } from "./source.ts";
 
 /**
@@ -16,10 +18,9 @@ import type { StargazersData } from "./source.ts";
  */
 export function renderStargazers(
   data: StargazersData,
-  _config: Record<string, unknown>,
+  config: z.input<typeof StargazersConfig>,
   ctx: RenderContext,
 ): RenderResult {
-  void _config;
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   if (data.repos.length === 0) {

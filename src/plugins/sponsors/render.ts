@@ -6,12 +6,14 @@
 
 import { text, rect, image, g } from "../../render/svg/builder.ts";
 import { truncateText } from "../../render/layout/text.ts";
+import * as z from "zod";
 import type { RenderResult, RenderContext } from "../types.ts";
+import { SponsorsConfig } from "./source.ts";
 import type { SponsorsData } from "./source.ts";
 
 export function renderSponsors(
   data: SponsorsData,
-  config: Record<string, unknown>,
+  config: z.input<typeof SponsorsConfig>,
   ctx: RenderContext,
 ): RenderResult {
   const resolvedSections = Array.isArray(config.sections)

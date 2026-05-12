@@ -8,7 +8,9 @@
 
 import { text, image } from "../../render/svg/builder.ts";
 import { wrapText } from "../../render/layout/text.ts";
+import * as z from "zod";
 import type { RenderResult, RenderContext } from "../types.ts";
+import { IntroductionConfig } from "./source.ts";
 import type { IntroductionData } from "./source.ts";
 
 /**
@@ -25,7 +27,7 @@ function formatDate(isoDate: string): string {
  */
 export function renderIntroduction(
   data: IntroductionData,
-  config: Record<string, unknown>,
+  config: z.input<typeof IntroductionConfig>,
   ctx: RenderContext,
 ): RenderResult {
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;

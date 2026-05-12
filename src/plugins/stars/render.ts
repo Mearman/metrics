@@ -4,9 +4,11 @@
  * Renders recently starred repositories as a compact list.
  */
 
+import * as z from "zod";
 import { text, rect } from "../../render/svg/builder.ts";
 import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
+import { StarsConfig } from "./source.ts";
 import type { StarsData } from "./source.ts";
 
 /**
@@ -14,10 +16,9 @@ import type { StarsData } from "./source.ts";
  */
 export function renderStars(
   data: StarsData,
-  _config: Record<string, unknown>,
+  config: z.input<typeof StarsConfig>,
   ctx: RenderContext,
 ): RenderResult {
-  void _config;
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   if (data.repositories.length === 0) {

@@ -4,9 +4,11 @@
  * Renders recent activity as a timeline of events.
  */
 
+import * as z from "zod";
 import { text, rect } from "../../render/svg/builder.ts";
 import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
+import { ActivityConfig } from "./source.ts";
 import type { ActivityData } from "./source.ts";
 
 /** Event type to colour mapping. */
@@ -29,10 +31,9 @@ const EVENT_COLOURS: Record<string, string> = {
  */
 export function renderActivity(
   data: ActivityData,
-  _config: Record<string, unknown>,
+  config: z.input<typeof ActivityConfig>,
   ctx: RenderContext,
 ): RenderResult {
-  void _config;
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   if (data.events.length === 0) {

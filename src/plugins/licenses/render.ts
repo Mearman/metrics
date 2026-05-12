@@ -5,9 +5,11 @@
  * colour-coded licence categories.
  */
 
+import * as z from "zod";
 import { text, rect } from "../../render/svg/builder.ts";
 import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
+import { LicencesConfig } from "./source.ts";
 import type { LicencesData } from "./source.ts";
 
 /** Colour map for common licence SPDX IDs */
@@ -29,10 +31,9 @@ const licenceColours: Record<string, string> = {
  */
 export function renderLicences(
   data: LicencesData,
-  _config: Record<string, unknown>,
+  config: z.input<typeof LicencesConfig>,
   ctx: RenderContext,
 ): RenderResult {
-  void _config;
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   if (data.licences.length === 0 && data.unlicensed === 0) {

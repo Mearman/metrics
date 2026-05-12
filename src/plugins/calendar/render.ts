@@ -1,3 +1,4 @@
+import * as z from "zod";
 /**
  * Calendar plugin — renderer.
  *
@@ -6,6 +7,7 @@
 
 import { text, rect, g } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
+import { CalendarConfig } from "./source.ts";
 import type { CalendarData } from "./source.ts";
 
 /**
@@ -13,10 +15,9 @@ import type { CalendarData } from "./source.ts";
  */
 export function renderCalendar(
   data: CalendarData,
-  _config: Record<string, unknown>,
+  config: z.input<typeof CalendarConfig>,
   ctx: RenderContext,
 ): RenderResult {
-  void _config;
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   if (data.years.length === 0) {

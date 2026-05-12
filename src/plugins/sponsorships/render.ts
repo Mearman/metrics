@@ -5,12 +5,14 @@
  */
 
 import { text, image, g } from "../../render/svg/builder.ts";
+import * as z from "zod";
 import type { RenderResult, RenderContext } from "../types.ts";
+import { SponsorshipsConfig } from "./source.ts";
 import type { SponsorshipsData } from "./source.ts";
 
 export function renderSponsorships(
   data: SponsorshipsData,
-  config: Record<string, unknown>,
+  config: z.input<typeof SponsorshipsConfig>,
   ctx: RenderContext,
 ): RenderResult {
   const resolvedSize = typeof config.size === "number" ? config.size : 28;

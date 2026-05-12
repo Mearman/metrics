@@ -1,3 +1,4 @@
+import * as z from "zod";
 /**
  * Repositories plugin — renderer.
  *
@@ -10,6 +11,7 @@ import { truncateText } from "../../render/layout/text.ts";
 import { shouldEnumerate } from "../../repos/filter.ts";
 import type { RepoProperties } from "../../repos/filter.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
+import { RepositoriesConfig } from "./source.ts";
 import type { RepositoriesData, RepositoryInfo } from "./source.ts";
 
 /**
@@ -26,10 +28,9 @@ function formatCount(n: number): string {
  */
 export function renderRepositories(
   data: RepositoriesData,
-  _config: Record<string, unknown>,
+  config: z.input<typeof RepositoriesConfig>,
   ctx: RenderContext,
 ): RenderResult {
-  void _config;
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
   const { icons } = ctx;
 

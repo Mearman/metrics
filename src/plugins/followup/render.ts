@@ -1,3 +1,4 @@
+import * as z from "zod";
 /**
  * Followup plugin — renderer.
  *
@@ -6,6 +7,7 @@
 
 import { text, rect, g } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
+import { FollowupConfig } from "./source.ts";
 import type { FollowupData } from "./source.ts";
 
 /** Vertical gap between a bar bottom and the label baseline. */
@@ -25,10 +27,9 @@ const LINE_HEIGHT = 14;
  */
 export function renderFollowup(
   data: FollowupData,
-  _config: Record<string, unknown>,
+  config: z.input<typeof FollowupConfig>,
   ctx: RenderContext,
 ): RenderResult {
-  void _config;
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   if (data.sections.length === 0) {

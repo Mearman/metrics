@@ -14,10 +14,9 @@ import type { IsocalendarData } from "./source.ts";
  */
 export function renderIsocalendar(
   data: IsocalendarData,
-  _config: { duration?: string },
+  config: { duration?: string },
   ctx: RenderContext,
 ): RenderResult {
-  void _config;
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   const weeks = data.weeks.length;

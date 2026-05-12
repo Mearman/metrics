@@ -1,3 +1,4 @@
+import * as z from "zod";
 /**
  * Gists plugin — renderer.
  *
@@ -6,6 +7,7 @@
 
 import { text } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
+import { GistsConfig } from "./source.ts";
 import type { GistsData } from "./source.ts";
 
 /**
@@ -13,10 +15,9 @@ import type { GistsData } from "./source.ts";
  */
 export function renderGists(
   data: GistsData,
-  _config: Record<string, unknown>,
+  config: z.input<typeof GistsConfig>,
   ctx: RenderContext,
 ): RenderResult {
-  void _config;
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];

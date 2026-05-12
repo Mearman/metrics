@@ -4,9 +4,11 @@
  * Renders a code snippet in a terminal-style card.
  */
 
+import * as z from "zod";
 import { text, rect } from "../../render/svg/builder.ts";
 import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
+import { CodeConfig } from "./source.ts";
 import type { CodeData } from "./source.ts";
 
 /**
@@ -14,10 +16,9 @@ import type { CodeData } from "./source.ts";
  */
 export function renderCode(
   data: CodeData,
-  _config: Record<string, unknown>,
+  config: z.input<typeof CodeConfig>,
   ctx: RenderContext,
 ): RenderResult {
-  void _config;
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];

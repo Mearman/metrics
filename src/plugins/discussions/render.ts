@@ -4,8 +4,10 @@
  * Renders discussion statistics with category breakdown.
  */
 
+import * as z from "zod";
 import { text, rect } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
+import { DiscussionsConfig } from "./source.ts";
 import type { DiscussionsData } from "./source.ts";
 
 /**
@@ -13,10 +15,9 @@ import type { DiscussionsData } from "./source.ts";
  */
 export function renderDiscussions(
   data: DiscussionsData,
-  _config: Record<string, unknown>,
+  config: z.input<typeof DiscussionsConfig>,
   ctx: RenderContext,
 ): RenderResult {
-  void _config;
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
