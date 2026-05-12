@@ -89,7 +89,7 @@ export interface IsocalendarData {
 // ---------------------------------------------------------------------------
 
 /**
- * Fetch contribution calendar data.
+ * Fetch contribution calendar data for a rolling duration.
  *
  * @param duration - "half-year" (26 weeks) or "full-year" (52 weeks)
  */
@@ -107,11 +107,29 @@ export async function fetchIsocalendar(
   const now = new Date();
   const from = new Date(now);
   from.setDate(from.getDate() - weeks * 7);
+  return await fetchIsocalendarRange(api, user, from, now);
+}
 
+/**
+ * Fetch contribution calendar data for an explicit date range.
+ *
+ * Used by the skyline plugin to fetch specific calendar years.
+ */
+export async function fetchIsocalendarRange(
+  api: {
+    graphql(
+      query: string,
+      variables?: Record<string, unknown>,
+    ): Promise<unknown>;
+  },
+  user: string,
+  from: Date,
+  to: Date,
+): Promise<IsocalendarData> {
   const raw = await api.graphql(ISCALENDAR_QUERY, {
     login: user,
     from: from.toISOString(),
-    to: now.toISOString(),
+    to: to.toISOString(),
   });
   const parsed = ResponseSchema.safeParse(raw);
   if (!parsed.success) {

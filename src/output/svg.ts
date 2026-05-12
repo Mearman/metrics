@@ -42,12 +42,19 @@ export async function writeSvg(path: string, content: string): Promise<void> {
       "removeNonInheritableGroupAttrs",
       "removeUselessStrokeAndFill",
       "removeUnusedNS",
-      "cleanupIds",
+      {
+        name: "cleanupIds",
+        params: {
+          // Preserve skyline animation class
+          preserve: ["skyline-scene"],
+        },
+      },
       "cleanupNumericValues",
       "cleanupListOfValues",
       "moveElemsAttrsToGroup",
       "moveGroupAttrsToElems",
-      "collapseGroups",
+      // collapseGroups removed — would merge the skyline-scene
+      // animation group into its parent, breaking CSS animation
       "mergePaths",
       "convertShapeToPath",
       "sortAttrs",

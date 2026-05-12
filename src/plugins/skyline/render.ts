@@ -279,8 +279,8 @@ export function renderSkyline(
   // Render a ground plane — a single isometric rectangle that
   // forms the floor of the cityscape. This gives spatial context
   // without needing every zero-contribution cell to be visible.
-  const gpLeft = (0 - 0) * COS30 * cellW - COS30 * cellW;
-  const gpRight = (totalWeeks - 0) * COS30 * cellW + COS30 * cellW;
+  const gpLeft = -COS30 * cellW;
+  const gpRight = totalWeeks * COS30 * cellW + COS30 * cellW;
   const gpBack = (0 + 0) * SIN30 * cellH - SIN30 * cellH;
   const gpFront = (totalWeeks + totalRows) * SIN30 * cellH + SIN30 * cellH;
 
@@ -295,8 +295,8 @@ export function renderSkyline(
 
   buildingElements.unshift(
     path(groundPath, {
-      fill: "#161b22",
-      stroke: "#30363d",
+      fill: colours.calendar.L0,
+      stroke: colours.border,
       "stroke-width": 0.5,
     }),
   );
@@ -346,15 +346,47 @@ export function renderSkyline(
     );
   }
 
-  // Wrap all buildings in a group with the offset transform
+  // Wrap all buildings in a group with the offset transform.
+  // Add a gentle rocking animation to convey 3D depth.
+  const sceneCentreX = String(sceneWidth / 2);
   elements.push(
     g(
       {
         transform: `translate(${String(offsetX)},${String(baseY - maxHeight)})`,
       },
-      ...buildingElements,
+      g(
+        {
+          class: "skyline-scene",
+        },
+        ...buildingElements,
+      ),
     ),
   );
+
+  // CSS animation for a subtle rocking motion.
+  // The skyline sways ±2° around its centre, giving a sense
+  // of 3D depth without requiring re-projection.
+  elements.push({
+    tag: "style",
+    attrs: {},
+    children: [
+      {
+        tag: "",
+        attrs: {},
+        text: [
+          "@keyframes skyline-rock {",
+          "  0%, 100% { transform: rotate(0deg) }",
+          "  25% { transform: rotate(1.5deg) }",
+          "  75% { transform: rotate(-1.5deg) }",
+          "}",
+          ".skyline-scene {",
+          `  transform-origin: ${sceneCentreX}px center`,
+          "  animation: skyline-rock 12s ease-in-out infinite",
+          "}",
+        ].join("\n"),
+      },
+    ],
+  });
 
   const totalHeight = baseY + sceneDepth + 30;
 

@@ -306,7 +306,7 @@ Three built-in themes: `classic` (dark), `light`, `terminal` (monospace green on
 
 ## Plugins
 
-27 plugins implemented (4 not feasible, 1 needs external API).
+28 plugins implemented (2 not feasible).
 
 | Plugin       | ID              | Status | Description                            |
 |--------------|-----------------|--------|----------------------------------------|
@@ -335,11 +335,22 @@ Three built-in themes: `classic` (dark), `light`, `terminal` (monospace green on
 | LoC          | `loc`           | ✅     | Actual lines of code per repo          |
 | Projects     | `projects`      | ✅     | GitHub Projects v2 boards              |
 | Skyline      | `skyline`       | ✅     | 3D isometric contribution cityscape    |
+| Skyline      | `skyline`       | ✅     | 3D isometric contribution cityscape    |
 | Sponsors     | `sponsors`      | ✅     | GitHub Sponsors card (needs PAT)       |
 | Sponsorships | `sponsorships`  | ✅     | Active sponsorships (needs PAT)        |
+| Traffic      | `traffic`       | ✅     | Repository traffic (needs PAT)         |
 | Star lists   | `starlists`     | ❌     | Not available in GitHub API            |
 | Starred topics| `starred-topics`| ❌     | Covered by `topics` plugin             |
-| Traffic      | `traffic`       | ✅     | Repository traffic (needs PAT)         |
+
+### Skyline config
+
+```yaml
+skyline:
+  year: 0          # 0 = current rolling year; set e.g. 2024 for a specific calendar year
+  max_height: 100  # Maximum building height in pixels (20–200)
+```
+
+The skyline renders the same contribution data as isocalendar, but as a 3D isometric cityscape. Each day's contributions become a building whose height is proportional to its count. A gentle rocking animation conveys 3D depth.
 
 ---
 

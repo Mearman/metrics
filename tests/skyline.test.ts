@@ -6,7 +6,32 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { renderSkyline } from "../src/plugins/skyline/render.ts";
 import type { RenderContext, Theme } from "../src/plugins/types.ts";
+import type { SvgElement } from "../src/render/svg/builder.ts";
 import type { IsocalendarData } from "../src/plugins/isocalendar/source.ts";
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Recursively collect all path elements from an element tree. */
+function collectPaths(elements: SvgElement[]): SvgElement[] {
+  const paths: SvgElement[] = [];
+  for (const el of elements) {
+    if (el.tag === "path") paths.push(el);
+    if (el.children) paths.push(...collectPaths(el.children));
+  }
+  return paths;
+}
+
+/** Recursively collect all group elements from an element tree. */
+function collectGroups(elements: SvgElement[]): SvgElement[] {
+  const groups: SvgElement[] = [];
+  for (const el of elements) {
+    if (el.tag === "g") groups.push(el);
+    if (el.children) groups.push(...collectGroups(el.children));
+  }
+  return groups;
+}
 
 // ---------------------------------------------------------------------------
 // Shared test fixtures
@@ -111,14 +136,12 @@ describe("skyline renderer", () => {
     };
     const result = renderSkyline(data, {}, ctx);
 
-    // Should contain a group wrapping the buildings
-    const groups = result.elements.filter((el) => el.tag === "g");
-    assert.ok(groups.length >= 1, "Should contain a group for buildings");
+    // Should contain groups wrapping the buildings
+    const groups = collectGroups(result.elements);
+    assert.ok(groups.length >= 2, "Should contain groups for buildings");
 
-    // Paths should be inside the group
-    const buildingGroup = groups[0];
-    const paths =
-      buildingGroup?.children?.filter((el) => el.tag === "path") ?? [];
+    // Paths should be nested inside groups
+    const paths = collectPaths(result.elements);
     assert.ok(paths.length > 0, "Should render path elements for buildings");
   });
 
@@ -132,48 +155,29 @@ describe("skyline renderer", () => {
   });
 
   it("uses contribution-based colours", () => {
-    // High contributions should get L4 colour variants
     const data: IsocalendarData = {
       weeks: makeWeeks(2, () => 10),
       totalContributions: 140,
     };
     const result = renderSkyline(data, {}, ctx);
 
-    const groups = result.elements.filter((el) => el.tag === "g");
-    assert.ok(groups.length >= 1);
-
-    const buildingGroup = groups[0];
-    assert.ok(buildingGroup?.children);
-
-    // Check that some paths use bright green (L4) top face (lightened)
-    const topFaces = buildingGroup.children.filter(
-      (el) =>
-        el.tag === "path" &&
-        typeof el.attrs.fill === "string" &&
-        el.attrs.fill.includes("#"),
+    // Check that paths use fill colours
+    const paths = collectPaths(result.elements).filter(
+      (el) => typeof el.attrs.fill === "string",
     );
-    assert.ok(
-      topFaces.length > 0,
-      "Should have path elements with fill colours",
-    );
+    assert.ok(paths.length > 0, "Should have path elements with fill colours");
   });
 
-  it("renders zero-contribution days as flat ground", () => {
+  it("renders ground plane for zero-contribution data", () => {
     const data: IsocalendarData = {
       weeks: makeWeeks(2, () => 0),
       totalContributions: 0,
     };
     const result = renderSkyline(data, {}, ctx);
 
-    // Even with zero contributions, buildings should exist (height=2 minimum)
-    const groups = result.elements.filter((el) => el.tag === "g");
-    const buildingGroup = groups[0];
-    const paths =
-      buildingGroup?.children?.filter((el) => el.tag === "path") ?? [];
-    assert.ok(
-      paths.length > 0,
-      "Should render flat buildings for zero contributions",
-    );
+    // Even with zero contributions, the ground plane should render
+    const paths = collectPaths(result.elements);
+    assert.ok(paths.length >= 1, "Should render ground plane path");
   });
 
   it("respects max_height config", () => {
@@ -199,5 +203,27 @@ describe("skyline renderer", () => {
     const result = renderSkyline(data, {}, ctx);
     assert.ok(result.height > 0);
     assert.ok(result.elements.length > 0);
+  });
+
+  it("includes rocking animation style element", () => {
+    const data: IsocalendarData = {
+      weeks: makeWeeks(4, () => 5),
+      totalContributions: 140,
+    };
+    const result = renderSkyline(data, {}, ctx);
+    const styleEl = result.elements.find((el) => el.tag === "style");
+    assert.ok(styleEl, "Should include a <style> element for animation");
+  });
+
+  it("includes skyline-scene class on inner group", () => {
+    const data: IsocalendarData = {
+      weeks: makeWeeks(4, () => 5),
+      totalContributions: 140,
+    };
+    const result = renderSkyline(data, {}, ctx);
+    const sceneGroup = collectGroups(result.elements).find(
+      (el) => el.attrs.class === "skyline-scene",
+    );
+    assert.ok(sceneGroup, "Should have a .skyline-scene group");
   });
 });
