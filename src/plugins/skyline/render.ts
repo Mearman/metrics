@@ -347,40 +347,36 @@ export function renderSkyline(
   }
 
   // Wrap all buildings in a group with the offset transform.
-  // Add a gentle rocking animation to convey 3D depth.
+  // SMIL animateTransform provides a gentle rocking animation
+  // (±1.5° over 12s) that conveys 3D depth. SMIL works when
+  // the SVG is viewed directly; CSS animations are disabled
+  // when SVG is loaded as an <img> element.
   const sceneCentreX = String(sceneWidth / 2);
+  const innerGroup = g(
+    {
+      class: "skyline-scene",
+    },
+    ...buildingElements,
+    {
+      tag: "animateTransform",
+      attrs: {
+        attributeName: "transform",
+        type: "rotate",
+        values: `${String(-1.5)} ${sceneCentreX} 0; ${String(1.5)} ${sceneCentreX} 0; ${String(-1.5)} ${sceneCentreX} 0`,
+        dur: "12s",
+        repeatCount: "indefinite",
+      },
+    },
+  );
+
   elements.push(
     g(
       {
         transform: `translate(${String(offsetX)},${String(baseY - maxHeight)})`,
       },
-      g(
-        {
-          class: "skyline-scene",
-        },
-        ...buildingElements,
-      ),
+      innerGroup,
     ),
   );
-
-  // CSS animation for a subtle rocking motion.
-  // The skyline sways ±1.5° around its centre, giving a sense
-  // of 3D depth without requiring re-projection.
-  elements.push({
-    tag: "style",
-    attrs: {},
-    text: [
-      "@keyframes skyline-rock {",
-      "  0%, 100% { transform: rotate(0deg) }",
-      "  25% { transform: rotate(1.5deg) }",
-      "  75% { transform: rotate(-1.5deg) }",
-      "}",
-      ".skyline-scene {",
-      `  transform-origin: ${sceneCentreX}px center`,
-      "  animation: skyline-rock 12s ease-in-out infinite",
-      "}",
-    ].join("\n"),
-  });
 
   const totalHeight = baseY + sceneDepth + 30;
 
