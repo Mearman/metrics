@@ -19,6 +19,10 @@ export const ReactionsConfig = z.object({
   days: z.int().min(1).max(365).default(30),
   /** Maximum number of reaction summaries to include */
   limit: z.int().min(1).max(50).default(10),
+  /** Display mode: absolute (total count) or relative (highest = 100%) */
+  display: z.enum(["absolute", "relative"]).default("absolute"),
+  /** Additional details to show */
+  details: z.array(z.enum(["count", "percentage"])).default([]),
 });
 export type ReactionsConfig = z.infer<typeof ReactionsConfig>;
 

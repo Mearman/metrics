@@ -509,6 +509,8 @@ discussions:
 notable:
   indepth: false        # detailed org info
   from: 5              # organisations to fetch (1+)
+  types: organization  # all, organization, user
+  self: false           # include own repositories
 ```
 
 #### calendar
@@ -529,7 +531,9 @@ introduction: {}        # no options
 ```yaml
 reactions:
   days: 30              # lookback period (1–365)
-  limit: 10             # top reactions (1–20)
+  limit: 10             # top reactions (1–50)
+  display: absolute     # absolute | relative
+  details: []           # count, percentage
 ```
 
 #### contributors
@@ -582,6 +586,7 @@ Requires `git` — clones repos with `git clone --depth 1`. Significantly increa
 ```yaml
 projects:
   limit: 6              # max projects (1–20)
+  descriptions: false   # show project descriptions
 ```
 
 #### sponsors

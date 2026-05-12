@@ -132,7 +132,7 @@ describe("Projects renderer", () => {
         { title: "Research", description: "My research tasks", itemCount: 7 },
       ],
     };
-    const result = renderProjects(data, {}, makeCtx());
+    const result = renderProjects(data, { descriptions: true }, makeCtx());
     const allTexts = findTextsDeep(result.elements);
     assert.ok(allTexts.some((el) => el.text?.includes("My research")));
   });

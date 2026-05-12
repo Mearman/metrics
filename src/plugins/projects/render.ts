@@ -14,11 +14,11 @@ import type { ProjectsData } from "./source.ts";
  */
 export function renderProjects(
   data: ProjectsData,
-  _config: Record<string, unknown>,
+  config: { descriptions?: boolean },
   ctx: RenderContext,
 ): RenderResult {
-  void _config;
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
+  const showDescriptions = config.descriptions ?? false;
 
   if (data.projects.length === 0) {
     return { height: 0, elements: [] };
@@ -68,8 +68,8 @@ export function renderProjects(
     );
     y += nameFont + 3;
 
-    // Description (if present)
-    if (project.description.length > 0) {
+    // Description (if present and enabled)
+    if (showDescriptions && project.description.length > 0) {
       const desc = truncateText(
         project.description,
         ctx.contentWidth - 16,

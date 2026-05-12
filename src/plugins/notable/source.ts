@@ -14,7 +14,12 @@ import type { FetchContext, DataSource } from "../types.ts";
 
 export const NotableConfig = z.object({
   indepth: z.boolean().default(false),
+  /** Number of organisations to fetch */
   from: z.int().min(1).default(5),
+  /** Account type filter: all, organisation, user */
+  types: z.enum(["all", "organization", "user"]).default("organization"),
+  /** Include own repositories */
+  self: z.boolean().default(false),
 });
 
 export type NotableConfig = z.infer<typeof NotableConfig>;

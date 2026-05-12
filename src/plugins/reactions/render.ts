@@ -2,9 +2,11 @@
  * Reactions plugin — renderer.
  *
  * Renders reaction statistics as emoji-labelled bars.
+ * Supports absolute/relative display and count/percentage details.
  */
 
 import { text, rect } from "../../render/svg/builder.ts";
+import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { ReactionsData } from "./source.ts";
 
@@ -36,12 +38,18 @@ const REACTION_ORDER = [
  */
 export function renderReactions(
   data: ReactionsData,
-  _config: Record<string, unknown>,
+  config: {
+    display?: string;
+    details?: string[];
+  },
   ctx: RenderContext,
 ): RenderResult {
-  void _config;
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
+  const isRelative = config.display === "relative";
+  const details = config.details ?? [];
+  const showCount = details.includes("count");
+  const showPct = details.includes("percentage");
 
   elements.push(
     text(padding, 14, "Reactions", {
@@ -68,24 +76,46 @@ export function renderReactions(
     return { height: 50, elements };
   }
 
-  // Find the max reaction count for bar scaling
+  // Determine scale: absolute (total) or relative (highest = max)
+  const totalReactions = Object.values(data.totals).reduce(
+    (sum, v) => sum + v,
+    0,
+  );
   const maxCount = Math.max(
     ...REACTION_ORDER.map((key) => data.totals[key] ?? 0),
     1,
   );
 
   let y = 32;
-  const barMaxWidth = ctx.contentWidth - 120;
+  const labelWidth = 110;
+  const barMaxWidth = ctx.contentWidth - labelWidth - 60;
 
   for (const key of REACTION_ORDER) {
     const count = data.totals[key] ?? 0;
     if (count === 0) continue;
 
     const emoji = REACTION_EMOJI[key] ?? key;
-    const barWidth = Math.max((count / maxCount) * barMaxWidth, 4);
+
+    // Compute bar scale
+    const scaledCount = isRelative
+      ? (count / maxCount) * barMaxWidth
+      : totalReactions > 0
+        ? (count / totalReactions) * barMaxWidth
+        : 0;
+    const barWidth = Math.max(scaledCount, 4);
+
+    // Label with optional details
+    let label = emoji;
+    if (showCount) label += ` ${String(count)}`;
+    if (showPct) {
+      const pct =
+        totalReactions > 0 ? ((count / totalReactions) * 100).toFixed(1) : "0";
+      label += ` ${pct}%`;
+    }
+    if (!showCount && !showPct) label += ` ${String(count)}`;
 
     elements.push(
-      text(padding, y + 12, `${emoji} ${String(count)}`, {
+      text(padding, y + 12, label, {
         fill: colours.textSecondary,
         "font-size": 12,
         "font-family": fontStack,
@@ -93,7 +123,7 @@ export function renderReactions(
     );
 
     elements.push(
-      rect(padding + 80, y + 4, barWidth, 10, {
+      rect(padding + labelWidth, y + 4, barWidth, 10, {
         fill: colours.accent,
         opacity: 0.7,
         rx: 3,
@@ -116,7 +146,8 @@ export function renderReactions(
 
   for (const item of data.items.slice(0, 3)) {
     const label = `${item.type}: ${item.title}`;
-    const truncated = label.length > 55 ? `${label.slice(0, 52)}…` : label;
+    const maxLabelWidth = ctx.contentWidth - 50;
+    const truncated = truncateText(label, maxLabelWidth, 11, ctx.measure);
 
     elements.push(
       text(padding + 8, y + 10, truncated, {

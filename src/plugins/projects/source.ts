@@ -17,6 +17,8 @@ import type { DataSource } from "../types.ts";
 export const ProjectsConfig = z.object({
   /** Maximum projects to display */
   limit: z.int().min(1).max(20).default(6),
+  /** Show project descriptions */
+  descriptions: z.boolean().default(false),
 });
 export type ProjectsConfig = z.infer<typeof ProjectsConfig>;
 
