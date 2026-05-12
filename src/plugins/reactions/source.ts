@@ -62,7 +62,6 @@ const ResponseSchema = z.object({
         z.object({
           title: z.string().trim(),
           url: z.string().trim(),
-          isPullRequest: z.boolean(),
           repository: z.object({
             nameWithOwner: z.string().trim(),
           }),
@@ -105,7 +104,6 @@ export async function fetchReactions(
           nodes {
             title
             url
-            isPullRequest
             repository {
               nameWithOwner
             }
@@ -200,7 +198,7 @@ export async function fetchReactions(
 
     items.push({
       repository: issue.repository.nameWithOwner,
-      type: issue.isPullRequest ? "PR" : "Issue",
+      type: "Issue",
       title: issue.title,
       reactions: reactionSummary,
     });

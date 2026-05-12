@@ -1,8 +1,9 @@
 /**
  * Contributors plugin — data source.
  *
- * Fetches contributor breakdown for the user's repositories.
- * Zod validates the GraphQL response at runtime.
+ * Fetches contributor breakdown for the user's top repositories.
+ * Uses REST API (repos.listContributors) since GitHub GraphQL
+ * does not expose a contributors field on Repository.
  */
 
 import * as z from "zod";
@@ -45,10 +46,10 @@ export interface ContributorsData {
 }
 
 // ---------------------------------------------------------------------------
-// GraphQL query
+// GraphQL query — fetches repo list only
 // ---------------------------------------------------------------------------
 
-const QUERY = `
+const REPOS_QUERY = `
   query($login: String!, $first: Int!, $after: String) {
     user(login: $login) {
       repositories(
@@ -65,13 +66,6 @@ const QUERY = `
         nodes {
           nameWithOwner
           isPrivate
-          contributors(orderBy: {field: CONTRIBUTIONS, direction: DESC}, first: 20) {
-            nodes {
-              login
-              avatarUrl
-              contributions
-            }
-          }
         }
       }
     }
@@ -82,26 +76,27 @@ const QUERY = `
 // Zod response schema
 // ---------------------------------------------------------------------------
 
-const ResponseSchema = z.object({
+const ReposResponseSchema = z.object({
   user: z.object({
     repositories: z.object({
       nodes: z.array(
         z.object({
           nameWithOwner: z.string().trim(),
           isPrivate: z.boolean(),
-          contributors: z.object({
-            nodes: z.array(
-              z.object({
-                login: z.string().trim(),
-                avatarUrl: z.string().trim(),
-                contributions: z.number(),
-              }),
-            ),
-          }),
         }),
       ),
     }),
   }),
+});
+
+// ---------------------------------------------------------------------------
+// REST response schema
+// ---------------------------------------------------------------------------
+
+const ContributorSchema = z.object({
+  login: z.string().trim(),
+  avatar_url: z.string().trim(),
+  contributions: z.number(),
 });
 
 // ---------------------------------------------------------------------------
@@ -110,6 +105,7 @@ const ResponseSchema = z.object({
 
 /**
  * Fetch contributors for the user's top repositories.
+ * Uses GraphQL to get the repo list, then REST for each repo's contributors.
  */
 export async function fetchContributors(
   api: ApiClient,
@@ -117,39 +113,57 @@ export async function fetchContributors(
   config: ContributorsConfig,
   repos: ReposConfig,
 ): Promise<ContributorsData> {
-  const reposQuery = QUERY.replace("__PRIVACY__", repoPrivacyFilter(repos));
+  const reposQuery = REPOS_QUERY.replace(
+    "__PRIVACY__",
+    repoPrivacyFilter(repos),
+  );
   const reposResult: RepoContributors[] = [];
 
   const raw = await api.graphql(reposQuery, {
     login: user,
     first: config.limit,
   });
-  const parsed = ResponseSchema.safeParse(raw);
+  const parsed = ReposResponseSchema.safeParse(raw);
   if (!parsed.success) {
     throw new Error(
-      `Invalid GraphQL response for contributors: ${parsed.error.message}`,
+      `Invalid GraphQL response for contributors repos: ${parsed.error.message}`,
     );
   }
 
   for (const repo of parsed.data.user.repositories.nodes) {
-    const contributors: Contributor[] = [];
+    const slashIndex = repo.nameWithOwner.indexOf("/");
+    const owner = repo.nameWithOwner.slice(0, slashIndex);
+    const name = repo.nameWithOwner.slice(slashIndex + 1);
 
-    for (const c of repo.contributors.nodes) {
-      if (c.contributions >= config.threshold) {
-        contributors.push({
-          login: c.login,
-          avatarUrl: c.avatarUrl,
-          contributions: c.contributions,
+    try {
+      const contributorsRaw = await api.rest.repos.listContributors({
+        owner,
+        repo: name,
+        per_page: config.contributors_per_repo,
+      });
+
+      const contributors: Contributor[] = [];
+      for (const c of contributorsRaw.data) {
+        const parsedContributor = ContributorSchema.safeParse(c);
+        if (!parsedContributor.success) continue;
+        if (parsedContributor.data.contributions >= config.threshold) {
+          contributors.push({
+            login: parsedContributor.data.login,
+            avatarUrl: parsedContributor.data.avatar_url,
+            contributions: parsedContributor.data.contributions,
+          });
+        }
+      }
+
+      if (contributors.length > 0) {
+        reposResult.push({
+          repository: repo.nameWithOwner,
+          isPrivate: repo.isPrivate,
+          contributors: contributors.slice(0, config.contributors_per_repo),
         });
       }
-    }
-
-    if (contributors.length > 0) {
-      reposResult.push({
-        repository: repo.nameWithOwner,
-        isPrivate: repo.isPrivate,
-        contributors: contributors.slice(0, config.contributors_per_repo),
-      });
+    } catch {
+      // Skip repos where we can't list contributors (e.g. empty repos)
     }
   }
 
