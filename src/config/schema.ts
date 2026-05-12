@@ -96,16 +96,6 @@ const OutputConfig = z.object({
 });
 
 // ---------------------------------------------------------------------------
-// Sync schema (fork upstream sync)
-// ---------------------------------------------------------------------------
-
-const SyncConfig = z.object({
-  upstream: z.string().trim().default("Mearman/metrics"),
-  branch: z.string().trim().default("main"),
-  auto_merge: z.boolean().default(true),
-});
-
-// ---------------------------------------------------------------------------
 // Root schema
 // ---------------------------------------------------------------------------
 
@@ -117,7 +107,6 @@ export const RootConfig = z.object({
   embed_fonts: z.boolean().default(true),
   /** Repository fetching and filtering rules */
   repos: ReposConfigSchema.default({ fetch: "public", rules: [] }),
-  sync: SyncConfig.optional(),
   outputs: z.array(OutputConfig).min(1),
 });
 

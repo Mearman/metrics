@@ -1,0 +1,58 @@
+name: Sync upstream
+on:
+  schedule: [{ cron: "0 6 * * *" }] # daily at 06:00 UTC
+  workflow_dispatch:
+    inputs:
+      upstream:
+        description: "Upstream repo (owner/repo)"
+        default: Mearman/metrics
+      branch:
+        description: "Branch to sync"
+        default: main
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Sync from upstream
+        shell: bash
+        env:
+          UPSTREAM: ${{ inputs.upstream || 'Mearman/metrics' }}
+          BRANCH: ${{ inputs.branch || 'main' }}
+        run: |
+          set -euo pipefail
+
+          UPSTREAM_URL="https://github.com/${UPSTREAM}.git"
+
+          echo "Syncing ${UPSTREAM_URL} (${BRANCH}) → origin/${BRANCH}"
+
+          git remote add upstream "${UPSTREAM_URL}" 2>/dev/null || true
+          git fetch upstream "${BRANCH}"
+
+          # Check if upstream has new commits
+          LOCAL=$(git rev-parse "origin/${BRANCH}")
+          UPSTREAM_REV=$(git rev-parse "upstream/${BRANCH}")
+
+          if [ "$LOCAL" = "$UPSTREAM_REV" ]; then
+            echo "Already up to date — no new commits."
+            exit 0
+          fi
+
+          echo "New commits found:"
+          git log --oneline "${LOCAL}..${UPSTREAM_REV}" | head -20
+
+          # Attempt merge
+          git checkout "${BRANCH}"
+          git merge "upstream/${BRANCH}" --no-edit
+
+          # Push the merged result
+          git push origin "${BRANCH}"
+
+          echo "Sync complete — upstream changes merged."

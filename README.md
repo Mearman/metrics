@@ -25,6 +25,22 @@ The `github.token` automatically provided to every Actions run has read access t
 
 To customise, edit `.github/metrics.yml` in your fork.
 
+### Staying up to date
+
+Your fork automatically syncs with `Mearman/metrics` daily via the **Sync upstream** workflow. When upstream adds new plugins, fixes bugs, or improves layouts, your fork pulls those changes automatically.
+
+If the merge conflicts with your local customisations, the sync will fail — resolve conflicts manually:
+
+```bash
+git remote add upstream https://github.com/Mearman/metrics.git
+git fetch upstream main
+git merge upstream/main
+# resolve conflicts, then:
+git push
+```
+
+You can also trigger a sync manually from your fork's **Actions** tab → **Sync upstream** → **Run workflow**.
+
 ### Action mode
 
 Use metrics as an action in your own repository. Zero-config — enable plugins with boolean inputs:
