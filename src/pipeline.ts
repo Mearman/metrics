@@ -54,7 +54,7 @@ import { resolveTheme } from "./render/template/themes.ts";
 import { createIconLookup } from "./render/svg/icons.ts";
 import { embeddedFontCss } from "./render/svg/font-embed.ts";
 import { inlineImages, clearImageCache } from "./render/svg/inline-images.ts";
-import type { RenderResult } from "./plugins/types.ts";
+import type { RenderResult, ApiClient } from "./plugins/types.ts";
 
 // ---------------------------------------------------------------------------
 // Pipeline
@@ -82,9 +82,9 @@ registerAllPlugins();
 export async function runPipeline(
   config: RootConfig,
   token: string,
-  options?: { dryRun?: boolean },
+  options?: { dryRun?: boolean; api?: ApiClient },
 ): Promise<PipelineResult> {
-  const api = createClient(token);
+  const api = options?.api ?? createClient(token);
   const dryRun = options?.dryRun ?? false;
   const measure = createMeasure();
   const icons = createIconLookup();
@@ -94,6 +94,37 @@ export async function runPipeline(
 
   for (const output of config.outputs) {
     const theme = resolveTheme(config.template);
+    // Apply colour overrides from config
+    if (config.colours) {
+      const calOverrides = config.colours.calendar;
+      if (calOverrides !== undefined) {
+        const merged = { ...theme.colours.calendar };
+        if (calOverrides.L0 !== undefined) merged.L0 = calOverrides.L0;
+        if (calOverrides.L1 !== undefined) merged.L1 = calOverrides.L1;
+        if (calOverrides.L2 !== undefined) merged.L2 = calOverrides.L2;
+        if (calOverrides.L3 !== undefined) merged.L3 = calOverrides.L3;
+        if (calOverrides.L4 !== undefined) merged.L4 = calOverrides.L4;
+        theme.colours.calendar = merged;
+      }
+      if (config.colours.text !== undefined)
+        theme.colours.text = config.colours.text;
+      if (config.colours.textSecondary !== undefined)
+        theme.colours.textSecondary = config.colours.textSecondary;
+      if (config.colours.textTertiary !== undefined)
+        theme.colours.textTertiary = config.colours.textTertiary;
+      if (config.colours.accent !== undefined)
+        theme.colours.accent = config.colours.accent;
+      if (config.colours.background !== undefined)
+        theme.colours.background = config.colours.background;
+      if (config.colours.border !== undefined)
+        theme.colours.border = config.colours.border;
+      if (config.colours.error !== undefined)
+        theme.colours.error = config.colours.error;
+      if (config.colours.warning !== undefined)
+        theme.colours.warning = config.colours.warning;
+      if (config.colours.success !== undefined)
+        theme.colours.success = config.colours.success;
+    }
     const contentWidth = theme.width - theme.margin * 2;
     const renderResults: RenderResult[] = [];
     const controller = new AbortController();
@@ -232,6 +263,8 @@ export async function runPipeline(
         role: "img",
         "aria-label": `Metrics for ${username}`,
       },
+      // Accessible title — first child of <svg> for screen readers
+      { tag: "title", attrs: {}, text: `Metrics for ${username}` },
       ...children,
     );
 
@@ -243,8 +276,13 @@ export async function runPipeline(
     const svgContent = serialise(withInlinedImages);
 
     if (!dryRun) {
-      const { writeSvg } = await import("./output/svg.ts");
-      await writeSvg(output.path, svgContent);
+      if (output.format === "png") {
+        const { writePng } = await import("./output/png.ts");
+        await writePng(output.path, svgContent);
+      } else {
+        const { writeSvg } = await import("./output/svg.ts");
+        await writeSvg(output.path, svgContent);
+      }
     }
 
     results.push({

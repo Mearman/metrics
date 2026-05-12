@@ -204,6 +204,17 @@ outputs:
 
 Plugins listed in `order` render first (in that order). Any plugins not listed are appended in their YAML key order.
 
+### PNG output
+
+Change `format: svg` to `format: png` to render a raster image instead. PNGs are generated at 2× pixel ratio for retina displays via [resvg-js](https://github.com/nicejam/resvg-js) — a pure WASM SVG renderer with no native dependencies.
+
+```yaml
+outputs:
+  - path: output/github-metrics.png
+    format: png
+    plugins: { base: {} }
+```
+
 ---
 
 ## Token tiers
@@ -301,6 +312,21 @@ Builder functions (`svg`, `g`, `text`, `rect`, `circle`, `path`, `image`) return
 ### Themes
 
 Three built-in themes: `classic` (dark), `light`, `terminal` (monospace green on black). Each theme defines colours, spacing, font stack, and calendar heatmap colours.
+
+#### Colour overrides
+
+Override individual theme colours without changing the whole theme:
+
+```yaml
+template: classic
+colours:
+  accent: "#ff6600"
+  background: "#1a1a2e"
+  calendar:
+    L4: "#ff4444"  # brighter top-level contribution colour
+```
+
+All colour fields are optional — only specify the ones you want to change.
 
 ---
 
@@ -590,6 +616,7 @@ skyline:
 | `fontkit`          | Font loading and text measurement  |
 | `@primer/octicons` | Octicon SVG path data              |
 | `svgo`             | SVG optimisation                   |
+| `@resvg/resvg-js`  | SVG-to-PNG rendering (WASM)       |
 | `@actions/core`    | GitHub Action I/O                  |
 | `@actions/github`  | GitHub Action context              |
 

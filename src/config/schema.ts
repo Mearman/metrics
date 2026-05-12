@@ -109,6 +109,29 @@ export const RootConfig = z.object({
   embed_fonts: z.boolean().default(true),
   /** Repository fetching and filtering rules */
   repos: ReposConfigSchema.default({ fetch: "public", rules: [] }),
+  /** Custom colour overrides — merge into the theme's colours */
+  colours: z
+    .object({
+      text: z.string().trim().optional(),
+      textSecondary: z.string().trim().optional(),
+      textTertiary: z.string().trim().optional(),
+      accent: z.string().trim().optional(),
+      background: z.string().trim().optional(),
+      border: z.string().trim().optional(),
+      error: z.string().trim().optional(),
+      warning: z.string().trim().optional(),
+      success: z.string().trim().optional(),
+      calendar: z
+        .object({
+          L0: z.string().trim().optional(),
+          L1: z.string().trim().optional(),
+          L2: z.string().trim().optional(),
+          L3: z.string().trim().optional(),
+          L4: z.string().trim().optional(),
+        })
+        .optional(),
+    })
+    .optional(),
   outputs: z.array(OutputConfig).min(1),
 });
 
