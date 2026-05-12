@@ -20,6 +20,7 @@ concurrency:
 jobs:
   generate:
     runs-on: ubuntu-latest
+    environment: metrics
     steps:
       - uses: actions/checkout@v6
 
