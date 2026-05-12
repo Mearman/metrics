@@ -57,3 +57,15 @@ export function getArrayLength(
   const prop = propOf(value, key);
   return Array.isArray(prop) ? prop.length : undefined;
 }
+
+/**
+ * Extract an array property from an unknown value by key.
+ * Returns `undefined` if the value is not an object, the key is absent,
+ * or the property is not an array.
+ */
+export function getArray(value: unknown, key: string): unknown[] | undefined {
+  if (typeof value !== "object" || value === null) return undefined;
+  if (!(key in value)) return undefined;
+  const prop = propOf(value, key);
+  return Array.isArray(prop) ? prop : undefined;
+}
