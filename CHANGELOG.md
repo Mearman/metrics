@@ -1,3 +1,9 @@
+## [1.16.0](https://github.com/Mearman/metrics/compare/v1.15.0...v1.16.0) (2026-05-12)
+
+### Features
+
+* **plugins:** expand customisation options across 8 plugins ([76746ba](https://github.com/Mearman/metrics/commit/76746bae038e421e2731d0239211b1570dbfaf2f))
+
 ## [1.15.0](https://github.com/Mearman/metrics/compare/v1.14.1...v1.15.0) (2026-05-12)
 
 ### Features
