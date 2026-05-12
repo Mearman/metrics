@@ -137,6 +137,10 @@ const PluginsConfig = Zod.object({
   calendar: Zod.object({
     years: Zod.int().min(1).max(10).default(3),
   }).optional(),
+  code: Zod.object({
+    max_length: Zod.int().min(20).max(500).default(200),
+    scan_limit: Zod.int().min(1).max(50).default(20),
+  }).optional(),
   // TODO: remaining 11 plugin schemas
 }).loose();
 
@@ -168,6 +172,8 @@ export const RootConfig = Zod.object({
   user: Zod.string().trim().optional(),
   timezone: Zod.string().trim().default("UTC"),
   template: Zod.string().trim().default("classic"),
+  /** Embed font data in SVG for cross-host rendering. Default true. */
+  embed_fonts: Zod.boolean().default(true),
   sync: SyncConfig.optional(),
   outputs: Zod.array(OutputConfig).min(1),
 });

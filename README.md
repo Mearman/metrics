@@ -225,7 +225,7 @@ Three built-in themes: `classic` (dark), `light`, `terminal` (monospace green on
 
 ## Plugins
 
-19 plugins implemented. 8 remaining.
+20 plugins implemented. 7 remaining.
 
 | Plugin       | ID              | Status | Description                            |
 |--------------|-----------------|--------|----------------------------------------|
@@ -248,7 +248,7 @@ Three built-in themes: `classic` (dark), `light`, `terminal` (monospace green on
 | Introduction | `introduction`  | ✅     | User bio and introduction card         |
 | Reactions    | `reactions`     | ✅     | Comment reaction stats                 |
 | Contributors | `contributors`  | ✅     | Per-repo contributor breakdown         |
-| Code         | `code`          | 🔲     | Random code snippet                    |
+| Code         | `code`          | ✅     | Random code snippet from recent commits |
 | Licences     | `licenses`      | 🔲     | Repository licence breakdown           |
 | Projects     | `projects`      | 🔲     | GitHub Projects boards                 |
 | Skyline      | `skyline`       | 🔲     | GitHub Skyline 3D visualisation        |

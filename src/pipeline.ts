@@ -138,13 +138,23 @@ export async function runPipeline(
       }
     }
 
-    // Font embedding for cross-host rendering
-    const fontCss = embeddedFontCss();
-    const styleElement: import("./render/svg/builder.ts").SvgElement = {
-      tag: "style",
-      attrs: {},
-      text: fontCss,
-    };
+    // Font embedding for cross-host rendering (configurable)
+    const children: import("./render/svg/builder.ts").SvgElement[] = [];
+    if (config.embed_fonts) {
+      const fontCss = embeddedFontCss();
+      children.push({ tag: "style", attrs: {}, text: fontCss });
+    }
+
+    // Background
+    children.push(
+      rect(0, 0, theme.width, totalHeight, {
+        fill: theme.colours.background,
+        rx: 6,
+      }),
+    );
+
+    // Sections
+    children.push(...sections);
 
     // Wrap in root SVG element
     const root = svg(
@@ -156,14 +166,7 @@ export async function runPipeline(
         role: "img",
         "aria-label": `Metrics for ${username}`,
       },
-      // Embedded font
-      styleElement,
-      // Background
-      rect(0, 0, theme.width, totalHeight, {
-        fill: theme.colours.background,
-        rx: 6,
-      }),
-      ...sections,
+      ...children,
     );
 
     const svgContent = serialise(root);

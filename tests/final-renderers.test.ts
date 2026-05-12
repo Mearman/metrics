@@ -287,3 +287,86 @@ describe("Discussions renderer", () => {
     assert.ok(result.height > 0);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Code renderer
+// ---------------------------------------------------------------------------
+
+import { renderCode } from "../src/plugins/code/render.ts";
+import type { CodeData } from "../src/plugins/code/source.ts";
+
+describe("Code renderer", () => {
+  it("renders empty state when no snippet", () => {
+    const data: CodeData = { snippet: null };
+    const result = renderCode(data, {}, makeCtx());
+    const msg = findTextsDeep(result.elements).find((el) =>
+      el.text?.includes("No recent"),
+    );
+    assert.ok(msg !== undefined);
+  });
+
+  it("renders section title", () => {
+    const data: CodeData = {
+      snippet: {
+        repository: "user/repo",
+        file: "src/index.ts",
+        code: "console.log('hello')",
+        language: "TypeScript",
+        message: "Add logging",
+      },
+    };
+    const result = renderCode(data, {}, makeCtx());
+    const title = findTextsDeep(result.elements).find(
+      (el) => el.text === "Code",
+    );
+    assert.ok(title !== undefined);
+  });
+
+  it("renders code lines in monospace", () => {
+    const data: CodeData = {
+      snippet: {
+        repository: "user/repo",
+        file: "main.py",
+        code: "def hello():",
+        language: "Python",
+        message: "Init",
+      },
+    };
+    const result = renderCode(data, {}, makeCtx());
+    const codeText = findTextsDeep(result.elements).find((el) =>
+      el.text?.includes("def hello"),
+    );
+    assert.ok(codeText !== undefined);
+    assert.ok(String(codeText.attrs["font-family"]).includes("monospace"));
+  });
+
+  it("renders file path and language", () => {
+    const data: CodeData = {
+      snippet: {
+        repository: "user/repo",
+        file: "src/app.ts",
+        code: "export {}",
+        language: "TypeScript",
+        message: "Setup",
+      },
+    };
+    const result = renderCode(data, {}, makeCtx());
+    const allTexts = findTextsDeep(result.elements);
+    const fileLabel = allTexts.find((el) => el.text?.includes("app.ts"));
+    assert.ok(fileLabel !== undefined);
+  });
+
+  it("computes positive height", () => {
+    const data: CodeData = {
+      snippet: {
+        repository: "user/repo",
+        file: "a.rs",
+        code: "fn main() {}",
+        language: "Rust",
+        message: "Init",
+      },
+    };
+    const result = renderCode(data, {}, makeCtx());
+    assert.ok(result.height > 0);
+  });
+});

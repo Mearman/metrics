@@ -24,6 +24,7 @@ import { calendarPlugin } from "./calendar/plugin.ts";
 import { introductionPlugin } from "./introduction/plugin.ts";
 import { reactionsPlugin } from "./reactions/plugin.ts";
 import { contributorsPlugin } from "./contributors/plugin.ts";
+import { codePlugin } from "./code/plugin.ts";
 
 export function registerAllPlugins(): void {
   registerPlugin(basePlugin);
@@ -45,4 +46,5 @@ export function registerAllPlugins(): void {
   registerPlugin(introductionPlugin);
   registerPlugin(reactionsPlugin);
   registerPlugin(contributorsPlugin);
+  registerPlugin(codePlugin);
 }
