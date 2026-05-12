@@ -1,3 +1,9 @@
+## [1.6.4](https://github.com/Mearman/metrics/compare/v1.6.3...v1.6.4) (2026-05-12)
+
+### CI
+
+* scope METRICS_TOKEN to environment restricted to main ([651a910](https://github.com/Mearman/metrics/commit/651a9100d6e2e078bd2916cee81471658cc7c54d))
+
 ## [1.6.3](https://github.com/Mearman/metrics/compare/v1.6.2...v1.6.3) (2026-05-12)
 
 ### Bug Fixes
