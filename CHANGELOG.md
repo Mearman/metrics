@@ -1,3 +1,9 @@
+## [1.11.1](https://github.com/Mearman/metrics/compare/v1.11.0...v1.11.1) (2026-05-12)
+
+### Refactoring
+
+* **config:** single source of truth for plugin schemas ([4902ff3](https://github.com/Mearman/metrics/commit/4902ff3b03b96ae7b9919f4479caec5fd82d0334))
+
 ## [1.11.0](https://github.com/Mearman/metrics/compare/v1.10.0...v1.11.0) (2026-05-12)
 
 ### Features
