@@ -124,7 +124,7 @@ export function renderFollowup(
             rect(padding, 0, mergedWidth, barHeight, {
               fill: "#a371f7",
             }),
-            rect(padding + mergedWidth, 0, closedWidth, barHeight, {
+            rect(padding + mergedWidth - 1, 0, closedWidth + 1, barHeight, {
               fill: "#f85149",
             }),
           ),
