@@ -10,7 +10,7 @@
 import type { RootConfig } from "./config/schema.ts";
 import { createClient } from "./api/client.ts";
 import { serialise } from "./render/svg/serialise.ts";
-import { svg, rect, line } from "./render/svg/builder.ts";
+import { svg, rect, line, g } from "./render/svg/builder.ts";
 import { getPlugin } from "./plugins/registry.ts";
 import { registerAllPlugins } from "./plugins/register.ts";
 
@@ -127,6 +127,7 @@ export async function runPipeline(
     }
     const contentWidth = theme.width - theme.margin * 2;
     const renderResults: RenderResult[] = [];
+    const renderPluginIds: string[] = [];
     const controller = new AbortController();
 
     // Reorder plugins if an explicit order is set
@@ -194,6 +195,7 @@ export async function runPipeline(
       });
 
       renderResults.push(result);
+      renderPluginIds.push(pluginId);
     }
 
     // Layout: stack sections vertically with dividers
@@ -229,10 +231,25 @@ export async function runPipeline(
         );
       }
 
-      // Offset each section's elements by its Y position in the stack
-      for (const element of result.elements) {
-        sections.push(offsetElement(element, 0, yOffset));
-      }
+      // Wrap each section in a group with a <title> for
+      // screen reader navigation
+      const pluginId = renderPluginIds[index];
+      if (pluginId === undefined) continue;
+      const sectionTitleId = `section-${pluginId}`;
+      const sectionElements = result.elements.map((element) =>
+        offsetElement(element, 0, yOffset),
+      );
+      sections.push(
+        g(
+          { "aria-labelledby": sectionTitleId },
+          {
+            tag: "title",
+            attrs: { id: sectionTitleId },
+            text: pluginId,
+          },
+          ...sectionElements,
+        ),
+      );
     }
 
     // Font embedding for cross-host rendering (configurable)

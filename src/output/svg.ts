@@ -27,8 +27,8 @@ export async function writeSvg(path: string, content: string): Promise<void> {
       "removeXMLProcInst",
       "removeComments",
       "removeMetadata",
-      "removeTitle",
-      "removeDesc",
+      // removeTitle and removeDesc removed — they strip
+      // <title> and <desc> elements needed for accessibility
       "removeUselessDefs",
       "removeEditorsNSData",
       "removeEmptyAttrs",
