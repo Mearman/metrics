@@ -1,3 +1,9 @@
+## [1.0.4](https://github.com/Mearman/metrics/compare/v1.0.3...v1.0.4) (2026-05-12)
+
+### Bug Fixes
+
+* place clipPath defs inside group for correct coordinate system ([2a1492e](https://github.com/Mearman/metrics/commit/2a1492e0bdf6acbee8f8594119df4ecedfc4be29))
+
 ## [1.0.3](https://github.com/Mearman/metrics/compare/v1.0.2...v1.0.3) (2026-05-12)
 
 ### Bug Fixes

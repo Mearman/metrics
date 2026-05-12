@@ -1,6 +1,6 @@
 {
   "name": "metrics",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Generate GitHub metrics as SVG — fork of lowlighter/metrics, overhauled",
   "type": "module",
   "main": "src/cli.ts",
