@@ -1,3 +1,9 @@
+## [1.0.3](https://github.com/Mearman/metrics/compare/v1.0.2...v1.0.3) (2026-05-12)
+
+### Bug Fixes
+
+* eliminate gap between stacked bar segments in Follow-up PRs ([d19b740](https://github.com/Mearman/metrics/commit/d19b740b411c5d379f8f5bb579d5f0c233b6e85a))
+
 ## [1.0.2](https://github.com/Mearman/metrics/compare/v1.0.1...v1.0.2) (2026-05-12)
 
 ### Bug Fixes
