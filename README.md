@@ -332,7 +332,7 @@ All colour fields are optional — only specify the ones you want to change.
 
 ## Plugins
 
-28 plugins implemented (2 not feasible).
+29 plugins implemented (2 not feasible).
 
 | Plugin       | ID              | Status | Description                            |
 |--------------|-----------------|--------|----------------------------------------|
@@ -367,6 +367,7 @@ All colour fields are optional — only specify the ones you want to change.
 | Traffic      | `traffic`       | ✅     | Repository traffic (needs PAT)         |
 | Star lists   | `starlists`     | ❌     | Not available in GitHub API            |
 | Starred topics| `starred-topics`| ❌     | Covered by `topics` plugin             |
+| Rss          | `rss`           | ✅     | RSS/Atom feed items (needs feed URL)  |
 
 ### Plugin config reference
 
@@ -604,6 +605,16 @@ skyline:
 
 3D isometric contribution cityscape. Each day's contributions become a building whose height is proportional to its count. A gentle SMIL rocking animation conveys 3D depth.
 
+#### rss
+
+```yaml
+rss:
+  source: https://news.ycombinator.com/rss  # feed URL (required)
+  limit: 4              # max items (0 = unlimited, max 30)
+```
+
+Displays items from any RSS 2.0 or Atom feed. Requires a `source` URL pointing to the feed. No GitHub token needed.
+
 ---
 
 ## Dependencies
@@ -617,6 +628,7 @@ skyline:
 | `@primer/octicons` | Octicon SVG path data              |
 | `svgo`             | SVG optimisation                   |
 | `@resvg/resvg-js`  | SVG-to-PNG rendering (WASM)       |
+| `fast-xml-parser`  | RSS/Atom XML parsing              |
 | `@actions/core`    | GitHub Action I/O                  |
 | `@actions/github`  | GitHub Action context              |
 

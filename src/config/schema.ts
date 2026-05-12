@@ -48,6 +48,7 @@ import { LocConfig } from "../plugins/loc/source.ts";
 import { TopicsConfig } from "../plugins/topics/source.ts";
 import { LicencesConfig } from "../plugins/licenses/source.ts";
 import { SkylineConfig } from "../plugins/skyline/source.ts";
+import { RssConfig } from "../plugins/rss/source.ts";
 
 // ---------------------------------------------------------------------------
 // Plugin config — composed from each plugin's own schema
@@ -82,6 +83,7 @@ const PluginsConfig = z.object({
   topics: TopicsConfig.optional(),
   licenses: LicencesConfig.optional(),
   skyline: SkylineConfig.optional(),
+  rss: RssConfig.optional(),
 });
 
 // ---------------------------------------------------------------------------

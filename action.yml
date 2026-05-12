@@ -212,6 +212,16 @@ inputs:
     description: "Maximum building height in pixels"
     default: "100"
 
+  plugin_rss:
+    description: "Enable rss: display items from an RSS/Atom feed"
+    default: "false"
+  plugin_rss_source:
+    description: "RSS/Atom feed URL (required when rss is enabled)"
+    default: ""
+  plugin_rss_limit:
+    description: "Maximum RSS items to display (0 = unlimited, max 30)"
+    default: "4"
+
   # ── Misc ─────────────────────────────────────────────────────────────
   dry-run:
     description: Generate without writing output files.
@@ -277,11 +287,14 @@ runs:
         METRICS_PLUGIN_SKYLINE: ${{ inputs.plugin_skyline }}
         METRICS_PLUGIN_SKYLINE_YEAR: ${{ inputs.plugin_skyline_year }}
         METRICS_PLUGIN_SKYLINE_MAX_HEIGHT: ${{ inputs.plugin_skyline_max_height }}
+        METRICS_PLUGIN_RSS: ${{ inputs.plugin_rss }}
+        METRICS_PLUGIN_RSS_SOURCE: ${{ inputs.plugin_rss_source }}
+        METRICS_PLUGIN_RSS_LIMIT: ${{ inputs.plugin_rss_limit }}
       run: |
         if [ ! -f "${{ inputs.config }}" ]; then
           # Build plugins section from enabled inputs
           plugins=""
-          for p in base isocalendar languages habits achievements lines activity stars followup stargazers people topics licenses introduction repositories gists discussions notable calendar reactions contributors code projects loc sponsors sponsorships traffic skyline; do
+          for p in base isocalendar languages habits achievements lines activity stars followup stargazers people topics licenses introduction repositories gists discussions notable calendar reactions contributors code projects loc sponsors sponsorships traffic skyline rss; do
             env_name="METRICS_PLUGIN_$(echo "$p" | tr '[:lower:]' '[:upper:]')"
             enabled="${!env_name}"
             if [ "$enabled" = "true" ]; then

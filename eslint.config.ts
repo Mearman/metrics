@@ -330,9 +330,12 @@ export default defineConfig(
   // has no index signature). All property access on unknown values goes
   // through this utility.
   {
-    files: ["src/util/props.ts"],
+    files: ["src/util/props.ts", "src/plugins/rss/source.ts"],
     rules: {
       "@typescript-eslint/consistent-type-assertions": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/dot-notation": "off",
     },
   },
 

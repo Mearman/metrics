@@ -33,6 +33,7 @@ import { sponsorsPlugin } from "./sponsors/plugin.ts";
 import { sponsorshipsPlugin } from "./sponsorships/plugin.ts";
 import { trafficPlugin } from "./traffic/plugin.ts";
 import { skylinePlugin } from "./skyline/plugin.ts";
+import { rssPlugin } from "./rss/plugin.ts";
 
 export function registerAllPlugins(): void {
   registerPlugin(basePlugin);
@@ -63,4 +64,5 @@ export function registerAllPlugins(): void {
   registerPlugin(sponsorshipsPlugin);
   registerPlugin(trafficPlugin);
   registerPlugin(skylinePlugin);
+  registerPlugin(rssPlugin);
 }
