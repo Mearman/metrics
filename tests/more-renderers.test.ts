@@ -248,11 +248,41 @@ describe("Stargazers renderer", () => {
     assert.ok(nameA !== undefined);
     assert.ok(nameB !== undefined);
   });
-});
 
-// ---------------------------------------------------------------------------
-// Habits renderer
-// ---------------------------------------------------------------------------
+  it("filters private repos when action is count", () => {
+    const data: StargazersData = {
+      totalStars: 100,
+      repos: [
+        { name: "public-repo", stars: 40, isPrivate: false },
+        { name: "private-repo", stars: 60, isPrivate: true },
+      ],
+    };
+    const ctx = makeCtx({
+      repos: {
+        fetch: "all",
+        rules: [{ match: { visibility: "private" }, action: "count" }],
+      },
+    });
+    const result = renderStargazers(data, {}, ctx);
+    // Public repo should be named
+    const publicName = result.elements.find((el) => el.text === "public-repo");
+    assert.ok(publicName !== undefined, "public repo should be named");
+    // Private repo should NOT be named
+    const privateName = result.elements.find(
+      (el) => el.text === "private-repo",
+    );
+    assert.strictEqual(
+      privateName,
+      undefined,
+      "private repo should not be named",
+    );
+    // Only one bar (for the public repo)
+    const bars = result.elements.filter(
+      (el) => el.tag === "rect" && el.attrs.fill === "#e3b341",
+    );
+    assert.strictEqual(bars.length, 1, "should render only one bar");
+  });
+});
 
 describe("Habits renderer", () => {
   const baseData: HabitsData = {
