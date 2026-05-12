@@ -1,3 +1,9 @@
+## [1.14.1](https://github.com/Mearman/metrics/compare/v1.14.0...v1.14.1) (2026-05-12)
+
+### Bug Fixes
+
+* **api:** retry transient errors with exponential backoff ([3580d12](https://github.com/Mearman/metrics/commit/3580d129528e7b973456c1e275a216b304552028))
+
 ## [1.14.0](https://github.com/Mearman/metrics/compare/v1.13.5...v1.14.0) (2026-05-12)
 
 ### Features
