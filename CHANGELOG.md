@@ -1,3 +1,9 @@
+## [1.0.2](https://github.com/Mearman/metrics/compare/v1.0.1...v1.0.2) (2026-05-12)
+
+### Bug Fixes
+
+* widen notable org label columns to 90px ([453a4e1](https://github.com/Mearman/metrics/commit/453a4e1e953bc29314d6c657640a3632dd4be5ce))
+
 ## [1.0.1](https://github.com/Mearman/metrics/compare/v1.0.0...v1.0.1) (2026-05-12)
 
 ### Bug Fixes
