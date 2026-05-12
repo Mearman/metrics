@@ -3,6 +3,12 @@
 timezone: Europe/London
 template: classic
 
+repos:
+  fetch: all
+  rules:
+    - match: { visibility: private }
+      action: count
+
 outputs:
   - path: output/github-metrics.svg
     format: svg
@@ -10,11 +16,12 @@ outputs:
       base:
         sections: [header, activity, community, repositories, metadata]
         indepth: true
+      introduction: {}
       isocalendar:
         duration: full-year
       languages:
         limit: 8
-        threshold: 5
+        threshold: 1
         categories: [markup, programming]
         recent_days: 14
       habits:
@@ -27,32 +34,44 @@ outputs:
         secrets: true
         threshold: C
       lines:
-        sections: [base]
-        repositories_limit: 4
-        history_limit: 1
+        limit: 4
       repositories:
-        pinned: 6
+        pinned: 4
+        starred: 2
       activity:
         limit: 5
         days: 14
       stars:
         limit: 4
       followup:
-        sections: [repositories]
+        sections: [repositories, user]
       stargazers:
-        limit: 8
+        limit: 6
       people:
-        limit: 20
-        types: [followers]
+        limit: 14
+        types: [followers, following]
       gists: {}
       discussions:
         categories: true
       notable:
         from: 5
+      calendar:
+        years: 1
+      reactions:
+        limit: 10
+      contributors:
+        limit: 4
+        contributors_per_repo: 6
+      code: {}
       topics:
         limit: 15
       licenses:
         limit: 8
       loc:
         limit: 4
-      # calendar:  # disabled — adds many API calls per year
+      projects:
+        limit: 4
+      sponsors: {}
+      sponsorships: {}
+      traffic:
+        limit: 4

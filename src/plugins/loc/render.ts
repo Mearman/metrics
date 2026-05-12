@@ -22,6 +22,28 @@ function formatLines(n: number): string {
   return `${(n / 1_000_000).toFixed(1)}M`;
 }
 
+/** Collect top languages across all repos, sorted by total lines. */
+function collectLanguages(
+  repos: LocData["repos"],
+  max: number,
+): { name: string; colour: string }[] {
+  const totals = new Map<string, { lines: number; colour: string }>();
+  for (const repo of repos) {
+    for (const lang of repo.languages) {
+      const existing = totals.get(lang.name);
+      if (existing !== undefined) {
+        existing.lines += lang.lines;
+      } else {
+        totals.set(lang.name, { lines: lang.lines, colour: lang.colour });
+      }
+    }
+  }
+  return [...totals]
+    .sort((a, b) => b[1].lines - a[1].lines)
+    .slice(0, max)
+    .map(([name, { colour }]) => ({ name, colour }));
+}
+
 // ---------------------------------------------------------------------------
 // Layout constants
 // ---------------------------------------------------------------------------
@@ -36,6 +58,12 @@ const BAR_RX = 3;
 
 const TEXT_TO_BAR_GAP = 4;
 const BAR_TO_TEXT_GAP = 6;
+
+const LEGEND_FONT_SIZE = 10;
+const LEGEND_SQUARE = 8;
+const LEGEND_GAP = 4;
+const LEGEND_ENTRY_GAP = 16;
+const MAX_LEGEND_LANGUAGES = 8;
 
 // ---------------------------------------------------------------------------
 // Renderer
@@ -65,10 +93,53 @@ export function renderLoc(
     }),
   );
 
-  const maxLines = Math.max(...data.repos.map((r) => r.totalLines));
-  const fullBarWidth = contentWidth - 16;
+  // Language legend
+  const visibleRepos = data.repos.filter((r) =>
+    shouldEnumerate(toRepoProps(r), ctx.repos.rules),
+  );
+  const legendLangs = collectLanguages(visibleRepos, MAX_LEGEND_LANGUAGES);
 
   let y = TITLE_Y + 22;
+
+  if (legendLangs.length > 0) {
+    let legendX = padding + 8;
+
+    for (const lang of legendLangs) {
+      // Colour square
+      elements.push(
+        rect(legendX, y, LEGEND_SQUARE, LEGEND_SQUARE, {
+          fill: lang.colour,
+          rx: 1,
+        }),
+      );
+      // Language name
+      const label = truncateText(lang.name, 80, LEGEND_FONT_SIZE, ctx.measure);
+      elements.push(
+        text(
+          legendX + LEGEND_SQUARE + LEGEND_GAP,
+          y + LEGEND_FONT_SIZE - 1,
+          label,
+          {
+            fill: colours.textTertiary,
+            "font-size": LEGEND_FONT_SIZE,
+            "font-family": fontStack,
+          },
+        ),
+      );
+      const labelWidth = ctx.measure.textWidth(label, LEGEND_FONT_SIZE);
+      legendX += LEGEND_SQUARE + LEGEND_GAP + labelWidth + LEGEND_ENTRY_GAP;
+
+      // Wrap to next line if exceeding content width
+      if (legendX > padding + contentWidth - 40) {
+        legendX = padding + 8;
+        y += LEGEND_FONT_SIZE + 6;
+      }
+    }
+    y += LEGEND_FONT_SIZE + 14;
+  }
+
+  const maxLines = Math.max(...visibleRepos.map((r) => r.totalLines), 1);
+  const fullBarWidth = contentWidth - 16;
 
   for (const repo of data.repos) {
     // Skip repos that shouldn't be named
@@ -111,18 +182,30 @@ export function renderLoc(
     // Stacked bar — proportional to the largest repo
     const repoBarWidth = (repo.totalLines / maxLines) * fullBarWidth;
     let xOffset = padding + 8;
-
+    const langCount = repo.languages.length;
+    let langIndex = 0;
     for (const lang of repo.languages) {
       const pct = lang.lines / repo.totalLines;
       const width = Math.max(pct * repoBarWidth, 1);
+      // Only round outer edges: first segment gets left radius,
+      // last segment gets right radius, middle segments get none.
+      const rx =
+        langCount === 1
+          ? BAR_RX
+          : langIndex === 0
+            ? BAR_RX
+            : langIndex === langCount - 1
+              ? BAR_RX
+              : 0;
 
       elements.push(
         rect(xOffset, y, width, BAR_HEIGHT, {
           fill: lang.colour,
-          rx: BAR_RX,
+          rx,
         }),
       );
       xOffset += width;
+      langIndex++;
     }
 
     y += BAR_HEIGHT + BAR_TO_TEXT_GAP + REPO_NAME_FONT_SIZE;

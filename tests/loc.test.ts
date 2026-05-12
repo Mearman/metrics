@@ -223,12 +223,14 @@ describe("LoC renderer", () => {
     };
     const result = renderLoc(data, {}, makeCtx());
     // Should have rects for both repos
-    const rects = result.elements.filter((el) => el.tag === "rect");
-    assert.ok(rects.length >= 2);
+    const bars = result.elements.filter(
+      (el) => el.tag === "rect" && el.attrs.height === 6,
+    );
+    assert.ok(bars.length >= 2);
 
     // Big repo bar should be wider than small repo bar
-    const bigBar = rects.find((el) => el.attrs.fill === "#3572a5");
-    const smallBar = rects.find((el) => el.attrs.fill === "#00add8");
+    const bigBar = bars.find((el) => el.attrs.fill === "#3572a5");
+    const smallBar = bars.find((el) => el.attrs.fill === "#00add8");
     assert.ok(bigBar !== undefined);
     assert.ok(smallBar !== undefined);
     assert.ok(
@@ -252,12 +254,14 @@ describe("LoC renderer", () => {
       totalLines: 1000,
     };
     const result = renderLoc(data, {}, makeCtx());
-    const rects = result.elements.filter(
+    // Filter to bar-height rects only (not legend squares)
+    const bars = result.elements.filter(
       (el) =>
         el.tag === "rect" &&
+        el.attrs.height === 6 &&
         (el.attrs.fill === "#3178c6" || el.attrs.fill === "#563d7c"),
     );
-    assert.strictEqual(rects.length, 2);
+    assert.strictEqual(bars.length, 2);
   });
 
   it("computes positive height", () => {

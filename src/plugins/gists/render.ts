@@ -54,10 +54,13 @@ export function renderGists(
 
   let col = 0;
   for (const stat of stats) {
-    const x = padding + col * statSpacing;
+    const colX = padding + col * statSpacing;
+    const colCentre = colX + statSpacing / 2;
+    const valueWidth = ctx.measure.textWidth(stat.value, 16);
+    const labelWidth = ctx.measure.textWidth(stat.label, 10);
 
     elements.push(
-      text(x, 40, stat.value, {
+      text(colCentre - valueWidth / 2, 40, stat.value, {
         fill: colours.text,
         "font-size": 16,
         "font-weight": 700,
@@ -66,7 +69,7 @@ export function renderGists(
     );
 
     elements.push(
-      text(x, 56, stat.label, {
+      text(colCentre - labelWidth / 2, 56, stat.label, {
         fill: colours.textTertiary,
         "font-size": 10,
         "font-family": fontStack,
