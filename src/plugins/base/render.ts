@@ -53,9 +53,9 @@ export function renderProfile(
     }),
   );
 
-  // Bio
+  // Bio (skip if null or empty)
   let bioY = loginY;
-  if (profile.bio !== null) {
+  if (profile.bio !== null && profile.bio.length > 0) {
     bioY += 22;
     elements.push(
       text(contentX, bioY, profile.bio, {

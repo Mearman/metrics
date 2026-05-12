@@ -46,13 +46,13 @@ export function renderNotable(
     const col = i % cols;
     const row = Math.floor(i / cols);
     const x = col * step;
-    const y = row * (avatarSize + 20);
+    const y = row * (avatarSize + 22);
 
     avatarElements.push(image(x, y, avatarSize, avatarSize, org.avatarUrl));
     avatarElements.push(
       text(x + avatarSize / 2, y + avatarSize + 12, org.name, {
         fill: colours.textTertiary,
-        "font-size": 9,
+        "font-size": 10,
         "font-family": fontStack,
         "text-anchor": "middle",
       }),
@@ -65,7 +65,7 @@ export function renderNotable(
   );
 
   const rows = Math.ceil(data.contributions.length / cols);
-  const totalHeight = 24 + rows * (avatarSize + 20) + padding;
+  const totalHeight = 24 + rows * (avatarSize + 22) + padding;
 
   return { height: totalHeight, elements };
 }

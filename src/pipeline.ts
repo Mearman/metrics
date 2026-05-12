@@ -17,6 +17,7 @@ import { createMeasure } from "./render/layout/measure.ts";
 import { resolveTheme } from "./render/template/themes.ts";
 import { createIconLookup } from "./render/svg/icons.ts";
 import { embeddedFontCss } from "./render/svg/font-embed.ts";
+import { inlineImages, clearImageCache } from "./render/svg/inline-images.ts";
 import type { RenderResult } from "./plugins/types.ts";
 
 // ---------------------------------------------------------------------------
@@ -169,7 +170,12 @@ export async function runPipeline(
       ...children,
     );
 
-    const svgContent = serialise(root);
+    // Inline external images (avatars) as base64 data URIs
+    // so they render in any context (embedded <img>, direct URL, etc.)
+    const withInlinedImages = await inlineImages(root);
+    clearImageCache();
+
+    const svgContent = serialise(withInlinedImages);
 
     if (!dryRun) {
       const { writeSvg } = await import("./output/svg.ts");
