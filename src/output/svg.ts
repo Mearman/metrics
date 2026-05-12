@@ -1,5 +1,11 @@
 /**
  * SVG output — serialise, optimise, write.
+ *
+ * SVGO optimisation is applied to reduce file size while preserving:
+ * - `<style>` elements (font embedding)
+ * - `<image>` elements (avatar images)
+ * - Text content (plugin labels and values)
+ * - `viewBox` attribute (responsive scaling)
  */
 
 import { mkdir, writeFile } from "node:fs/promises";
@@ -27,12 +33,8 @@ export async function writeSvg(path: string, content: string): Promise<void> {
       "removeEditorsNSData",
       "removeEmptyAttrs",
       "removeHiddenElems",
-      "removeEmptyText",
       "removeEmptyContainers",
-      "removeViewBox",
       "cleanupEnableBackground",
-      "minifyStyles",
-      "convertStyleToAttrs",
       "convertColors",
       "convertPathData",
       "convertTransform",
@@ -46,7 +48,6 @@ export async function writeSvg(path: string, content: string): Promise<void> {
       "moveElemsAttrsToGroup",
       "moveGroupAttrsToElems",
       "collapseGroups",
-      "removeRasterImages",
       "mergePaths",
       "convertShapeToPath",
       "sortAttrs",

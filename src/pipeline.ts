@@ -10,12 +10,13 @@
 import type { RootConfig } from "./config/schema.ts";
 import { createClient } from "./api/client.ts";
 import { serialise } from "./render/svg/serialise.ts";
-import { svg, rect } from "./render/svg/builder.ts";
+import { svg, rect, line } from "./render/svg/builder.ts";
 import { getPlugin } from "./plugins/registry.ts";
 import { registerAllPlugins } from "./plugins/register.ts";
 import { createMeasure } from "./render/layout/measure.ts";
 import { resolveTheme } from "./render/template/themes.ts";
 import { createIconLookup } from "./render/svg/icons.ts";
+import { embeddedFontCss } from "./render/svg/font-embed.ts";
 import type { RenderResult } from "./plugins/types.ts";
 
 // ---------------------------------------------------------------------------
@@ -98,22 +99,52 @@ export async function runPipeline(
       renderResults.push(result);
     }
 
-    // Layout: stack sections vertically
+    // Layout: stack sections vertically with dividers
     const totalHeight = renderResults.reduce(
       (sum, r) => sum + r.height,
       theme.margin * 2,
     );
 
-    const sections = renderResults.flatMap((result, index) => {
+    const dividerGap = 8;
+    const sections: import("./render/svg/builder.ts").SvgElement[] = [];
+
+    for (const [index, result] of renderResults.entries()) {
+      if (result.elements.length === 0) continue;
+
       const yOffset = renderResults
         .slice(0, index)
         .reduce((sum, r) => sum + r.height, theme.margin);
 
+      // Add a divider line before each section (except the first)
+      if (sections.length > 0) {
+        sections.push(
+          line(
+            theme.margin,
+            yOffset - dividerGap / 2,
+            theme.width - theme.margin,
+            yOffset - dividerGap / 2,
+            {
+              stroke: theme.colours.border,
+              "stroke-width": 0.5,
+              opacity: 0.6,
+            },
+          ),
+        );
+      }
+
       // Offset each section's elements by its Y position in the stack
-      return result.elements.map((element) =>
-        offsetElement(element, 0, yOffset),
-      );
-    });
+      for (const element of result.elements) {
+        sections.push(offsetElement(element, 0, yOffset));
+      }
+    }
+
+    // Font embedding for cross-host rendering
+    const fontCss = embeddedFontCss();
+    const styleElement: import("./render/svg/builder.ts").SvgElement = {
+      tag: "style",
+      attrs: {},
+      text: fontCss,
+    };
 
     // Wrap in root SVG element
     const root = svg(
@@ -125,6 +156,8 @@ export async function runPipeline(
         role: "img",
         "aria-label": `Metrics for ${username}`,
       },
+      // Embedded font
+      styleElement,
       // Background
       rect(0, 0, theme.width, totalHeight, {
         fill: theme.colours.background,

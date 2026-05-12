@@ -83,3 +83,13 @@ export function image(
 ): SvgElement {
   return { tag: "image", attrs: { x, y, width, height, href } };
 }
+
+export function line(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  opts: Record<string, string | number> = {},
+): SvgElement {
+  return { tag: "line", attrs: { x1, y1, x2, y2, ...opts } };
+}

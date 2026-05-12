@@ -8,6 +8,7 @@ import {
   circle,
   path,
   image,
+  line,
 } from "../src/render/svg/builder.ts";
 import { serialise } from "../src/render/svg/serialise.ts";
 import type { SvgElement } from "../src/render/svg/builder.ts";
@@ -79,6 +80,16 @@ describe("SVG builder", () => {
       viewBox: "0 0 100 100",
     });
     assert.deepStrictEqual(el.children, [child]);
+  });
+
+  it("creates a line element with coordinates", () => {
+    const el = line(0, 10, 100, 10, { stroke: "#ccc", "stroke-width": 1 });
+    assert.strictEqual(el.tag, "line");
+    assert.strictEqual(el.attrs.x1, 0);
+    assert.strictEqual(el.attrs.y1, 10);
+    assert.strictEqual(el.attrs.x2, 100);
+    assert.strictEqual(el.attrs.y2, 10);
+    assert.strictEqual(el.attrs.stroke, "#ccc");
   });
 });
 
