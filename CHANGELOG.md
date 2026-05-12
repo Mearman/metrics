@@ -1,3 +1,18 @@
+## [1.14.0](https://github.com/Mearman/metrics/compare/v1.13.5...v1.14.0) (2026-05-12)
+
+### Features
+
+* **config:** colour overrides, accessibility title, integration tests ([124fa42](https://github.com/Mearman/metrics/commit/124fa42a305f69910237a9f9edec3e221a842562))
+* **output:** png output via resvg-js ([991452c](https://github.com/Mearman/metrics/commit/991452c4985a8a954ec76c7847cf0a810fcf2b33))
+
+### Refactoring
+
+* rename unit test files to .unit.test.ts convention ([4e27e93](https://github.com/Mearman/metrics/commit/4e27e93a99e5f2064a53f5ecfcb96cc05e40a387))
+
+### Chores
+
+* remove old test files after rename to .unit.test.ts ([5ba9ede](https://github.com/Mearman/metrics/commit/5ba9ede58df9afd7b0a1250461f03cb65a9282a8))
+
 ## [1.13.5](https://github.com/Mearman/metrics/compare/v1.13.4...v1.13.5) (2026-05-12)
 
 ### Documentation
