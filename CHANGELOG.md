@@ -1,3 +1,9 @@
+## [1.12.1](https://github.com/Mearman/metrics/compare/v1.12.0...v1.12.1) (2026-05-12)
+
+### Bug Fixes
+
+* **plugins:** introduction name size and README config fix ([8777e6b](https://github.com/Mearman/metrics/commit/8777e6b1e357679b67dd9ffe1d40f6bb77b585c9))
+
 ## [1.12.0](https://github.com/Mearman/metrics/compare/v1.11.1...v1.12.0) (2026-05-12)
 
 ### Features
