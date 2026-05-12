@@ -4,23 +4,22 @@
  * Fetches followers and following users from GitHub.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
 
 // ---------------------------------------------------------------------------
 // Schema
 // ---------------------------------------------------------------------------
 
-export const PeopleConfig = Zod.object({
-  limit: Zod.int().min(0).max(100).default(24),
-  size: Zod.int().min(8).max(64).default(28),
-  types: Zod.array(Zod.enum(["followers", "following"])).default([
-    "followers",
-    "following",
-  ]),
+export const PeopleConfig = z.object({
+  limit: z.int().min(0).max(100).default(24),
+  size: z.int().min(8).max(64).default(28),
+  types: z
+    .array(z.enum(["followers", "following"]))
+    .default(["followers", "following"]),
 });
 
-export type PeopleConfig = Zod.infer<typeof PeopleConfig>;
+export type PeopleConfig = z.infer<typeof PeopleConfig>;
 
 // ---------------------------------------------------------------------------
 // Data types

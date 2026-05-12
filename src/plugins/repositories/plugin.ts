@@ -2,7 +2,7 @@
  * Repositories plugin — composes source and renderer.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { Plugin } from "../types.ts";
 import {
   fetchRepositories,
@@ -12,7 +12,7 @@ import {
 import { renderRepositories } from "./render.ts";
 
 export const repositoriesPlugin: Plugin<
-  Zod.infer<typeof RepositoriesConfig>,
+  z.infer<typeof RepositoriesConfig>,
   RepositoriesData
 > = {
   id: "repositories",

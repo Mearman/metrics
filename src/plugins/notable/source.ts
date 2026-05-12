@@ -2,21 +2,22 @@
  * Notable plugin — data source.
  *
  * Fetches organisations where the user has notable contributions.
+ * Zod validates the GraphQL response at runtime.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
 
 // ---------------------------------------------------------------------------
-// Schema
+// Config
 // ---------------------------------------------------------------------------
 
-export const NotableConfig = Zod.object({
-  indepth: Zod.boolean().default(false),
-  from: Zod.int().min(1).default(5),
+export const NotableConfig = z.object({
+  indepth: z.boolean().default(false),
+  from: z.int().min(1).default(5),
 });
 
-export type NotableConfig = Zod.infer<typeof NotableConfig>;
+export type NotableConfig = z.infer<typeof NotableConfig>;
 
 // ---------------------------------------------------------------------------
 // Data types
@@ -50,29 +51,44 @@ query($login: String!, $limit: Int!) {
 }`;
 
 // ---------------------------------------------------------------------------
-// Fetch
+// Zod response schema
 // ---------------------------------------------------------------------------
 
-interface OrgNode {
-  name: string;
-  avatarUrl: string;
-  url: string;
-}
+const ResponseSchema = z.object({
+  user: z.object({
+    organizations: z.object({
+      nodes: z.array(
+        z.object({
+          name: z.string().trim(),
+          avatarUrl: z.string().trim(),
+          url: z.string().trim(),
+        }),
+      ),
+    }),
+  }),
+});
+
+// ---------------------------------------------------------------------------
+// Fetch
+// ---------------------------------------------------------------------------
 
 export async function fetchNotable(
   ctx: FetchContext,
   config: NotableConfig,
 ): Promise<NotableData> {
-  const result = await ctx.api.graphql<{
-    user: {
-      organizations: {
-        nodes: OrgNode[];
-      };
-    };
-  }>(QUERY, { login: ctx.user, limit: config.from });
+  const raw = await ctx.api.graphql(QUERY, {
+    login: ctx.user,
+    limit: config.from,
+  });
+  const parsed = ResponseSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(
+      `Invalid GraphQL response for notable: ${parsed.error.message}`,
+    );
+  }
 
   const contributions: NotableContribution[] =
-    result.user.organizations.nodes.map((org) => ({
+    parsed.data.user.organizations.nodes.map((org) => ({
       name: org.name,
       avatarUrl: org.avatarUrl,
       url: org.url,

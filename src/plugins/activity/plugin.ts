@@ -2,13 +2,13 @@
  * Activity plugin — composes source and renderer.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { Plugin } from "../types.ts";
 import { fetchActivity, type ActivityData, ActivityConfig } from "./source.ts";
 import { renderActivity } from "./render.ts";
 
 export const activityPlugin: Plugin<
-  Zod.infer<typeof ActivityConfig>,
+  z.infer<typeof ActivityConfig>,
   ActivityData
 > = {
   id: "activity",

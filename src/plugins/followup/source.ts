@@ -5,21 +5,19 @@
  * Shows open/closed issue ratio and open/merged PR ratio.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
 
 // ---------------------------------------------------------------------------
 // Schema
 // ---------------------------------------------------------------------------
 
-export const FollowupConfig = Zod.object({
-  sections: Zod.array(Zod.enum(["repositories", "user"])).default([
-    "repositories",
-  ]),
-  indepth: Zod.boolean().default(false),
+export const FollowupConfig = z.object({
+  sections: z.array(z.enum(["repositories", "user"])).default(["repositories"]),
+  indepth: z.boolean().default(false),
 });
 
-export type FollowupConfig = Zod.infer<typeof FollowupConfig>;
+export type FollowupConfig = z.infer<typeof FollowupConfig>;
 
 // ---------------------------------------------------------------------------
 // Data types

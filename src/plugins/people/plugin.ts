@@ -2,15 +2,12 @@
  * People plugin — composes source and renderer.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { Plugin } from "../types.ts";
 import { fetchPeople, type PeopleData, PeopleConfig } from "./source.ts";
 import { renderPeople } from "./render.ts";
 
-export const peoplePlugin: Plugin<
-  Zod.infer<typeof PeopleConfig>,
-  PeopleData
-> = {
+export const peoplePlugin: Plugin<z.infer<typeof PeopleConfig>, PeopleData> = {
   id: "people",
   source: {
     id: "people",

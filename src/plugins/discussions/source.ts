@@ -5,19 +5,19 @@
  * Requires the Discussions GraphQL API (available with github.token).
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
 
 // ---------------------------------------------------------------------------
 // Schema
 // ---------------------------------------------------------------------------
 
-export const DiscussionsConfig = Zod.object({
-  categories: Zod.boolean().default(true),
-  limit: Zod.int().min(1).max(20).default(5),
+export const DiscussionsConfig = z.object({
+  categories: z.boolean().default(true),
+  limit: z.int().min(1).max(20).default(5),
 });
 
-export type DiscussionsConfig = Zod.infer<typeof DiscussionsConfig>;
+export type DiscussionsConfig = z.infer<typeof DiscussionsConfig>;
 
 // ---------------------------------------------------------------------------
 // Data types

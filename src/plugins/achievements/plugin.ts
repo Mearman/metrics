@@ -2,19 +2,19 @@
  * Achievements plugin — composes source and renderer.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { Plugin } from "../types.ts";
 import { fetchAchievements, type AchievementsData } from "./source.ts";
 import { renderAchievements } from "./render.ts";
 
-const AchievementsPluginConfig = Zod.object({
-  display: Zod.enum(["compact", "detailed"]).default("detailed"),
-  secrets: Zod.boolean().default(false),
-  threshold: Zod.enum(["C", "B", "A", "S", "X"]).default("C"),
+const AchievementsPluginConfig = z.object({
+  display: z.enum(["compact", "detailed"]).default("detailed"),
+  secrets: z.boolean().default(false),
+  threshold: z.enum(["C", "B", "A", "S", "X"]).default("C"),
 });
 
 export const achievementsPlugin: Plugin<
-  Zod.infer<typeof AchievementsPluginConfig>,
+  z.infer<typeof AchievementsPluginConfig>,
   AchievementsData
 > = {
   id: "achievements",

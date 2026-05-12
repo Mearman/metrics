@@ -2,20 +2,20 @@
  * Habits plugin — composes source and renderer.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { Plugin } from "../types.ts";
 import { fetchHabits, type HabitsData } from "./source.ts";
 import { renderHabits } from "./render.ts";
 
-const HabitsPluginConfig = Zod.object({
-  days: Zod.int().min(1).default(14),
-  from: Zod.int().min(1).default(200),
-  charts: Zod.boolean().default(false),
-  facts: Zod.boolean().default(false),
+const HabitsPluginConfig = z.object({
+  days: z.int().min(1).default(14),
+  from: z.int().min(1).default(200),
+  charts: z.boolean().default(false),
+  facts: z.boolean().default(false),
 });
 
 export const habitsPlugin: Plugin<
-  Zod.infer<typeof HabitsPluginConfig>,
+  z.infer<typeof HabitsPluginConfig>,
   HabitsData
 > = {
   id: "habits",

@@ -2,13 +2,13 @@
  * Notable plugin — composes source and renderer.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { Plugin } from "../types.ts";
 import { fetchNotable, type NotableData, NotableConfig } from "./source.ts";
 import { renderNotable } from "./render.ts";
 
 export const notablePlugin: Plugin<
-  Zod.infer<typeof NotableConfig>,
+  z.infer<typeof NotableConfig>,
   NotableData
 > = {
   id: "notable",

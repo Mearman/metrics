@@ -2,7 +2,7 @@
  * Stargazers plugin — composes source and renderer.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { Plugin } from "../types.ts";
 import {
   fetchStargazers,
@@ -12,7 +12,7 @@ import {
 import { renderStargazers } from "./render.ts";
 
 export const stargazersPlugin: Plugin<
-  Zod.infer<typeof StargazersConfig>,
+  z.infer<typeof StargazersConfig>,
   StargazersData
 > = {
   id: "stargazers",

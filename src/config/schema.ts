@@ -15,142 +15,158 @@
  */
 
 import { cosmiconfig } from "cosmiconfig";
-import * as Zod from "zod";
+import * as z from "zod";
 
 // ---------------------------------------------------------------------------
 // Plugin config schemas — each plugin defines its own
 // ---------------------------------------------------------------------------
 
-const BasePluginConfig = Zod.object({
-  sections: Zod.array(
-    Zod.enum(["header", "activity", "community", "repositories", "metadata"]),
-  ).default(["header", "activity", "community", "repositories", "metadata"]),
-  indepth: Zod.boolean().default(false),
+const BasePluginConfig = z.object({
+  sections: z
+    .array(
+      z.enum(["header", "activity", "community", "repositories", "metadata"]),
+    )
+    .default(["header", "activity", "community", "repositories", "metadata"]),
+  indepth: z.boolean().default(false),
 });
 
-const IsocalendarPluginConfig = Zod.object({
-  duration: Zod.enum(["half-year", "full-year"]).default("full-year"),
+const IsocalendarPluginConfig = z.object({
+  duration: z.enum(["half-year", "full-year"]).default("full-year"),
 });
 
-const LanguagesPluginConfig = Zod.object({
-  limit: Zod.int().min(1).max(20).default(8),
-  threshold: Zod.number().min(0).max(100).default(5),
-  categories: Zod.array(Zod.enum(["markup", "programming"])).default([
-    "markup",
-    "programming",
-  ]),
-  recent_days: Zod.int().min(1).default(14),
-  recent_load: Zod.int().min(1).default(300),
+const LanguagesPluginConfig = z.object({
+  limit: z.int().min(1).max(20).default(8),
+  threshold: z.number().min(0).max(100).default(5),
+  categories: z
+    .array(z.enum(["markup", "programming"]))
+    .default(["markup", "programming"]),
+  recent_days: z.int().min(1).default(14),
+  recent_load: z.int().min(1).default(300),
 });
 
-const HabitsPluginConfig = Zod.object({
-  days: Zod.int().min(1).default(14),
-  from: Zod.int().min(1).default(200),
-  charts: Zod.boolean().default(false),
-  facts: Zod.boolean().default(false),
+const HabitsPluginConfig = z.object({
+  days: z.int().min(1).default(14),
+  from: z.int().min(1).default(200),
+  charts: z.boolean().default(false),
+  facts: z.boolean().default(false),
 });
 
-const AchievementsPluginConfig = Zod.object({
-  display: Zod.enum(["compact", "detailed"]).default("detailed"),
-  secrets: Zod.boolean().default(false),
-  threshold: Zod.enum(["C", "B", "A", "S", "X"]).default("C"),
+const AchievementsPluginConfig = z.object({
+  display: z.enum(["compact", "detailed"]).default("detailed"),
+  secrets: z.boolean().default(false),
+  threshold: z.enum(["C", "B", "A", "S", "X"]).default("C"),
 });
 
-const LinesPluginConfig = Zod.object({
-  sections: Zod.array(Zod.enum(["base", "history"])).default(["base"]),
-  repositories_limit: Zod.int().min(1).default(4),
-  history_limit: Zod.int().min(1).default(1),
+const LinesPluginConfig = z.object({
+  sections: z.array(z.enum(["base", "history"])).default(["base"]),
+  repositories_limit: z.int().min(1).default(4),
+  history_limit: z.int().min(1).default(1),
 });
 
-const RepositoriesPluginConfig = Zod.object({
-  pinned: Zod.int().min(0).max(6).default(0),
-  featured: Zod.array(Zod.string().trim()).default([]),
-  starred: Zod.int().min(0).max(100).default(0),
-  order: Zod.array(Zod.enum(["featured", "pinned", "starred"])).default([
-    "featured",
-    "pinned",
-    "starred",
-  ]),
+const RepositoriesPluginConfig = z.object({
+  pinned: z.int().min(0).max(6).default(0),
+  featured: z.array(z.string().trim()).default([]),
+  starred: z.int().min(0).max(100).default(0),
+  order: z
+    .array(z.enum(["featured", "pinned", "starred"]))
+    .default(["featured", "pinned", "starred"]),
 });
 
-const ActivityPluginConfig = Zod.object({
-  limit: Zod.int().min(1).max(100).default(5),
-  load: Zod.int().min(100).max(1000).default(300),
-  days: Zod.int().min(0).max(365).default(14),
-  filter: Zod.array(
-    Zod.enum([
-      "all",
-      "push",
-      "issue",
-      "pr",
-      "review",
-      "comment",
-      "release",
-      "fork",
-      "star",
-      "wiki",
-      "ref/create",
-      "ref/delete",
-    ]),
-  ).default(["all"]),
-  timestamps: Zod.boolean().default(false),
+const ActivityPluginConfig = z.object({
+  limit: z.int().min(1).max(100).default(5),
+  load: z.int().min(100).max(1000).default(300),
+  days: z.int().min(0).max(365).default(14),
+  filter: z
+    .array(
+      z.enum([
+        "all",
+        "push",
+        "issue",
+        "pr",
+        "review",
+        "comment",
+        "release",
+        "fork",
+        "star",
+        "wiki",
+        "ref/create",
+        "ref/delete",
+      ]),
+    )
+    .default(["all"]),
+  timestamps: z.boolean().default(false),
 });
 
 // Plugin configs are keyed by plugin ID, all optional.
 // .loose() allows plugins we haven't defined schemas for yet.
-const PluginsConfig = Zod.object({
-  base: BasePluginConfig.optional(),
-  isocalendar: IsocalendarPluginConfig.optional(),
-  languages: LanguagesPluginConfig.optional(),
-  habits: HabitsPluginConfig.optional(),
-  achievements: AchievementsPluginConfig.optional(),
-  lines: LinesPluginConfig.optional(),
-  repositories: RepositoriesPluginConfig.optional(),
-  activity: ActivityPluginConfig.optional(),
-  stars: Zod.object({ limit: Zod.int().min(1).max(100).default(4) }).optional(),
-  followup: Zod.object({
-    sections: Zod.array(Zod.enum(["repositories", "user"])).default([
-      "repositories",
-    ]),
-    indepth: Zod.boolean().default(false),
-  }).optional(),
-  stargazers: Zod.object({
-    limit: Zod.int().min(1).max(30).default(8),
-  }).optional(),
-  people: Zod.object({
-    limit: Zod.int().min(0).max(100).default(24),
-    size: Zod.int().min(8).max(64).default(28),
-    types: Zod.array(Zod.enum(["followers", "following"])).default([
-      "followers",
-      "following",
-    ]),
-  }).optional(),
-  gists: Zod.object({}).optional(),
-  discussions: Zod.object({
-    categories: Zod.boolean().default(true),
-    limit: Zod.int().min(1).max(20).default(5),
-  }).optional(),
-  notable: Zod.object({
-    indepth: Zod.boolean().default(false),
-    from: Zod.int().min(1).default(5),
-  }).optional(),
-  calendar: Zod.object({
-    years: Zod.int().min(1).max(10).default(3),
-  }).optional(),
-  code: Zod.object({
-    max_length: Zod.int().min(20).max(500).default(200),
-    scan_limit: Zod.int().min(1).max(50).default(20),
-  }).optional(),
-  // TODO: remaining 11 plugin schemas
-}).loose();
+const PluginsConfig = z
+  .object({
+    base: BasePluginConfig.optional(),
+    isocalendar: IsocalendarPluginConfig.optional(),
+    languages: LanguagesPluginConfig.optional(),
+    habits: HabitsPluginConfig.optional(),
+    achievements: AchievementsPluginConfig.optional(),
+    lines: LinesPluginConfig.optional(),
+    repositories: RepositoriesPluginConfig.optional(),
+    activity: ActivityPluginConfig.optional(),
+    stars: z.object({ limit: z.int().min(1).max(100).default(4) }).optional(),
+    followup: z
+      .object({
+        sections: z
+          .array(z.enum(["repositories", "user"]))
+          .default(["repositories"]),
+        indepth: z.boolean().default(false),
+      })
+      .optional(),
+    stargazers: z
+      .object({
+        limit: z.int().min(1).max(30).default(8),
+      })
+      .optional(),
+    people: z
+      .object({
+        limit: z.int().min(0).max(100).default(24),
+        size: z.int().min(8).max(64).default(28),
+        types: z
+          .array(z.enum(["followers", "following"]))
+          .default(["followers", "following"]),
+      })
+      .optional(),
+    gists: z.object({}).optional(),
+    discussions: z
+      .object({
+        categories: z.boolean().default(true),
+        limit: z.int().min(1).max(20).default(5),
+      })
+      .optional(),
+    notable: z
+      .object({
+        indepth: z.boolean().default(false),
+        from: z.int().min(1).default(5),
+      })
+      .optional(),
+    calendar: z
+      .object({
+        years: z.int().min(1).max(10).default(3),
+      })
+      .optional(),
+    code: z
+      .object({
+        max_length: z.int().min(20).max(500).default(200),
+        scan_limit: z.int().min(1).max(50).default(20),
+      })
+      .optional(),
+    // TODO: remaining 11 plugin schemas
+  })
+  .loose();
 
 // ---------------------------------------------------------------------------
 // Output schema
 // ---------------------------------------------------------------------------
 
-const OutputConfig = Zod.object({
-  path: Zod.string().trim().min(1),
-  format: Zod.enum(["svg", "png"]).default("svg"),
+const OutputConfig = z.object({
+  path: z.string().trim().min(1),
+  format: z.enum(["svg", "png"]).default("svg"),
   plugins: PluginsConfig,
 });
 
@@ -158,27 +174,27 @@ const OutputConfig = Zod.object({
 // Sync schema (fork upstream sync)
 // ---------------------------------------------------------------------------
 
-const SyncConfig = Zod.object({
-  upstream: Zod.string().trim().default("Mearman/metrics"),
-  branch: Zod.string().trim().default("main"),
-  auto_merge: Zod.boolean().default(true),
+const SyncConfig = z.object({
+  upstream: z.string().trim().default("Mearman/metrics"),
+  branch: z.string().trim().default("main"),
+  auto_merge: z.boolean().default(true),
 });
 
 // ---------------------------------------------------------------------------
 // Root schema
 // ---------------------------------------------------------------------------
 
-export const RootConfig = Zod.object({
-  user: Zod.string().trim().optional(),
-  timezone: Zod.string().trim().default("UTC"),
-  template: Zod.string().trim().default("classic"),
+export const RootConfig = z.object({
+  user: z.string().trim().optional(),
+  timezone: z.string().trim().default("UTC"),
+  template: z.string().trim().default("classic"),
   /** Embed font data in SVG for cross-host rendering. Default true. */
-  embed_fonts: Zod.boolean().default(true),
+  embed_fonts: z.boolean().default(true),
   sync: SyncConfig.optional(),
-  outputs: Zod.array(OutputConfig).min(1),
+  outputs: z.array(OutputConfig).min(1),
 });
 
-export type RootConfig = Zod.infer<typeof RootConfig>;
+export type RootConfig = z.infer<typeof RootConfig>;
 
 // ---------------------------------------------------------------------------
 // Loader

@@ -2,7 +2,7 @@
  * Discussions plugin — composes source and renderer.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { Plugin } from "../types.ts";
 import {
   fetchDiscussions,
@@ -12,7 +12,7 @@ import {
 import { renderDiscussions } from "./render.ts";
 
 export const discussionsPlugin: Plugin<
-  Zod.infer<typeof DiscussionsConfig>,
+  z.infer<typeof DiscussionsConfig>,
   DiscussionsData
 > = {
   id: "discussions",

@@ -9,37 +9,39 @@
  * at runtime, giving us full type safety without assertions.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
 
 // ---------------------------------------------------------------------------
 // Schema
 // ---------------------------------------------------------------------------
 
-export const ActivityConfig = Zod.object({
-  limit: Zod.int().min(1).max(100).default(5),
-  load: Zod.int().min(100).max(1000).default(300),
-  days: Zod.int().min(0).max(365).default(14),
-  filter: Zod.array(
-    Zod.enum([
-      "all",
-      "push",
-      "issue",
-      "pr",
-      "review",
-      "comment",
-      "release",
-      "fork",
-      "star",
-      "wiki",
-      "ref/create",
-      "ref/delete",
-    ]),
-  ).default(["all"]),
-  timestamps: Zod.boolean().default(false),
+export const ActivityConfig = z.object({
+  limit: z.int().min(1).max(100).default(5),
+  load: z.int().min(100).max(1000).default(300),
+  days: z.int().min(0).max(365).default(14),
+  filter: z
+    .array(
+      z.enum([
+        "all",
+        "push",
+        "issue",
+        "pr",
+        "review",
+        "comment",
+        "release",
+        "fork",
+        "star",
+        "wiki",
+        "ref/create",
+        "ref/delete",
+      ]),
+    )
+    .default(["all"]),
+  timestamps: z.boolean().default(false),
 });
 
-export type ActivityConfig = Zod.infer<typeof ActivityConfig>;
+export type ActivityConfig = z.infer<typeof ActivityConfig>;
 
 // ---------------------------------------------------------------------------
 // Data types
@@ -74,60 +76,76 @@ export interface ActivityData {
 // Payload schemas — validate each event type's payload with Zod
 // ---------------------------------------------------------------------------
 
-const PushPayload = Zod.object({
-  ref: Zod.string().trim().default("refs/heads/main"),
-  size: Zod.number().default(1),
-}).loose();
+const PushPayload = z
+  .object({
+    ref: z.string().trim().default("refs/heads/main"),
+    size: z.number().default(1),
+  })
+  .loose();
 
-const IssuePayload = Zod.object({
-  action: Zod.string().trim(),
-  issue: Zod.object({ number: Zod.number(), title: Zod.string().trim() }),
-}).loose();
+const IssuePayload = z
+  .object({
+    action: z.string().trim(),
+    issue: z.object({ number: z.number(), title: z.string().trim() }),
+  })
+  .loose();
 
-const PRPayload = Zod.object({
-  action: Zod.string().trim(),
-  pull_request: Zod.object({
-    number: Zod.number(),
-    title: Zod.string().trim(),
-    merged: Zod.boolean().default(false),
-  }),
-}).loose();
+const PRPayload = z
+  .object({
+    action: z.string().trim(),
+    pull_request: z.object({
+      number: z.number(),
+      title: z.string().trim(),
+      merged: z.boolean().default(false),
+    }),
+  })
+  .loose();
 
-const CommentPayload = Zod.object({
-  issue: Zod.object({ number: Zod.number() }).optional(),
-  pull_request: Zod.object({ number: Zod.number() }).optional(),
-}).loose();
+const CommentPayload = z
+  .object({
+    issue: z.object({ number: z.number() }).optional(),
+    pull_request: z.object({ number: z.number() }).optional(),
+  })
+  .loose();
 
-const ReleasePayload = Zod.object({
-  release: Zod.object({
-    name: Zod.string().trim().nullable(),
-    tag_name: Zod.string().trim(),
-  }),
-}).loose();
+const ReleasePayload = z
+  .object({
+    release: z.object({
+      name: z.string().trim().nullable(),
+      tag_name: z.string().trim(),
+    }),
+  })
+  .loose();
 
-const ForkPayload = Zod.object({
-  forkee: Zod.object({ full_name: Zod.string().trim() }),
-}).loose();
+const ForkPayload = z
+  .object({
+    forkee: z.object({ full_name: z.string().trim() }),
+  })
+  .loose();
 
-const RefPayload = Zod.object({
-  ref: Zod.string().trim(),
-  ref_type: Zod.string().trim(),
-}).loose();
+const RefPayload = z
+  .object({
+    ref: z.string().trim(),
+    ref_type: z.string().trim(),
+  })
+  .loose();
 
-const PagesPayload = Zod.object({
-  pages: Zod.array(Zod.unknown()).optional(),
-}).loose();
+const PagesPayload = z
+  .object({
+    pages: z.array(z.unknown()).optional(),
+  })
+  .loose();
 
 // ---------------------------------------------------------------------------
 // REST event schema — validates the full event response
 // ---------------------------------------------------------------------------
 
 /** Schema for a single REST event from listPublicEventsForUser. */
-const RestEventSchema = Zod.object({
-  type: Zod.string().trim(),
-  created_at: Zod.string().trim().optional(),
-  repo: Zod.object({ name: Zod.string().trim() }),
-  payload: Zod.unknown(),
+const RestEventSchema = z.object({
+  type: z.string().trim(),
+  created_at: z.string().trim().optional(),
+  repo: z.object({ name: z.string().trim() }),
+  payload: z.unknown(),
 });
 
 // ---------------------------------------------------------------------------

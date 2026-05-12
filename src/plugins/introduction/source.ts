@@ -2,9 +2,28 @@
  * Introduction plugin — data source.
  *
  * Fetches user profile data for the introduction card.
- * Reuses the same GraphQL query as the base plugin since
- * it needs the same profile fields.
+ * Uses the same GraphQL query structure as the base plugin.
+ *
+ * Zod validates the GraphQL response at runtime — no generic
+ * type assertions on api.graphql() calls.
  */
+
+import * as z from "zod";
+import type { DataSource } from "../types.ts";
+
+// ---------------------------------------------------------------------------
+// Config
+// ---------------------------------------------------------------------------
+
+export const IntroductionConfig = z.object({
+  text: z.string().trim().optional(),
+});
+
+export type IntroductionConfig = z.infer<typeof IntroductionConfig>;
+
+// ---------------------------------------------------------------------------
+// GraphQL query
+// ---------------------------------------------------------------------------
 
 const PROFILE_QUERY = `
   query($login: String!) {
@@ -22,12 +41,27 @@ const PROFILE_QUERY = `
   }
 ` as const;
 
-import * as z from "zod";
+// ---------------------------------------------------------------------------
+// Zod response schema
+// ---------------------------------------------------------------------------
 
-export const IntroductionConfig = z.object({
-  text: z.string().trim().optional(),
+const ProfileResponseSchema = z.object({
+  user: z.object({
+    name: z.string().trim(),
+    login: z.string().trim(),
+    avatarUrl: z.string().trim(),
+    bio: z.string().trim().nullable(),
+    company: z.string().trim().nullable(),
+    location: z.string().trim().nullable(),
+    twitterUsername: z.string().trim().nullable(),
+    websiteUrl: z.string().trim().nullable(),
+    createdAt: z.string().trim(),
+  }),
 });
-export type IntroductionConfig = z.infer<typeof IntroductionConfig>;
+
+// ---------------------------------------------------------------------------
+// Data type
+// ---------------------------------------------------------------------------
 
 export interface IntroductionData {
   name: string;
@@ -41,34 +75,28 @@ export interface IntroductionData {
   joinedAt: string;
 }
 
-interface GraphQLResponse {
-  user: {
-    name: string;
-    login: string;
-    avatarUrl: string;
-    bio: string | null;
-    company: string | null;
-    location: string | null;
-    twitterUsername: string | null;
-    websiteUrl: string | null;
-    createdAt: string;
-  };
-}
+// ---------------------------------------------------------------------------
+// Fetch
+// ---------------------------------------------------------------------------
 
-/**
- * Fetch user profile for the introduction card.
- */
 export async function fetchIntroduction(
   api: {
-    graphql<T>(query: string, variables?: Record<string, unknown>): Promise<T>;
+    graphql(
+      query: string,
+      variables?: Record<string, unknown>,
+    ): Promise<unknown>;
   },
   user: string,
 ): Promise<IntroductionData> {
-  const data = await api.graphql<GraphQLResponse>(PROFILE_QUERY, {
-    login: user,
-  });
+  const raw = await api.graphql(PROFILE_QUERY, { login: user });
+  const parsed = ProfileResponseSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(
+      `Invalid GraphQL response for introduction: ${parsed.error.message}`,
+    );
+  }
 
-  const u = data.user;
+  const u = parsed.data.user;
   return {
     name: u.name,
     login: u.login,
@@ -81,3 +109,18 @@ export async function fetchIntroduction(
     joinedAt: u.createdAt,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Data source
+// ---------------------------------------------------------------------------
+
+export const introductionSource: DataSource<
+  IntroductionConfig,
+  IntroductionData
+> = {
+  id: "introduction",
+  configSchema: IntroductionConfig,
+  async fetch(ctx) {
+    return await fetchIntroduction(ctx.api, ctx.user);
+  },
+};

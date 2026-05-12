@@ -4,18 +4,18 @@
  * Fetches yearly commit activity per year.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
 
 // ---------------------------------------------------------------------------
 // Schema
 // ---------------------------------------------------------------------------
 
-export const CalendarConfig = Zod.object({
-  years: Zod.int().min(1).max(10).default(3),
+export const CalendarConfig = z.object({
+  years: z.int().min(1).max(10).default(3),
 });
 
-export type CalendarConfig = Zod.infer<typeof CalendarConfig>;
+export type CalendarConfig = z.infer<typeof CalendarConfig>;
 
 // ---------------------------------------------------------------------------
 // Data types

@@ -5,20 +5,22 @@
  * avatar, name, login, bio, and key statistics.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { Plugin } from "../types.ts";
 import { fetchProfile, type UserProfile } from "./source.ts";
 import { renderProfile } from "./render.ts";
 
-const BasePluginConfig = Zod.object({
-  sections: Zod.array(
-    Zod.enum(["header", "activity", "community", "repositories", "metadata"]),
-  ).default(["header", "activity", "community", "repositories", "metadata"]),
-  indepth: Zod.boolean().default(false),
+const BasePluginConfig = z.object({
+  sections: z
+    .array(
+      z.enum(["header", "activity", "community", "repositories", "metadata"]),
+    )
+    .default(["header", "activity", "community", "repositories", "metadata"]),
+  indepth: z.boolean().default(false),
 });
 
 export const basePlugin: Plugin<
-  Zod.infer<typeof BasePluginConfig>,
+  z.infer<typeof BasePluginConfig>,
   UserProfile
 > = {
   id: "base",

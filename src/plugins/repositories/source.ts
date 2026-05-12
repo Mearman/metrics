@@ -4,25 +4,23 @@
  * Fetches pinned and featured repositories from GitHub.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
 
 // ---------------------------------------------------------------------------
 // Schema
 // ---------------------------------------------------------------------------
 
-export const RepositoriesConfig = Zod.object({
-  pinned: Zod.int().min(0).max(6).default(0),
-  featured: Zod.array(Zod.string().trim()).default([]),
-  starred: Zod.int().min(0).max(100).default(0),
-  order: Zod.array(Zod.enum(["featured", "pinned", "starred"])).default([
-    "featured",
-    "pinned",
-    "starred",
-  ]),
+export const RepositoriesConfig = z.object({
+  pinned: z.int().min(0).max(6).default(0),
+  featured: z.array(z.string().trim()).default([]),
+  starred: z.int().min(0).max(100).default(0),
+  order: z
+    .array(z.enum(["featured", "pinned", "starred"]))
+    .default(["featured", "pinned", "starred"]),
 });
 
-export type RepositoriesConfig = Zod.infer<typeof RepositoriesConfig>;
+export type RepositoriesConfig = z.infer<typeof RepositoriesConfig>;
 
 // ---------------------------------------------------------------------------
 // Data types

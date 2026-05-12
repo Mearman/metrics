@@ -2,17 +2,17 @@
  * Isocalendar plugin — composes source and renderer.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { Plugin } from "../types.ts";
 import { fetchIsocalendar, type IsocalendarData } from "./source.ts";
 import { renderIsocalendar } from "./render.ts";
 
-const IsocalendarPluginConfig = Zod.object({
-  duration: Zod.enum(["half-year", "full-year"]).default("full-year"),
+const IsocalendarPluginConfig = z.object({
+  duration: z.enum(["half-year", "full-year"]).default("full-year"),
 });
 
 export const isocalendarPlugin: Plugin<
-  Zod.infer<typeof IsocalendarPluginConfig>,
+  z.infer<typeof IsocalendarPluginConfig>,
   IsocalendarData
 > = {
   id: "isocalendar",

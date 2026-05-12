@@ -2,13 +2,13 @@
  * Followup plugin — composes source and renderer.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { Plugin } from "../types.ts";
 import { fetchFollowup, type FollowupData, FollowupConfig } from "./source.ts";
 import { renderFollowup } from "./render.ts";
 
 export const followupPlugin: Plugin<
-  Zod.infer<typeof FollowupConfig>,
+  z.infer<typeof FollowupConfig>,
   FollowupData
 > = {
   id: "followup",

@@ -2,13 +2,13 @@
  * Calendar plugin — composes source and renderer.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { Plugin } from "../types.ts";
 import { fetchCalendar, type CalendarData, CalendarConfig } from "./source.ts";
 import { renderCalendar } from "./render.ts";
 
 export const calendarPlugin: Plugin<
-  Zod.infer<typeof CalendarConfig>,
+  z.infer<typeof CalendarConfig>,
   CalendarData
 > = {
   id: "calendar",

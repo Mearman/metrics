@@ -4,18 +4,18 @@
  * Fetches recently starred repositories from GitHub.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
 
 // ---------------------------------------------------------------------------
 // Schema
 // ---------------------------------------------------------------------------
 
-export const StarsConfig = Zod.object({
-  limit: Zod.int().min(1).max(100).default(4),
+export const StarsConfig = z.object({
+  limit: z.int().min(1).max(100).default(4),
 });
 
-export type StarsConfig = Zod.infer<typeof StarsConfig>;
+export type StarsConfig = z.infer<typeof StarsConfig>;
 
 // ---------------------------------------------------------------------------
 // Data types

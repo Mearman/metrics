@@ -6,19 +6,19 @@
  * rather than paginating through individual star events.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
 
 // ---------------------------------------------------------------------------
 // Schema
 // ---------------------------------------------------------------------------
 
-export const StargazersConfig = Zod.object({
+export const StargazersConfig = z.object({
   /** Number of recent repos to show (sorted by stars) */
-  limit: Zod.int().min(1).max(30).default(8),
+  limit: z.int().min(1).max(30).default(8),
 });
 
-export type StargazersConfig = Zod.infer<typeof StargazersConfig>;
+export type StargazersConfig = z.infer<typeof StargazersConfig>;
 
 // ---------------------------------------------------------------------------
 // Data types

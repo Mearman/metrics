@@ -2,18 +2,19 @@
  * Gists plugin — data source.
  *
  * Fetches gist statistics from GitHub.
+ * Zod validates the GraphQL response at runtime.
  */
 
-import * as Zod from "zod";
+import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
 
 // ---------------------------------------------------------------------------
-// Schema
+// Config
 // ---------------------------------------------------------------------------
 
-export const GistsConfig = Zod.object({});
+export const GistsConfig = z.object({});
 
-export type GistsConfig = Zod.infer<typeof GistsConfig>;
+export type GistsConfig = z.infer<typeof GistsConfig>;
 
 // ---------------------------------------------------------------------------
 // Data types
@@ -48,37 +49,52 @@ query($login: String!, $limit: Int!) {
 }`;
 
 // ---------------------------------------------------------------------------
-// Fetch
+// Zod response schema
 // ---------------------------------------------------------------------------
 
-interface GistNode {
-  isFork: boolean;
-  stargazerCount: number;
-  forks: { totalCount: number };
-  comments: { totalCount: number };
-  files: { name: string }[];
-}
+const ResponseSchema = z.object({
+  user: z.object({
+    gists: z.object({
+      totalCount: z.number(),
+      nodes: z.array(
+        z.object({
+          isFork: z.boolean(),
+          stargazerCount: z.number(),
+          forks: z.object({ totalCount: z.number() }),
+          comments: z.object({ totalCount: z.number() }),
+          files: z.array(z.object({ name: z.string().trim() })),
+        }),
+      ),
+    }),
+  }),
+});
+
+// ---------------------------------------------------------------------------
+// Fetch
+// ---------------------------------------------------------------------------
 
 export async function fetchGists(
   ctx: FetchContext,
   _config: GistsConfig,
 ): Promise<GistsData> {
   void _config;
-  const result = await ctx.api.graphql<{
-    user: {
-      gists: {
-        totalCount: number;
-        nodes: GistNode[];
-      };
-    };
-  }>(QUERY, { login: ctx.user, limit: 100 });
+  const raw = await ctx.api.graphql(QUERY, {
+    login: ctx.user,
+    limit: 100,
+  });
+  const parsed = ResponseSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(
+      `Invalid GraphQL response for gists: ${parsed.error.message}`,
+    );
+  }
 
   let stargazers = 0;
   let forks = 0;
   let comments = 0;
   let files = 0;
 
-  for (const gist of result.user.gists.nodes) {
+  for (const gist of parsed.data.user.gists.nodes) {
     if (gist.isFork) continue;
     stargazers += gist.stargazerCount;
     forks += gist.forks.totalCount;
@@ -87,7 +103,7 @@ export async function fetchGists(
   }
 
   return {
-    totalCount: result.user.gists.totalCount,
+    totalCount: parsed.data.user.gists.totalCount,
     stargazers,
     forks,
     files,
