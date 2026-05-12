@@ -1,3 +1,9 @@
+## [1.0.7](https://github.com/Mearman/metrics/compare/v1.0.6...v1.0.7) (2026-05-12)
+
+### Bug Fixes
+
+* lines plugin — proportional bars, language colours, label alignment ([f09f081](https://github.com/Mearman/metrics/commit/f09f081732888d6dd264c866474b7ef577c929d6))
+
 ## [1.0.6](https://github.com/Mearman/metrics/compare/v1.0.5...v1.0.6) (2026-05-12)
 
 ### Bug Fixes
