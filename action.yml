@@ -1,27 +1,220 @@
-name: Metrics embed
+name: Metrics
 author: Joseph Mearman
 description: >-
-  Generate GitHub metrics as SVG — fork of lowlighter/metrics, overhauled.
-  Pure SVG output, no Puppeteer, no browser dependency.
+  Generate GitHub metrics as a pure SVG — no Puppeteer, no browser dependency.
+  Fork of lowlighter/metrics, fully overhauled.
 branding:
   icon: user-check
   color: gray-dark
 
 inputs:
+  # ── Token ────────────────────────────────────────────────────────────
   token:
     description: >-
-      GitHub token. Use github.token for public data, or a PAT with
-      public_repo scope for higher rate limits.
+      GitHub token for API access.
+
+      • github.token (default) — public data only, 1 000 req/hr.
+      • PAT with public_repo scope — public data + higher rate limit, 5 000 req/hr.
+      • PAT with repo scope — public + private data, 5 000 req/hr.
+        Required for traffic, private repos, and sponsor data.
     default: ${{ github.token }}
+
+  # ── Config ───────────────────────────────────────────────────────────
   config:
-    description: Path to YAML config file
+    description: >-
+      Path to YAML config file (cosmiconfig format).
+      If the file does not exist, a zero-config default is generated
+      that produces a single SVG with the most popular plugins.
     default: .github/metrics.yml
-  dry-run:
-    description: Generate without writing output
+
+  # ── Output ──────────────────────────────────────────────────────────
+  output:
+    description: >-
+      Output directory for generated SVGs.
+      The default produces output/github-metrics.svg
+      suitable for GitHub Pages deployment.
+    default: output
+
+  # ── User ────────────────────────────────────────────────────────────
+  user:
+    description: >-
+      GitHub username to generate metrics for.
+      Defaults to the repository owner (auto-detected).
+    default: ""
+
+  # ── Template ─────────────────────────────────────────────────────────
+  template:
+    description: >-
+      Visual template: "classic" (dark), "light", or "terminal".
+    default: classic
+
+  # ── Repos ────────────────────────────────────────────────────────────
+  repos_fetch:
+    description: >-
+      Which repositories to include in aggregate data.
+
+      • "public" — public repos only (default, works with github.token).
+      • "all" — include private repos (requires PAT with repo scope).
+        Private repos contribute to totals but are NOT named in per-repo
+        lists by default (action: count).
+    default: public
+
+  # ── Plugins ──────────────────────────────────────────────────────────
+  plugin_base:
+    description: >-
+      Enable base plugin: user profile header with avatar, name, bio,
+      follower count, and repository stats.
+    default: "true"
+
+  plugin_isocalendar:
+    description: >-
+      Enable isocalendar: contribution heatmap for the past year.
+    default: "true"
+
+  plugin_languages:
+    description: >-
+      Enable languages: stacked bar chart of language distribution.
+    default: "true"
+
+  plugin_habits:
+    description: >-
+      Enable habits: commit timing stats with daily activity chart.
+    default: "true"
+
+  plugin_achievements:
+    description: >-
+      Enable achievements: derived badges with tier indicators.
+    default: "true"
+
+  plugin_lines:
+    description: >-
+      Enable code size: per-repo byte breakdown with language bars.
+    default: "true"
+
+  plugin_activity:
+    description: >-
+      Enable activity: recent events timeline.
+    default: "true"
+
+  plugin_stars:
+    description: >-
+      Enable stars: recently starred repositories.
+    default: "true"
+
+  plugin_followup:
+    description: >-
+      Enable follow-up: issue/PR status progress bars.
+    default: "true"
+
+  plugin_stargazers:
+    description: >-
+      Enable stargazers: per-repo star count bar chart.
+    default: "true"
+
+  plugin_people:
+    description: >-
+      Enable people: followers/following avatar grid.
+    default: "true"
+
+  plugin_topics:
+    description: >-
+      Enable topics: repository topic/tag cloud as pill badges.
+    default: "true"
+
+  plugin_licenses:
+    description: >-
+      Enable licences: licence breakdown bar chart.
+    default: "true"
+
+  plugin_introduction:
+    description: >-
+      Enable introduction: user bio card with location, company, links.
     default: "false"
+
+  plugin_repositories:
+    description: >-
+      Enable repositories: featured/pinned/starred repo cards.
+    default: "false"
+
+  plugin_gists:
+    description: >-
+      Enable gists: gist statistics card.
+    default: "false"
+
+  plugin_discussions:
+    description: >-
+      Enable discussions: discussion stats with category breakdown.
+    default: "false"
+
+  plugin_notable:
+    description: >-
+      Enable notable: notable contribution organisations (avatar grid).
+    default: "false"
+
+  plugin_calendar:
+    description: >-
+      Enable calendar: yearly contribution calendars as compact heatmaps.
+    default: "false"
+
+  plugin_reactions:
+    description: >-
+      Enable reactions: emoji-labelled bar chart of reaction totals.
+    default: "false"
+
+  plugin_contributors:
+    description: >-
+      Enable contributors: per-repo contributor avatar grids.
+    default: "false"
+
+  plugin_code:
+    description: >-
+      Enable code: random code snippet from recent push events.
+    default: "false"
+
+  plugin_projects:
+    description: >-
+      Enable projects: GitHub Projects v2 boards.
+    default: "false"
+
+  plugin_loc:
+    description: >-
+      Enable lines of code: actual line counts via git clone.
+      WARNING: clones each repository, adding ~60s per repo to CI time.
+      Recommend setting cache_dir when enabled.
+    default: "false"
+
+  plugin_sponsors:
+    description: >-
+      Enable sponsors: sponsor avatar grid and funding goal.
+      Requires PAT with read:user scope.
+    default: "false"
+
+  plugin_sponsorships:
+    description: >-
+      Enable sponsorships: sponsored accounts avatar grid.
+      Requires PAT with read:user scope.
+    default: "false"
+
+  plugin_traffic:
+    description: >-
+      Enable traffic: repository view counts as bar chart.
+      Requires PAT with repo scope (push access).
+    default: "false"
+
+  # ── Misc ─────────────────────────────────────────────────────────────
+  dry-run:
+    description: Generate without writing output files.
+    default: "false"
+
   node-version:
-    description: Node.js version for native TypeScript execution
+    description: Node.js version for native TypeScript execution.
     default: "26"
+
+  loc_cache_dir:
+    description: >-
+      Cache directory for LoC plugin clones (reduces CI time on re-runs).
+      Set to e.g. ~/.cache/metrics-loc and pair with actions/cache.
+    default: ""
 
 runs:
   using: composite
@@ -35,8 +228,76 @@ runs:
     - shell: bash
       run: pnpm install --frozen-lockfile
 
+    - name: Generate zero-config default if no config exists
+      if: inputs.config == '.github/metrics.yml'
+      shell: bash
+      env:
+        METRICS_USER: ${{ inputs.user }}
+        METRICS_REPOS_FETCH: ${{ inputs.repos_fetch }}
+        METRICS_TEMPLATE: ${{ inputs.template }}
+        METRICS_OUTPUT: ${{ inputs.output }}
+        METRICS_PLUGIN_BASE: ${{ inputs.plugin_base }}
+        METRICS_PLUGIN_ISOCALENDAR: ${{ inputs.plugin_isocalendar }}
+        METRICS_PLUGIN_LANGUAGES: ${{ inputs.plugin_languages }}
+        METRICS_PLUGIN_HABITS: ${{ inputs.plugin_habits }}
+        METRICS_PLUGIN_ACHIEVEMENTS: ${{ inputs.plugin_achievements }}
+        METRICS_PLUGIN_LINES: ${{ inputs.plugin_lines }}
+        METRICS_PLUGIN_ACTIVITY: ${{ inputs.plugin_activity }}
+        METRICS_PLUGIN_STARS: ${{ inputs.plugin_stars }}
+        METRICS_PLUGIN_FOLLOWUP: ${{ inputs.plugin_followup }}
+        METRICS_PLUGIN_STARGAZERS: ${{ inputs.plugin_stargazers }}
+        METRICS_PLUGIN_PEOPLE: ${{ inputs.plugin_people }}
+        METRICS_PLUGIN_TOPICS: ${{ inputs.plugin_topics }}
+        METRICS_PLUGIN_LICENSES: ${{ inputs.plugin_licenses }}
+        METRICS_PLUGIN_INTRODUCTION: ${{ inputs.plugin_introduction }}
+        METRICS_PLUGIN_REPOSITORIES: ${{ inputs.plugin_repositories }}
+        METRICS_PLUGIN_GISTS: ${{ inputs.plugin_gists }}
+        METRICS_PLUGIN_DISCUSSIONS: ${{ inputs.plugin_discussions }}
+        METRICS_PLUGIN_NOTABLE: ${{ inputs.plugin_notable }}
+        METRICS_PLUGIN_CALENDAR: ${{ inputs.plugin_calendar }}
+        METRICS_PLUGIN_REACTIONS: ${{ inputs.plugin_reactions }}
+        METRICS_PLUGIN_CONTRIBUTORS: ${{ inputs.plugin_contributors }}
+        METRICS_PLUGIN_CODE: ${{ inputs.plugin_code }}
+        METRICS_PLUGIN_PROJECTS: ${{ inputs.plugin_projects }}
+        METRICS_PLUGIN_LOC: ${{ inputs.plugin_loc }}
+        METRICS_PLUGIN_SPONSORS: ${{ inputs.plugin_sponsors }}
+        METRICS_PLUGIN_SPONSORSHIPS: ${{ inputs.plugin_sponsorships }}
+        METRICS_PLUGIN_TRAFFIC: ${{ inputs.plugin_traffic }}
+      run: |
+        if [ ! -f "${{ inputs.config }}" ]; then
+          # Build plugins section from enabled inputs
+          plugins=""
+          for p in base isocalendar languages habits achievements lines activity stars followup stargazers people topics licenses introduction repositories gists discussions notable calendar reactions contributors code projects loc sponsors sponsorships traffic; do
+            env_name="METRICS_PLUGIN_$(echo "$p" | tr '[:lower:]' '[:upper:]')"
+            enabled="${!env_name}"
+            if [ "$enabled" = "true" ]; then
+              plugins="${plugins}
+          ${p}: {}"
+            fi
+          done
+
+          cat > "${{ inputs.config }}" << YAML
+        user: \${METRICS_USER:-"\${{ github.repository_owner }}"}
+        template: \${METRICS_TEMPLATE}
+        repos:
+          fetch: \${METRICS_REPOS_FETCH}
+
+        outputs:
+          - path: \${METRICS_OUTPUT}/github-metrics.svg
+            format: svg
+            plugins:${plugins}
+        YAML
+          echo "Generated default config at ${{ inputs.config }}"
+        fi
+
     - name: Generate metrics
       shell: bash
-      run: node src/cli.ts --config "${{ inputs.config }}"
+      run: |
+        USER_FLAG=""
+        if [ -n "${{ inputs.user }}" ]; then
+          USER_FLAG="--user ${{ inputs.user }}"
+        fi
+        node src/cli.ts --config "${{ inputs.config }}" $USER_FLAG
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
+        METRICS_LOC_CACHE: ${{ inputs.loc_cache_dir }}

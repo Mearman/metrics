@@ -24,14 +24,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v6
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 26
-
-      - run: pnpm install --frozen-lockfile
-
       - uses: actions/cache@v4
         with:
           path: ~/.cache/metrics-loc
@@ -39,11 +31,11 @@ jobs:
           restore-keys: |
             metrics-loc-
 
-      - name: Generate metrics
-        run: node src/cli.ts --user "${{ github.repository_owner }}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.METRICS_TOKEN || github.token }}
-          METRICS_LOC_CACHE: ~/.cache/metrics-loc
+      - uses: ./
+        with:
+          token: ${{ secrets.METRICS_TOKEN || github.token }}
+          repos_fetch: all
+          loc_cache_dir: ~/.cache/metrics-loc
 
       - uses: actions/upload-pages-artifact@v5
         with:

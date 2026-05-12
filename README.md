@@ -27,7 +27,7 @@ To customise, edit `.github/metrics.yml` in your fork.
 
 ### Action mode
 
-Use metrics as an action in your own repository:
+Use metrics as an action in your own repository. Zero-config — enable plugins with boolean inputs:
 
 ```yaml
 # .github/workflows/metrics.yml
@@ -53,6 +53,19 @@ jobs:
       - uses: Mearman/metrics@latest
         with:
           token: ${{ secrets.METRICS_TOKEN || github.token }}
+          plugin_base: true
+          plugin_isocalendar: true
+          plugin_languages: true
+          plugin_habits: true
+          plugin_achievements: true
+          plugin_lines: true
+          plugin_activity: true
+          plugin_stars: true
+          plugin_followup: true
+          plugin_stargazers: true
+          plugin_people: true
+          plugin_topics: true
+          plugin_licenses: true
       - uses: actions/upload-pages-artifact@v5
         with:
           path: output
@@ -67,6 +80,8 @@ jobs:
       - uses: actions/deploy-pages@v5
         id: deployment
 ```
+
+Or provide a `.github/metrics.yml` for full control — see [Configuration](#configuration).
 
 ### Local development
 
