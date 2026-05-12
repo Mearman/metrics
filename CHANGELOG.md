@@ -1,3 +1,9 @@
+## [1.6.0](https://github.com/Mearman/metrics/compare/v1.5.0...v1.6.0) (2026-05-12)
+
+### Features
+
+* renderer-level repo filtering for list plugins ([92a6fb8](https://github.com/Mearman/metrics/commit/92a6fb8bec4b91ff1043b711f11aef35b9d31d74))
+
 ## [1.5.0](https://github.com/Mearman/metrics/compare/v1.4.0...v1.5.0) (2026-05-12)
 
 ### Features
