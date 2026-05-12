@@ -1,3 +1,9 @@
+## [1.8.0](https://github.com/Mearman/metrics/compare/v1.7.0...v1.8.0) (2026-05-12)
+
+### Features
+
+* **loc:** clone caching and opt-in CI config ([e888e93](https://github.com/Mearman/metrics/commit/e888e93c18a9db777a5b03397a7fb69811426b8f))
+
 ## [1.7.0](https://github.com/Mearman/metrics/compare/v1.6.4...v1.7.0) (2026-05-12)
 
 ### Features
