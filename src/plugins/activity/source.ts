@@ -119,6 +119,18 @@ const PagesPayload = Zod.object({
 }).loose();
 
 // ---------------------------------------------------------------------------
+// REST event schema — validates the full event response
+// ---------------------------------------------------------------------------
+
+/** Schema for a single REST event from listPublicEventsForUser. */
+const RestEventSchema = Zod.object({
+  type: Zod.string().trim(),
+  created_at: Zod.string().trim().optional(),
+  repo: Zod.object({ name: Zod.string().trim() }),
+  payload: Zod.unknown(),
+});
+
+// ---------------------------------------------------------------------------
 // Fetch
 // ---------------------------------------------------------------------------
 
@@ -141,31 +153,32 @@ export async function fetchActivity(
       page,
     });
 
-    for (const event of response.data) {
-      const createdStr =
-        typeof event.created_at === "string" ? event.created_at : undefined;
+    // Validate each event through Zod — reject malformed responses
+    let hitMaxAge = false;
+    for (const raw of response.data) {
+      const parsed = RestEventSchema.safeParse(raw);
+      if (!parsed.success) continue;
+      const event = parsed.data;
+
       const createdAt =
-        createdStr !== undefined ? new Date(createdStr) : undefined;
+        event.created_at !== undefined ? new Date(event.created_at) : undefined;
 
       if (
         maxAge !== undefined &&
         createdAt !== undefined &&
         createdAt < maxAge
       ) {
+        hitMaxAge = true;
         break;
       }
 
-      const parsed = parseEvent(
-        event.type ?? "",
-        event.repo.name,
-        event.payload,
-      );
-      if (parsed === undefined) continue;
+      const activity = parseEvent(event.type, event.repo.name, event.payload);
+      if (activity === undefined) continue;
 
-      allEvents.push(parsed);
+      allEvents.push(activity);
     }
 
-    if (response.data.length < 100) break;
+    if (hitMaxAge || response.data.length < 100) break;
   }
 
   const filterSet = new Set(config.filter);
