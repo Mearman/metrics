@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/Mearman/metrics/compare/v1.0.7...v1.1.0) (2026-05-12)
+
+### Features
+
+* add LoC plugin — actual lines of code by shallow-cloning repos ([0493300](https://github.com/Mearman/metrics/commit/0493300228416d26e96d7551901969c988df00fa))
+
 ## [1.0.7](https://github.com/Mearman/metrics/compare/v1.0.6...v1.0.7) (2026-05-12)
 
 ### Bug Fixes
