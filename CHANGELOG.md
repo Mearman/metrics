@@ -1,3 +1,9 @@
+## [1.13.1](https://github.com/Mearman/metrics/compare/v1.13.0...v1.13.1) (2026-05-12)
+
+### Bug Fixes
+
+* **plugins:** skyline year support, animation, light theme, docs, cleanup ([4c8e772](https://github.com/Mearman/metrics/commit/4c8e772b4042adc6703663482c51f58adc6f8c5b))
+
 ## [1.13.0](https://github.com/Mearman/metrics/compare/v1.12.1...v1.13.0) (2026-05-12)
 
 ### Features
