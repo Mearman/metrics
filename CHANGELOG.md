@@ -1,3 +1,9 @@
+## [1.0.5](https://github.com/Mearman/metrics/compare/v1.0.4...v1.0.5) (2026-05-12)
+
+### Bug Fixes
+
+* overlap PR bar segments by 1px to eliminate anti-aliasing seam ([043703d](https://github.com/Mearman/metrics/commit/043703d579bf282ada1eb71ac62f54b8f376c5c3))
+
 ## [1.0.4](https://github.com/Mearman/metrics/compare/v1.0.3...v1.0.4) (2026-05-12)
 
 ### Bug Fixes
