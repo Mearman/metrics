@@ -1,11 +1,15 @@
 /**
- * Inline external images — fetches remote image URLs and replaces
- * them with base64 data URIs in the SVG output.
+ * Inline external images — fetches appropriately-sized avatar
+ * images and embeds as base64 data URIs in the SVG output.
  *
  * Browsers block cross-origin image loads in SVGs served from
  * different origins (e.g. GitHub Pages loading avatars from
  * avatars.githubusercontent.com). Embedding images inline avoids
  * this restriction entirely.
+ *
+ * GitHub's CDN supports the `s` query parameter to return
+ * pre-resized images, so we request the display size directly
+ * instead of downloading full-size images and resizing locally.
  */
 
 import type { SvgElement } from "./builder.ts";
@@ -46,8 +50,30 @@ async function fetchAsDataUri(url: string): Promise<string> {
 }
 
 /**
+ * Optimise GitHub avatar URLs by requesting a size-appropriate
+ * version. GitHub's CDN supports the `s` query parameter to
+ * return pre-resized images, reducing download size significantly.
+ */
+function optimiseAvatarUrl(url: string, displaySize: number): string {
+  if (
+    url.includes("avatars.githubusercontent.com") ||
+    url.includes("avatars0.githubusercontent.com") ||
+    url.includes("avatars1.githubusercontent.com") ||
+    url.includes("avatars2.githubusercontent.com") ||
+    url.includes("avatars3.githubusercontent.com")
+  ) {
+    // Request 2x for retina sharpness
+    const pixelSize = displaySize * 2;
+    const separator = url.includes("?") ? "&" : "?";
+    return `${url}${separator}s=${String(pixelSize)}`;
+  }
+  return url;
+}
+
+/**
  * Walk an SvgElement tree and inline all external image hrefs.
  *
+ * Requests appropriately-sized images from CDN (GitHub avatars).
  * Only processes `<image>` elements with `href` starting with "http".
  */
 export async function inlineImages(element: SvgElement): Promise<SvgElement> {
@@ -57,7 +83,10 @@ export async function inlineImages(element: SvgElement): Promise<SvgElement> {
     typeof element.attrs.href === "string" &&
     element.attrs.href.startsWith("http")
   ) {
-    const dataUri = await fetchAsDataUri(element.attrs.href);
+    const displaySize =
+      typeof element.attrs.width === "number" ? element.attrs.width : 32;
+    const optimisedUrl = optimiseAvatarUrl(element.attrs.href, displaySize);
+    const dataUri = await fetchAsDataUri(optimisedUrl);
     return {
       ...element,
       attrs: { ...element.attrs, href: dataUri },
@@ -75,7 +104,7 @@ export async function inlineImages(element: SvgElement): Promise<SvgElement> {
 }
 
 /**
- * Clear the avatar fetch cache.
+ * Clear the image fetch cache.
  */
 export function clearImageCache(): void {
   cache.clear();
