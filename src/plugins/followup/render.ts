@@ -8,6 +8,18 @@ import { text, rect, g } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { FollowupData } from "./source.ts";
 
+/** Vertical gap between a bar bottom and the label baseline. */
+const BAR_LABEL_GAP = 6;
+
+/** Font size for stat labels below bars. */
+const LABEL_FONT_SIZE = 10;
+
+/** Font size for section subtitles. */
+const SUBTITLE_FONT_SIZE = 11;
+
+/** Line spacing after a label before the next element. */
+const LINE_HEIGHT = 14;
+
 /**
  * Render follow-up sections with progress bars.
  */
@@ -35,20 +47,19 @@ export function renderFollowup(
   );
 
   let yCursor = 32;
+  const barWidth = ctx.contentWidth;
+  const barHeight = 8;
 
   for (const section of data.sections) {
     // Section subtitle
     elements.push(
       text(padding, yCursor, section.title, {
         fill: colours.textSecondary,
-        "font-size": 11,
+        "font-size": SUBTITLE_FONT_SIZE,
         "font-family": fontStack,
       }),
     );
-    yCursor += 18;
-
-    const barWidth = ctx.contentWidth;
-    const barHeight = 8;
+    yCursor += LINE_HEIGHT + SUBTITLE_FONT_SIZE - LABEL_FONT_SIZE;
 
     // Issues progress bar
     const totalIssues = section.issues.open + section.issues.closed;
@@ -68,8 +79,10 @@ export function renderFollowup(
           rx: 4,
         }),
       );
-      yCursor += barHeight + 6;
 
+      // Label baseline sits below the bar with clearance for the
+      // text ascent (text y is baseline, text extends upward).
+      yCursor += barHeight + BAR_LABEL_GAP + LABEL_FONT_SIZE;
       elements.push(
         text(
           padding,
@@ -77,18 +90,16 @@ export function renderFollowup(
           `${String(section.issues.open)} open · ${String(section.issues.closed)} closed`,
           {
             fill: colours.textTertiary,
-            "font-size": 10,
+            "font-size": LABEL_FONT_SIZE,
             "font-family": fontStack,
           },
         ),
       );
-      yCursor += 18;
+      yCursor += LINE_HEIGHT;
     }
 
     // PRs progress bar — uses clipPath to give segments the
     // track's rounded shape without gaps between segments.
-    // defs is inside the group so clipPath coordinates share
-    // the same local coordinate system as the segments.
     const totalPRs =
       section.pullRequests.open +
       section.pullRequests.merged +
@@ -130,8 +141,9 @@ export function renderFollowup(
           ),
         ),
       );
-      yCursor += barHeight + 6;
 
+      // Label baseline sits below the bar with clearance.
+      yCursor += barHeight + BAR_LABEL_GAP + LABEL_FONT_SIZE;
       elements.push(
         text(
           padding,
@@ -139,12 +151,12 @@ export function renderFollowup(
           `${String(section.pullRequests.open)} open · ${String(section.pullRequests.merged)} merged · ${String(section.pullRequests.closed)} closed`,
           {
             fill: colours.textTertiary,
-            "font-size": 10,
+            "font-size": LABEL_FONT_SIZE,
             "font-family": fontStack,
           },
         ),
       );
-      yCursor += 20;
+      yCursor += LINE_HEIGHT;
     }
 
     yCursor += 4;
