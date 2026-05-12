@@ -1,3 +1,9 @@
+## [1.10.0](https://github.com/Mearman/metrics/compare/v1.9.1...v1.10.0) (2026-05-12)
+
+### Features
+
+* **action:** full input surface for zero-config fork mode ([b695916](https://github.com/Mearman/metrics/commit/b695916e9caea134c5ce794c08055f51c5113542))
+
 ## [1.9.1](https://github.com/Mearman/metrics/compare/v1.9.0...v1.9.1) (2026-05-12)
 
 ### Bug Fixes
