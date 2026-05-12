@@ -352,6 +352,7 @@ export function renderSkyline(
   // the SVG is viewed directly; CSS animations are disabled
   // when SVG is loaded as an <img> element.
   const sceneCentreX = String(sceneWidth / 2);
+  const sceneCentreY = String((sceneDepth + maxHeight) / 2);
   const innerGroup = g(
     {
       class: "skyline-scene",
@@ -362,7 +363,7 @@ export function renderSkyline(
       attrs: {
         attributeName: "transform",
         type: "rotate",
-        values: `${String(-1.5)} ${sceneCentreX} 0; ${String(1.5)} ${sceneCentreX} 0; ${String(-1.5)} ${sceneCentreX} 0`,
+        values: `${String(-1.5)} ${sceneCentreX} ${sceneCentreY}; ${String(1.5)} ${sceneCentreX} ${sceneCentreY}; ${String(-1.5)} ${sceneCentreX} ${sceneCentreY}`,
         dur: "12s",
         repeatCount: "indefinite",
       },
