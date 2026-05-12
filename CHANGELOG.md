@@ -1,3 +1,10 @@
+## [1.7.0](https://github.com/Mearman/metrics/compare/v1.6.4...v1.7.0) (2026-05-12)
+
+### Features
+
+* reactions plugin now queries both issues and pull requests ([a101194](https://github.com/Mearman/metrics/commit/a101194b19b272a587631b4fcfe3294a4ab0df43))
+* visual polish — legends, centring, bar radius ([beaff7f](https://github.com/Mearman/metrics/commit/beaff7f9b04b5a18ae8d17087ea0854bd3e7ac98))
+
 ## [1.6.4](https://github.com/Mearman/metrics/compare/v1.6.3...v1.6.4) (2026-05-12)
 
 ### CI
