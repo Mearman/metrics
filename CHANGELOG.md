@@ -1,3 +1,9 @@
+## [1.4.0](https://github.com/Mearman/metrics/compare/v1.3.0...v1.4.0) (2026-05-12)
+
+### Features
+
+* add repository filtering engine ([13517c7](https://github.com/Mearman/metrics/commit/13517c7b34b0e089bd537cdf6b5849a4fdb39fdd))
+
 ## [1.3.0](https://github.com/Mearman/metrics/compare/v1.2.0...v1.3.0) (2026-05-12)
 
 ### Features
