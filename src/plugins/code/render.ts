@@ -22,6 +22,10 @@ export function renderCode(
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
+  if (data.snippet === null) {
+    return { height: 0, elements: [] };
+  }
+
   elements.push(
     text(padding, 14, "Code", {
       fill: colours.text,
@@ -30,17 +34,6 @@ export function renderCode(
       "font-family": fontStack,
     }),
   );
-
-  if (data.snippet === null) {
-    elements.push(
-      text(padding, 36, "No recent code snippets", {
-        fill: colours.textTertiary,
-        "font-size": 12,
-        "font-family": fontStack,
-      }),
-    );
-    return { height: 52, elements };
-  }
 
   const snippet = data.snippet;
   const cardPadding = 12;

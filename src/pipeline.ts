@@ -151,8 +151,8 @@ export async function runPipeline(
             yOffset - dividerGap / 2,
             {
               stroke: theme.colours.border,
-              "stroke-width": 0.5,
-              opacity: 0.6,
+              "stroke-width": 1,
+              opacity: 0.4,
             },
           ),
         );

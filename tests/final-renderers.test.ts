@@ -287,7 +287,7 @@ describe("Discussions renderer", () => {
       categories: [],
     };
     const result = renderDiscussions(data, {}, makeCtx());
-    assert.ok(result.height > 0);
+    assert.strictEqual(result.height, 0);
   });
 });
 
@@ -302,10 +302,7 @@ describe("Code renderer", () => {
   it("renders empty state when no snippet", () => {
     const data: CodeData = { snippet: null };
     const result = renderCode(data, {}, makeCtx());
-    const msg = findTextsDeep(result.elements).find((el) =>
-      el.text?.includes("No recent"),
-    );
-    assert.ok(msg !== undefined);
+    assert.strictEqual(result.height, 0);
   });
 
   it("renders section title", () => {

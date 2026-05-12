@@ -67,10 +67,12 @@ export function renderTraffic(
       }),
     );
 
-    // Count
+    // Count (right-aligned to content edge)
     const countText = `${String(repo.views)} (${String(repo.uniques)} unique)`;
+    const countWidth = ctx.measure.textWidth(countText, fontCount);
+    const countX = padding + ctx.contentWidth - countWidth;
     elements.push(
-      text(padding + labelWidth + barWidth + 6, y + fontCount, countText, {
+      text(countX, y + fontCount, countText, {
         fill: colours.textTertiary,
         "font-size": fontCount,
         "font-family": fontStack,

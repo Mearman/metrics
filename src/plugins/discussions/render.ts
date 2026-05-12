@@ -21,6 +21,10 @@ export function renderDiscussions(
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
+  if (data.totalCount === 0) {
+    return { height: 0, elements: [] };
+  }
+
   elements.push(
     text(padding, 14, `💬 ${String(data.totalCount)} discussions`, {
       fill: colours.text,

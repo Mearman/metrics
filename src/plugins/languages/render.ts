@@ -63,16 +63,18 @@ export function renderLanguages(
   const lineHeight = 20;
   const dotSize = 10;
   const columnWidth = contentWidth / 2;
+  const legendFontSize = 11;
 
   let y = legendY;
   let column = 0;
 
   for (const lang of languages) {
     const x = padding + column * columnWidth;
+    const textBaseline = y + dotSize / 2 + legendFontSize / 3;
 
     // Colour dot
     elements.push(
-      rect(x, y + 4, dotSize, dotSize, {
+      rect(x, y, dotSize, dotSize, {
         fill: lang.colour,
         rx: 2,
       }),
@@ -82,9 +84,9 @@ export function renderLanguages(
     const pct = ((lang.size / data.totalBytes) * 100).toFixed(1);
     const label = `${lang.name} ${pct}%`;
     elements.push(
-      text(x + dotSize + 6, y + 13, label, {
+      text(x + dotSize + 6, textBaseline, label, {
         fill: colours.textSecondary,
-        "font-size": 11,
+        "font-size": legendFontSize,
         "font-family": fontStack,
       }),
     );

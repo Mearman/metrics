@@ -45,21 +45,36 @@ export function renderNotable(
   );
 
   const avatarElements: import("../../render/svg/builder.ts").SvgElement[] = [];
+  const totalRows = Math.ceil(data.contributions.length / cols);
 
   let i = 0;
   for (const org of data.contributions) {
-    const col = i % cols;
     const row = Math.floor(i / cols);
-    const x = col * step;
+    const isLastRow = row === totalRows - 1;
+    const itemsInRow = isLastRow
+      ? data.contributions.length - row * cols
+      : cols;
+    const col = i % cols;
+    const rowWidth = itemsInRow * step;
+    const rowOffset = isLastRow ? (cols * step - rowWidth) / 2 : 0;
+    const x = rowOffset + col * step;
     const y = row * (avatarSize + 22);
 
+    // Centre the avatar within the column
+    const avatarX = x + (step - avatarSize) / 2;
     const displayName = truncateText(org.name, step - 4, 10, ctx.measure);
-    avatarElements.push(image(x, y, avatarSize, avatarSize, org.avatarUrl));
+    const labelWidth = ctx.measure.textWidth(displayName, 10);
+    const labelX = x + (step - labelWidth) / 2;
+
     avatarElements.push(
-      text(x, y + avatarSize + 12, displayName, {
+      image(avatarX, y, avatarSize, avatarSize, org.avatarUrl),
+    );
+    avatarElements.push(
+      text(labelX, y + avatarSize + 12, displayName, {
         fill: colours.textTertiary,
         "font-size": 10,
         "font-family": fontStack,
+        "text-anchor": "start",
       }),
     );
     i++;
