@@ -5,6 +5,7 @@
  */
 
 import { text, image, g } from "../../render/svg/builder.ts";
+import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { NotableData } from "./source.ts";
 
@@ -48,9 +49,10 @@ export function renderNotable(
     const x = col * step;
     const y = row * (avatarSize + 22);
 
+    const displayName = truncateText(org.name, step, 10, ctx.measure);
     avatarElements.push(image(x, y, avatarSize, avatarSize, org.avatarUrl));
     avatarElements.push(
-      text(x + avatarSize / 2, y + avatarSize + 12, org.name, {
+      text(x + avatarSize / 2, y + avatarSize + 12, displayName, {
         fill: colours.textTertiary,
         "font-size": 10,
         "font-family": fontStack,
