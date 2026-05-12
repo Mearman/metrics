@@ -1,3 +1,9 @@
+## [1.18.1](https://github.com/Mearman/metrics/compare/v1.18.0...v1.18.1) (2026-05-12)
+
+### Refactoring
+
+* **plugins:** rss — eliminate all type assertions and any from xml parsing ([5ff19cd](https://github.com/Mearman/metrics/commit/5ff19cdf18e6b359528f7ebccf29362ef22b3098))
+
 ## [1.18.0](https://github.com/Mearman/metrics/compare/v1.17.0...v1.18.0) (2026-05-12)
 
 ### Features
