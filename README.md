@@ -225,7 +225,7 @@ Three built-in themes: `classic` (dark), `light`, `terminal` (monospace green on
 
 ## Plugins
 
-23 plugins implemented. 6 remaining.
+24 plugins implemented (4 not feasible, 3 need PAT/admin scope).
 
 | Plugin       | ID              | Status | Description                            |
 |--------------|-----------------|--------|----------------------------------------|
@@ -252,12 +252,12 @@ Three built-in themes: `classic` (dark), `light`, `terminal` (monospace green on
 | Topics       | `topics`        | ✅     | Repository topic/tag cloud             |
 | Licences     | `licenses`      | ✅     | Repository licence breakdown           |
 | LoC          | `loc`           | ✅     | Actual lines of code per repo          |
-| Projects     | `projects`      | 🔲     | GitHub Projects boards                 |
+| Projects     | `projects`      | ✅     | GitHub Projects v2 boards              |
 | Skyline      | `skyline`       | 🔲     | GitHub Skyline 3D visualisation        |
 | Sponsors     | `sponsors`      | 🔲     | Sponsor card                           |
 | Sponsorships | `sponsorships`  | 🔲     | Active sponsorships                    |
-| Star lists   | `starlists`     | 🔲     | Repositories from starred lists        |
-| Topics       | `topics`        | 🔲     | Starred topics                         |
+| Star lists   | `starlists`     | ❌     | Not available in GitHub API            |
+| Starred topics| `starred-topics`| ❌     | Covered by `topics` plugin             |
 | Traffic      | `traffic`       | 🔲     | Repository traffic                     |
 
 ---
