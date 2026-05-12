@@ -36,7 +36,7 @@ export function renderNotable(
   );
 
   const avatarSize = 32;
-  const labelWidth = 80;
+  const labelWidth = 90;
   const gap = labelWidth - avatarSize;
   const step = avatarSize + gap;
   const cols = Math.min(
