@@ -7,6 +7,8 @@
 
 import { text, rect } from "../../render/svg/builder.ts";
 import { truncateText } from "../../render/layout/text.ts";
+import { shouldEnumerate } from "../../repos/filter.ts";
+import type { RepoProperties } from "../../repos/filter.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { LocData } from "./source.ts";
 
@@ -69,6 +71,9 @@ export function renderLoc(
   let y = TITLE_Y + 22;
 
   for (const repo of data.repos) {
+    // Skip repos that shouldn't be named
+    if (!shouldEnumerate(toRepoProps(repo), ctx.repos.rules)) continue;
+
     // Repo name
     const displayName = truncateText(
       repo.name,
@@ -126,4 +131,19 @@ export function renderLoc(
   const totalHeight = y + padding - TITLE_Y;
 
   return { height: totalHeight, elements };
+}
+
+/** Convert a LocData repo to RepoProperties for filter matching. */
+function toRepoProps(repo: {
+  name: string;
+  isPrivate: boolean;
+}): RepoProperties {
+  const slashIndex = repo.name.indexOf("/");
+  return {
+    name: repo.name,
+    isPrivate: repo.isPrivate,
+    owner: slashIndex >= 0 ? repo.name.slice(0, slashIndex) : repo.name,
+    topics: [],
+    language: null,
+  };
 }

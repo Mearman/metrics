@@ -6,6 +6,8 @@
  */
 
 import { text, rect } from "../../render/svg/builder.ts";
+import { shouldEnumerate } from "../../repos/filter.ts";
+import type { RepoProperties } from "../../repos/filter.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { LinesData } from "./source.ts";
 
@@ -73,12 +75,19 @@ export function renderLines(
 
   // Largest repo determines the full bar width — other repos are
   // proportional so the viewer can compare relative sizes at a glance.
-  const maxBytes = Math.max(...data.repos.map((r) => r.totalBytes));
+  const maxBytes = Math.max(
+    ...data.repos
+      .filter((r) => shouldEnumerate(toRepoProps(r), ctx.repos.rules))
+      .map((r) => r.totalBytes),
+    1,
+  );
   const fullBarWidth = contentWidth - 16;
 
   let y = TITLE_Y + 22;
 
   for (const repo of data.repos) {
+    // Skip repos that shouldn't be named
+    if (!shouldEnumerate(toRepoProps(repo), ctx.repos.rules)) continue;
     // Repo name (left-aligned)
     elements.push(
       text(padding + 8, y + REPO_NAME_FONT_SIZE - 2, repo.name, {
@@ -132,4 +141,19 @@ export function renderLines(
   const totalHeight = y + padding - TITLE_Y;
 
   return { height: totalHeight, elements };
+}
+
+/** Convert a LinesData repo to RepoProperties for filter matching. */
+function toRepoProps(repo: {
+  name: string;
+  isPrivate: boolean;
+}): RepoProperties {
+  const slashIndex = repo.name.indexOf("/");
+  return {
+    name: repo.name,
+    isPrivate: repo.isPrivate,
+    owner: slashIndex >= 0 ? repo.name.slice(0, slashIndex) : repo.name,
+    topics: [],
+    language: null,
+  };
 }

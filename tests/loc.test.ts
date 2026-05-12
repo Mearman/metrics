@@ -75,6 +75,7 @@ function makeCtx(overrides?: Partial<RenderContext>): RenderContext {
     theme: testTheme,
     icons: stubIcons,
     contentWidth: 480 - 16 * 2,
+    repos: { fetch: "public" as const, rules: [] },
     ...overrides,
   };
 }
@@ -171,6 +172,7 @@ describe("LoC renderer", () => {
         {
           name: "test-repo",
           totalLines: 1500,
+          isPrivate: false,
           languages: [{ name: "TypeScript", lines: 1500, colour: "#3178c6" }],
         },
       ],
@@ -190,6 +192,7 @@ describe("LoC renderer", () => {
         {
           name: "my-project",
           totalLines: 500,
+          isPrivate: false,
           languages: [{ name: "Rust", lines: 500, colour: "#dea584" }],
         },
       ],
@@ -206,11 +209,13 @@ describe("LoC renderer", () => {
         {
           name: "big-repo",
           totalLines: 10_000,
+          isPrivate: false,
           languages: [{ name: "Python", lines: 10_000, colour: "#3572a5" }],
         },
         {
           name: "small-repo",
           totalLines: 1_000,
+          isPrivate: false,
           languages: [{ name: "Go", lines: 1_000, colour: "#00add8" }],
         },
       ],
@@ -237,6 +242,7 @@ describe("LoC renderer", () => {
         {
           name: "mixed-repo",
           totalLines: 1000,
+          isPrivate: false,
           languages: [
             { name: "TypeScript", lines: 600, colour: "#3178c6" },
             { name: "CSS", lines: 400, colour: "#563d7c" },
@@ -260,6 +266,7 @@ describe("LoC renderer", () => {
         {
           name: "repo",
           totalLines: 100,
+          isPrivate: false,
           languages: [{ name: "Shell", lines: 100, colour: "#89e051" }],
         },
       ],

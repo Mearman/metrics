@@ -30,6 +30,7 @@ const REPO_LANGUAGES_QUERY = `
         }
         nodes {
           name
+          isPrivate
           languages(first: 20) {
             edges {
               size
@@ -70,6 +71,7 @@ const ResponseSchema = z.object({
       nodes: z.array(
         z.object({
           name: z.string().trim(),
+          isPrivate: z.boolean(),
           languages: z.object({
             edges: z.array(
               z.object({
@@ -94,6 +96,7 @@ const ResponseSchema = z.object({
 export interface RepoLines {
   name: string;
   totalBytes: number;
+  isPrivate: boolean;
   languages: { name: string; bytes: number; colour: string }[];
 }
 
@@ -153,7 +156,12 @@ export async function fetchLines(
       const repoTotal = languages.reduce((sum, l) => sum + l.bytes, 0);
 
       if (repoTotal > 0) {
-        repoResults.push({ name: repo.name, totalBytes: repoTotal, languages });
+        repoResults.push({
+          name: repo.name,
+          totalBytes: repoTotal,
+          isPrivate: repo.isPrivate,
+          languages,
+        });
         totalBytes += repoTotal;
       }
     }

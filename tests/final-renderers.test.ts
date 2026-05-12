@@ -64,6 +64,7 @@ function makeCtx(overrides?: Partial<RenderContext>): RenderContext {
     theme: testTheme,
     icons: stubIcons,
     contentWidth: 480 - 16 * 2,
+    repos: { fetch: "public" as const, rules: [] },
     ...overrides,
   };
 }
@@ -170,6 +171,7 @@ describe("Repositories renderer", () => {
         licenseInfo: null,
         createdAt: "2024-01-01",
         isFork: false,
+        isPrivate: false,
         sorting: "pinned",
       },
       {
@@ -183,6 +185,7 @@ describe("Repositories renderer", () => {
         licenseInfo: null,
         createdAt: "2024-06-01",
         isFork: true,
+        isPrivate: false,
         sorting: "starred",
       },
     ],

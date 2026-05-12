@@ -28,6 +28,7 @@ export interface RepoTraffic {
   name: string;
   views: number;
   uniques: number;
+  isPrivate: boolean;
 }
 
 export interface TrafficData {
@@ -46,6 +47,7 @@ const ReposResponseSchema = z.object({
       nodes: z.array(
         z.object({
           nameWithOwner: z.string().trim(),
+          isPrivate: z.boolean(),
         }),
       ),
     }),
@@ -61,7 +63,10 @@ const REPOS_QUERY = `
         ownerAffiliations: OWNER
         orderBy: { field: UPDATED_AT, direction: DESC }
       ) {
-        nodes { nameWithOwner }
+        nodes {
+          nameWithOwner
+          isPrivate
+        }
       }
     }
   }
@@ -100,6 +105,7 @@ export async function fetchTraffic(
       owner: n.nameWithOwner.slice(0, slashIndex),
       repo: n.nameWithOwner.slice(slashIndex + 1),
       fullName: n.nameWithOwner,
+      isPrivate: n.isPrivate,
     };
   });
 
@@ -118,6 +124,7 @@ export async function fetchTraffic(
           name: repo.fullName,
           views: response.data.count,
           uniques: response.data.uniques,
+          isPrivate: repo.isPrivate,
         });
         totalViews += response.data.count;
         totalUniques += response.data.uniques;

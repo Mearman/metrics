@@ -27,6 +27,7 @@ export type StargazersConfig = z.infer<typeof StargazersConfig>;
 export interface RepoStars {
   name: string;
   stars: number;
+  isPrivate: boolean;
 }
 
 export interface StargazersData {
@@ -50,6 +51,7 @@ query($login: String!, $limit: Int!) {
       nodes {
         name
         stargazerCount
+        isPrivate
       }
     }
   }
@@ -66,6 +68,7 @@ const ResponseSchema = z.object({
         z.object({
           name: z.string().trim(),
           stargazerCount: z.number(),
+          isPrivate: z.boolean(),
         }),
       ),
     }),
@@ -95,6 +98,7 @@ export async function fetchStargazers(
   const repos = parsed.data.user.repositories.nodes.map((node) => ({
     name: node.name,
     stars: node.stargazerCount,
+    isPrivate: node.isPrivate,
   }));
 
   const totalStars = repos.reduce((sum, r) => sum + r.stars, 0);

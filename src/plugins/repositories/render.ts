@@ -7,8 +7,10 @@
 
 import { g, rect, text, circle } from "../../render/svg/builder.ts";
 import { truncateText } from "../../render/layout/text.ts";
+import { shouldEnumerate } from "../../repos/filter.ts";
+import type { RepoProperties } from "../../repos/filter.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
-import type { RepositoriesData } from "./source.ts";
+import type { RepositoriesData, RepositoryInfo } from "./source.ts";
 
 /**
  * Format a large number compactly (e.g. 1234 → "1.2k").
@@ -60,6 +62,9 @@ export function renderRepositories(
   }[] = [];
 
   for (const repo of data.list) {
+    // Skip repos that shouldn't be named
+    if (!shouldEnumerate(toRepoProps(repo), ctx.repos.rules)) continue;
+
     const cardElements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
     // Placeholder background rect — height patched below
@@ -192,4 +197,19 @@ export function renderRepositories(
   }
 
   return { height: yCursor + padding, elements };
+}
+
+/** Convert a RepositoryInfo to RepoProperties for filter matching. */
+function toRepoProps(repo: RepositoryInfo): RepoProperties {
+  const slashIndex = repo.nameWithOwner.indexOf("/");
+  return {
+    name: repo.nameWithOwner,
+    isPrivate: repo.isPrivate,
+    owner:
+      slashIndex >= 0
+        ? repo.nameWithOwner.slice(0, slashIndex)
+        : repo.nameWithOwner,
+    topics: [],
+    language: repo.primaryLanguage?.name ?? null,
+  };
 }

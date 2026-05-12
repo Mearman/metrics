@@ -37,6 +37,7 @@ export type LocConfig = z.infer<typeof LocConfig>;
 export interface RepoLoc {
   name: string;
   totalLines: number;
+  isPrivate: boolean;
   languages: { name: string; lines: number; colour: string }[];
 }
 
@@ -55,6 +56,7 @@ const ResponseSchema = z.object({
       nodes: z.array(
         z.object({
           nameWithOwner: z.string().trim(),
+          isPrivate: z.boolean(),
           url: z.string().trim(),
           diskUsage: z.number(),
         }),
@@ -74,6 +76,7 @@ const REPOS_QUERY = `
       ) {
         nodes {
           nameWithOwner
+          isPrivate
           url
           diskUsage
         }
@@ -193,7 +196,7 @@ export async function fetchLoc(
   reposConfig: ReposConfig,
 ): Promise<LocData> {
   // Resolve repo list
-  let repos: { name: string; url: string }[];
+  let repos: { name: string; url: string; isPrivate: boolean }[];
 
   if (explicitRepos.length > 0) {
     repos = explicitRepos.map((r) => {
@@ -203,6 +206,7 @@ export async function fetchLoc(
       return {
         name: hasOwner ? r.slice(slashIndex + 1) : r,
         url: `https://github.com/${ownerRepo}`,
+        isPrivate: false,
       };
     });
   } else {
@@ -224,6 +228,7 @@ export async function fetchLoc(
     repos = parsed.data.user.repositories.nodes.map((n) => ({
       name: n.nameWithOwner,
       url: n.url,
+      isPrivate: n.isPrivate,
     }));
   }
 
@@ -243,6 +248,7 @@ export async function fetchLoc(
         results.push({
           name: repo.name,
           totalLines: repoTotal,
+          isPrivate: repo.isPrivate,
           languages,
         });
         totalLines += repoTotal;

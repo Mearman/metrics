@@ -36,6 +36,7 @@ export interface Contributor {
 
 export interface RepoContributors {
   repository: string;
+  isPrivate: boolean;
   contributors: Contributor[];
 }
 
@@ -63,6 +64,7 @@ const QUERY = `
         }
         nodes {
           nameWithOwner
+          isPrivate
           contributors(orderBy: {field: CONTRIBUTIONS, direction: DESC}, first: 20) {
             nodes {
               login
@@ -86,6 +88,7 @@ const ResponseSchema = z.object({
       nodes: z.array(
         z.object({
           nameWithOwner: z.string().trim(),
+          isPrivate: z.boolean(),
           contributors: z.object({
             nodes: z.array(
               z.object({
@@ -144,6 +147,7 @@ export async function fetchContributors(
     if (contributors.length > 0) {
       reposResult.push({
         repository: repo.nameWithOwner,
+        isPrivate: repo.isPrivate,
         contributors: contributors.slice(0, config.contributors_per_repo),
       });
     }

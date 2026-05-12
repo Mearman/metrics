@@ -54,6 +54,7 @@ function makeCtx(overrides?: Partial<RenderContext>): RenderContext {
     theme: testTheme,
     icons: stubIcons,
     contentWidth: 480 - 16 * 2,
+    repos: { fetch: "public" as const, rules: [] },
     ...overrides,
   };
 }

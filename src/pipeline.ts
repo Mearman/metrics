@@ -103,6 +103,7 @@ export async function runPipeline(
         theme,
         icons,
         contentWidth,
+        repos: config.repos,
       });
 
       renderResults.push(result);

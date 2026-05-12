@@ -5,6 +5,8 @@
  */
 
 import { text, image } from "../../render/svg/builder.ts";
+import { shouldEnumerate } from "../../repos/filter.ts";
+import type { RepoProperties } from "../../repos/filter.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { ContributorsData } from "./source.ts";
 
@@ -48,6 +50,9 @@ export function renderContributors(
   );
 
   for (const repo of data.repos) {
+    // Skip repos that shouldn't be named
+    if (!shouldEnumerate(toRepoProps(repo), ctx.repos.rules)) continue;
+
     // Repo name
     elements.push(
       text(padding, y + 12, repo.repository, {
@@ -74,4 +79,20 @@ export function renderContributors(
   }
 
   return { height: y + padding, elements };
+}
+
+/** Convert a ContributorsData repo to RepoProperties for filter matching. */
+function toRepoProps(repo: {
+  repository: string;
+  isPrivate: boolean;
+}): RepoProperties {
+  const slashIndex = repo.repository.indexOf("/");
+  return {
+    name: repo.repository,
+    isPrivate: repo.isPrivate,
+    owner:
+      slashIndex >= 0 ? repo.repository.slice(0, slashIndex) : repo.repository,
+    topics: [],
+    language: null,
+  };
 }

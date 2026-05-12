@@ -70,6 +70,7 @@ function makeCtx(): RenderContext {
     theme: testTheme,
     icons: stubIcons,
     contentWidth: 448,
+    repos: { fetch: "public" as const, rules: [] },
   };
 }
 

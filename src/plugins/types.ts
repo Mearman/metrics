@@ -40,6 +40,8 @@ export interface RenderContext {
   icons: IconLookup;
   /** Available content width in px */
   contentWidth: number;
+  /** Repository filtering rules */
+  repos: import("../repos/filter.ts").ReposConfig;
 }
 
 // ---------------------------------------------------------------------------

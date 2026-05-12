@@ -34,6 +34,7 @@ export interface RepositoryInfo {
   nameWithOwner: string;
   description: string | null;
   isFork: boolean;
+  isPrivate: boolean;
   stargazerCount: number;
   forkCount: number;
   issues: { totalCount: number };
@@ -63,6 +64,7 @@ query($login: String!, $limit: Int!) {
             description
             forkCount
             isFork
+            isPrivate
             issues { totalCount }
             nameWithOwner
             licenseInfo { spdxId name }
@@ -83,6 +85,7 @@ query($owner: String!, $name: String!) {
     description
     forkCount
     isFork
+    isPrivate
     issues { totalCount }
     nameWithOwner
     licenseInfo { spdxId name }
@@ -106,6 +109,7 @@ query($login: String!, $limit: Int!, $affiliations: [RepositoryAffiliation]) {
         description
         forkCount
         isFork
+        isPrivate
         issues { totalCount }
         nameWithOwner
         licenseInfo { spdxId name }
@@ -128,6 +132,7 @@ const RepoNodeSchema = z.object({
   description: z.string().trim().nullable(),
   forkCount: z.number(),
   isFork: z.boolean(),
+  isPrivate: z.boolean(),
   issues: TotalCount,
   nameWithOwner: z.string().trim(),
   licenseInfo: z
@@ -176,6 +181,7 @@ function formatRepo(
     nameWithOwner: node.nameWithOwner,
     description: node.description,
     isFork: node.isFork,
+    isPrivate: node.isPrivate,
     stargazerCount: node.stargazerCount,
     forkCount: node.forkCount,
     issues: { totalCount: node.issues.totalCount },

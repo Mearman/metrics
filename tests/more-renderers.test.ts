@@ -69,6 +69,7 @@ function makeCtx(overrides?: Partial<RenderContext>): RenderContext {
     theme: testTheme,
     icons: stubIcons,
     contentWidth: 480 - 16 * 2,
+    repos: { fetch: "public" as const, rules: [] },
     ...overrides,
   };
 }
@@ -215,8 +216,8 @@ describe("Stargazers renderer", () => {
   const baseData: StargazersData = {
     totalStars: 50,
     repos: [
-      { name: "repo-a", stars: 30 },
-      { name: "repo-b", stars: 20 },
+      { name: "repo-a", stars: 30, isPrivate: false },
+      { name: "repo-b", stars: 20, isPrivate: false },
     ],
   };
 

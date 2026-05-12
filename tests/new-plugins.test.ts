@@ -56,6 +56,7 @@ function makeCtx(overrides?: Partial<RenderContext>): RenderContext {
     theme: testTheme,
     icons: stubIcons,
     contentWidth: 480 - 16 * 2,
+    repos: { fetch: "public" as const, rules: [] },
     ...overrides,
   };
 }
@@ -274,6 +275,7 @@ describe("Contributors renderer", () => {
     repos: [
       {
         repository: "owner/repo",
+        isPrivate: false,
         contributors: [
           {
             login: "alice",
@@ -289,6 +291,7 @@ describe("Contributors renderer", () => {
       },
       {
         repository: "owner/other",
+        isPrivate: false,
         contributors: [
           {
             login: "charlie",
