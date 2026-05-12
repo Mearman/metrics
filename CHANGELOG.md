@@ -1,3 +1,9 @@
+## [1.3.0](https://github.com/Mearman/metrics/compare/v1.2.0...v1.3.0) (2026-05-12)
+
+### Features
+
+* add sponsors, sponsorships, and traffic plugins (27 total) ([7e4a670](https://github.com/Mearman/metrics/commit/7e4a67077c527ef61d5cce5898b7efed7aac74bd))
+
 ## [1.2.0](https://github.com/Mearman/metrics/compare/v1.1.0...v1.2.0) (2026-05-12)
 
 ### Features
