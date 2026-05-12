@@ -49,4 +49,8 @@ outputs:
         categories: true
       notable:
         from: 5
+      topics:
+        limit: 15
+      licenses:
+        limit: 8
       # calendar:  # disabled — adds many API calls per year

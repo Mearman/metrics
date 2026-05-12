@@ -8,6 +8,7 @@ import { renderIntroduction } from "../src/plugins/introduction/render.ts";
 import { renderReactions } from "../src/plugins/reactions/render.ts";
 import { renderContributors } from "../src/plugins/contributors/render.ts";
 import type { RenderContext, Theme } from "../src/plugins/types.ts";
+import type { SvgElement } from "../src/render/svg/builder.ts";
 import type { IntroductionData } from "../src/plugins/introduction/source.ts";
 import type { ReactionsData } from "../src/plugins/reactions/source.ts";
 import type { ContributorsData } from "../src/plugins/contributors/source.ts";
@@ -57,6 +58,25 @@ function makeCtx(overrides?: Partial<RenderContext>): RenderContext {
     contentWidth: 480 - 16 * 2,
     ...overrides,
   };
+}
+
+/** Recursively find all <text> elements in an SVG tree. */
+function findTextsDeep(
+  elements: SvgElement[],
+): { text: string | undefined; attrs: Record<string, string | number> }[] {
+  const results: {
+    text: string | undefined;
+    attrs: Record<string, string | number>;
+  }[] = [];
+  for (const el of elements) {
+    if (el.tag === "text") {
+      results.push({ text: el.text, attrs: el.attrs });
+    }
+    if (el.children !== undefined) {
+      results.push(...findTextsDeep(el.children));
+    }
+  }
+  return results;
 }
 
 // ---------------------------------------------------------------------------
@@ -314,6 +334,117 @@ describe("Contributors renderer", () => {
 
   it("computes positive height", () => {
     const result = renderContributors(baseData, {}, makeCtx());
+    assert.ok(result.height > 0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Topics renderer
+// ---------------------------------------------------------------------------
+
+import { renderTopics } from "../src/plugins/topics/render.ts";
+import type { TopicsData } from "../src/plugins/topics/source.ts";
+
+describe("Topics renderer", () => {
+  it("returns empty for no topics", () => {
+    const data: TopicsData = { topics: [] };
+    const result = renderTopics(data, {}, makeCtx());
+    assert.strictEqual(result.height, 0);
+    assert.strictEqual(result.elements.length, 0);
+  });
+
+  it("renders section title", () => {
+    const data: TopicsData = { topics: [{ name: "typescript", count: 5 }] };
+    const result = renderTopics(data, {}, makeCtx());
+    const title = findTextsDeep(result.elements).find(
+      (el) => el.text === "Topics",
+    );
+    assert.ok(title !== undefined);
+  });
+
+  it("renders topic pills", () => {
+    const data: TopicsData = {
+      topics: [
+        { name: "typescript", count: 10 },
+        { name: "rust", count: 3 },
+      ],
+    };
+    const result = renderTopics(data, {}, makeCtx());
+    const allTexts = findTextsDeep(result.elements);
+    assert.ok(allTexts.some((el) => el.text?.includes("typescript")));
+    assert.ok(allTexts.some((el) => el.text?.includes("rust")));
+  });
+
+  it("computes positive height", () => {
+    const data: TopicsData = {
+      topics: [{ name: "python", count: 1 }],
+    };
+    const result = renderTopics(data, {}, makeCtx());
+    assert.ok(result.height > 0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Licences renderer
+// ---------------------------------------------------------------------------
+
+import { renderLicences } from "../src/plugins/licenses/render.ts";
+import type { LicencesData } from "../src/plugins/licenses/source.ts";
+
+describe("Licences renderer", () => {
+  it("returns empty for no data", () => {
+    const data: LicencesData = { licences: [], totalRepos: 0, unlicensed: 0 };
+    const result = renderLicences(data, {}, makeCtx());
+    assert.strictEqual(result.height, 0);
+    assert.strictEqual(result.elements.length, 0);
+  });
+
+  it("renders section title", () => {
+    const data: LicencesData = {
+      licences: [{ spdxId: "MIT", name: "MIT License", count: 5 }],
+      totalRepos: 5,
+      unlicensed: 0,
+    };
+    const result = renderLicences(data, {}, makeCtx());
+    const title = findTextsDeep(result.elements).find(
+      (el) => el.text === "Licences",
+    );
+    assert.ok(title !== undefined);
+  });
+
+  it("renders licence labels", () => {
+    const data: LicencesData = {
+      licences: [
+        { spdxId: "MIT", name: "MIT License", count: 10 },
+        { spdxId: "Apache-2.0", name: "Apache License 2.0", count: 3 },
+      ],
+      totalRepos: 13,
+      unlicensed: 0,
+    };
+    const result = renderLicences(data, {}, makeCtx());
+    const allTexts = findTextsDeep(result.elements);
+    assert.ok(allTexts.some((el) => el.text?.includes("MIT")));
+    assert.ok(allTexts.some((el) => el.text?.includes("Apache")));
+  });
+
+  it("shows unlicensed repos", () => {
+    const data: LicencesData = {
+      licences: [],
+      totalRepos: 5,
+      unlicensed: 5,
+    };
+    const result = renderLicences(data, {}, makeCtx());
+    const allTexts = findTextsDeep(result.elements);
+    assert.ok(allTexts.some((el) => el.text?.includes("No licence")));
+  });
+
+  it("computes positive height", () => {
+    const data: LicencesData = {
+      licences: [{ spdxId: "MIT", name: "MIT License", count: 1 }],
+      totalRepos: 1,
+      unlicensed: 0,
+    };
+    const result = renderLicences(data, {}, makeCtx());
     assert.ok(result.height > 0);
   });
 });

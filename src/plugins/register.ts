@@ -25,6 +25,8 @@ import { introductionPlugin } from "./introduction/plugin.ts";
 import { reactionsPlugin } from "./reactions/plugin.ts";
 import { contributorsPlugin } from "./contributors/plugin.ts";
 import { codePlugin } from "./code/plugin.ts";
+import { topicsPlugin } from "./topics/plugin.ts";
+import { licencesPlugin } from "./licenses/plugin.ts";
 
 export function registerAllPlugins(): void {
   registerPlugin(basePlugin);
@@ -47,4 +49,6 @@ export function registerAllPlugins(): void {
   registerPlugin(reactionsPlugin);
   registerPlugin(contributorsPlugin);
   registerPlugin(codePlugin);
+  registerPlugin(topicsPlugin);
+  registerPlugin(licencesPlugin);
 }
