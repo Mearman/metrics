@@ -1,3 +1,9 @@
+## [1.2.0](https://github.com/Mearman/metrics/compare/v1.1.0...v1.2.0) (2026-05-12)
+
+### Features
+
+* add Projects plugin — GitHub Projects v2 boards ([c7e6caa](https://github.com/Mearman/metrics/commit/c7e6caac8e51a3ad51a80e9ab87e77076e12ca9a))
+
 ## [1.1.0](https://github.com/Mearman/metrics/compare/v1.0.7...v1.1.0) (2026-05-12)
 
 ### Features
