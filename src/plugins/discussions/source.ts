@@ -3,13 +3,14 @@
  *
  * Fetches GitHub discussions statistics via GraphQL.
  * Requires the Discussions GraphQL API (available with github.token).
+ * Zod validates the GraphQL response at runtime.
  */
 
 import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
 
 // ---------------------------------------------------------------------------
-// Schema
+// Config
 // ---------------------------------------------------------------------------
 
 export const DiscussionsConfig = z.object({
@@ -34,7 +35,7 @@ export interface DiscussionsData {
 }
 
 // ---------------------------------------------------------------------------
-// GraphQL query
+// GraphQL queries
 // ---------------------------------------------------------------------------
 
 const QUERY = `
@@ -63,13 +64,37 @@ query($login: String!) {
 }`;
 
 // ---------------------------------------------------------------------------
-// Fetch
+// Zod response schemas
 // ---------------------------------------------------------------------------
 
-interface CategoryNode {
-  name: string;
-  discussionCount: number;
-}
+const CategoriesResponseSchema = z.object({
+  user: z.object({
+    repositoryDiscussionCategories: z.object({
+      nodes: z.array(
+        z.object({
+          name: z.string().trim(),
+          discussionCount: z.number(),
+        }),
+      ),
+    }),
+  }),
+});
+
+const CountResponseSchema = z.object({
+  user: z.object({
+    repositories: z.object({
+      nodes: z.array(
+        z.object({
+          discussions: z.object({ totalCount: z.number() }),
+        }),
+      ),
+    }),
+  }),
+});
+
+// ---------------------------------------------------------------------------
+// Fetch
+// ---------------------------------------------------------------------------
 
 export async function fetchDiscussions(
   ctx: FetchContext,
@@ -80,32 +105,28 @@ export async function fetchDiscussions(
 
   if (config.categories) {
     try {
-      const result = await ctx.api.graphql<{
-        user: {
-          repositoryDiscussionCategories: {
-            nodes: CategoryNode[];
-          };
-        };
-      }>(QUERY, { login: ctx.user });
-
-      categories = result.user.repositoryDiscussionCategories.nodes
-        .filter((c) => c.discussionCount > 0)
-        .sort((a, b) => b.discussionCount - a.discussionCount);
+      const raw = await ctx.api.graphql(QUERY, { login: ctx.user });
+      const parsed = CategoriesResponseSchema.safeParse(raw);
+      if (parsed.success) {
+        categories = parsed.data.user.repositoryDiscussionCategories.nodes
+          .filter((c) => c.discussionCount > 0)
+          .sort((a, b) => b.discussionCount - a.discussionCount);
+      }
     } catch {
       // Discussions API may not be available for all users
     }
   }
 
   // Count total discussions across repos
-  const countResult = await ctx.api.graphql<{
-    user: {
-      repositories: {
-        nodes: { discussions: { totalCount: number } }[];
-      };
-    };
-  }>(COUNT_QUERY, { login: ctx.user });
+  const rawCount = await ctx.api.graphql(COUNT_QUERY, { login: ctx.user });
+  const parsedCount = CountResponseSchema.safeParse(rawCount);
+  if (!parsedCount.success) {
+    throw new Error(
+      `Invalid GraphQL response for discussions count: ${parsedCount.error.message}`,
+    );
+  }
 
-  const totalCount = countResult.user.repositories.nodes.reduce(
+  const totalCount = parsedCount.data.user.repositories.nodes.reduce(
     (sum, repo) => sum + repo.discussions.totalCount,
     0,
   );

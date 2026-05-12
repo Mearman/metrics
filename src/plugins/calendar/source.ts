@@ -2,13 +2,14 @@
  * Calendar plugin — data source.
  *
  * Fetches yearly commit activity per year.
+ * Zod validates the GraphQL response at runtime.
  */
 
 import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
 
 // ---------------------------------------------------------------------------
-// Schema
+// Config
 // ---------------------------------------------------------------------------
 
 export const CalendarConfig = z.object({
@@ -35,7 +36,7 @@ export interface CalendarData {
 }
 
 // ---------------------------------------------------------------------------
-// GraphQL query
+// GraphQL queries
 // ---------------------------------------------------------------------------
 
 const QUERY = `
@@ -65,44 +66,56 @@ query($login: String!, $from: DateTime!, $to: DateTime!) {
 }`;
 
 // ---------------------------------------------------------------------------
-// Fetch
+// Zod response schemas
 // ---------------------------------------------------------------------------
 
-interface ContributionYearsResult {
-  user: {
-    contributionsCollection: {
-      contributionYears: number[];
-    };
-  };
-}
+const YearsResponseSchema = z.object({
+  user: z.object({
+    contributionsCollection: z.object({
+      contributionYears: z.array(z.number()),
+    }),
+  }),
+});
 
-interface YearResult {
-  user: {
-    contributionsCollection: {
-      contributionCalendar: {
-        weeks: {
-          contributionDays: {
-            date: string;
-            contributionCount: number;
-            color: string;
-          }[];
-        }[];
-      };
-    };
-  };
-}
+const YearResponseSchema = z.object({
+  user: z.object({
+    contributionsCollection: z.object({
+      contributionCalendar: z.object({
+        weeks: z.array(
+          z.object({
+            contributionDays: z.array(
+              z.object({
+                date: z.string().trim(),
+                contributionCount: z.number(),
+                color: z.string().trim(),
+              }),
+            ),
+          }),
+        ),
+      }),
+    }),
+  }),
+});
+
+// ---------------------------------------------------------------------------
+// Fetch
+// ---------------------------------------------------------------------------
 
 export async function fetchCalendar(
   ctx: FetchContext,
   config: CalendarConfig,
 ): Promise<CalendarData> {
   // Get available years
-  const yearsResult = await ctx.api.graphql<ContributionYearsResult>(QUERY, {
-    login: ctx.user,
-  });
+  const rawYears = await ctx.api.graphql(QUERY, { login: ctx.user });
+  const parsedYears = YearsResponseSchema.safeParse(rawYears);
+  if (!parsedYears.success) {
+    throw new Error(
+      `Invalid GraphQL response for calendar years: ${parsedYears.error.message}`,
+    );
+  }
 
   const availableYears =
-    yearsResult.user.contributionsCollection.contributionYears.slice(
+    parsedYears.data.user.contributionsCollection.contributionYears.slice(
       0,
       config.years,
     );
@@ -113,14 +126,20 @@ export async function fetchCalendar(
     const from = `${String(year)}-01-01T00:00:00Z`;
     const to = `${String(year)}-12-31T23:59:59Z`;
 
-    const result = await ctx.api.graphql<YearResult>(YEAR_QUERY, {
+    const rawYear = await ctx.api.graphql(YEAR_QUERY, {
       login: ctx.user,
       from,
       to,
     });
+    const parsedYear = YearResponseSchema.safeParse(rawYear);
+    if (!parsedYear.success) {
+      throw new Error(
+        `Invalid GraphQL response for calendar year ${String(year)}: ${parsedYear.error.message}`,
+      );
+    }
 
     const days =
-      result.user.contributionsCollection.contributionCalendar.weeks.flatMap(
+      parsedYear.data.user.contributionsCollection.contributionCalendar.weeks.flatMap(
         (week) =>
           week.contributionDays.map((day) => ({
             date: day.date,

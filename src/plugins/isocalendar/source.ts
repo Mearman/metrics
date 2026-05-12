@@ -2,7 +2,15 @@
  * Isocalendar plugin — data source.
  *
  * Fetches contribution calendar data for the contribution heatmap.
+ * Zod validates the GraphQL response at runtime.
  */
+
+import * as z from "zod";
+import type { DataSource } from "../types.ts";
+
+// ---------------------------------------------------------------------------
+// GraphQL query
+// ---------------------------------------------------------------------------
 
 const ISCALENDAR_QUERY = `
   query($login: String!, $from: DateTime!, $to: DateTime!) {
@@ -23,6 +31,44 @@ const ISCALENDAR_QUERY = `
   }
 ` as const;
 
+// ---------------------------------------------------------------------------
+// Config
+// ---------------------------------------------------------------------------
+
+export const IsocalendarConfig = z.object({
+  duration: z.enum(["half-year", "full-year"]).default("full-year"),
+});
+export type IsocalendarConfig = z.infer<typeof IsocalendarConfig>;
+
+// ---------------------------------------------------------------------------
+// Zod response schema
+// ---------------------------------------------------------------------------
+
+const ResponseSchema = z.object({
+  user: z.object({
+    contributionsCollection: z.object({
+      contributionCalendar: z.object({
+        weeks: z.array(
+          z.object({
+            contributionDays: z.array(
+              z.object({
+                contributionCount: z.number(),
+                date: z.string().trim(),
+                color: z.string().trim(),
+              }),
+            ),
+          }),
+        ),
+        totalContributions: z.number(),
+      }),
+    }),
+  }),
+});
+
+// ---------------------------------------------------------------------------
+// Data types
+// ---------------------------------------------------------------------------
+
 export interface ContributionDay {
   date: string;
   count: number;
@@ -38,24 +84,9 @@ export interface IsocalendarData {
   totalContributions: number;
 }
 
-interface CalendarDay {
-  contributionCount: number;
-  date: string;
-  color: string;
-}
-
-interface GraphQLResponse {
-  user: {
-    contributionsCollection: {
-      contributionCalendar: {
-        weeks: {
-          contributionDays: CalendarDay[];
-        }[];
-        totalContributions: number;
-      };
-    };
-  };
-}
+// ---------------------------------------------------------------------------
+// Fetch
+// ---------------------------------------------------------------------------
 
 /**
  * Fetch contribution calendar data.
@@ -64,7 +95,10 @@ interface GraphQLResponse {
  */
 export async function fetchIsocalendar(
   api: {
-    graphql<T>(query: string, variables?: Record<string, unknown>): Promise<T>;
+    graphql(
+      query: string,
+      variables?: Record<string, unknown>,
+    ): Promise<unknown>;
   },
   user: string,
   duration: "half-year" | "full-year" = "full-year",
@@ -74,16 +108,20 @@ export async function fetchIsocalendar(
   const from = new Date(now);
   from.setDate(from.getDate() - weeks * 7);
 
-  const data: GraphQLResponse = await api.graphql<GraphQLResponse>(
-    ISCALENDAR_QUERY,
-    {
-      login: user,
-      from: from.toISOString(),
-      to: now.toISOString(),
-    },
-  );
+  const raw = await api.graphql(ISCALENDAR_QUERY, {
+    login: user,
+    from: from.toISOString(),
+    to: now.toISOString(),
+  });
+  const parsed = ResponseSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(
+      `Invalid GraphQL response for isocalendar: ${parsed.error.message}`,
+    );
+  }
 
-  const calendar = data.user.contributionsCollection.contributionCalendar;
+  const calendar =
+    parsed.data.user.contributionsCollection.contributionCalendar;
 
   return {
     weeks: calendar.weeks.map((week) => ({
@@ -96,3 +134,16 @@ export async function fetchIsocalendar(
     totalContributions: calendar.totalContributions,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Data source
+// ---------------------------------------------------------------------------
+
+export const isocalendarSource: DataSource<IsocalendarConfig, IsocalendarData> =
+  {
+    id: "isocalendar",
+    configSchema: IsocalendarConfig,
+    async fetch(ctx, config) {
+      return await fetchIsocalendar(ctx.api, ctx.user, config.duration);
+    },
+  };

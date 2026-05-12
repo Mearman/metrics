@@ -2,12 +2,16 @@
  * Reactions plugin — data source.
  *
  * Fetches recent reaction statistics from the user's issues
- * and pull requests. Uses the issues endpoint with Zod
- * validation for type safety.
+ * and pull requests. Uses GraphQL with Zod validation for
+ * runtime type safety.
  */
 
 import * as z from "zod";
 import type { ApiClient } from "../types.ts";
+
+// ---------------------------------------------------------------------------
+// Config
+// ---------------------------------------------------------------------------
 
 export const ReactionsConfig = z.object({
   /** Number of days to look back */
@@ -16,6 +20,10 @@ export const ReactionsConfig = z.object({
   limit: z.int().min(1).max(50).default(10),
 });
 export type ReactionsConfig = z.infer<typeof ReactionsConfig>;
+
+// ---------------------------------------------------------------------------
+// Data types
+// ---------------------------------------------------------------------------
 
 export interface ReactionSummary {
   repository: string;
@@ -43,10 +51,44 @@ export interface ReactionsData {
   scanned: number;
 }
 
+// ---------------------------------------------------------------------------
+// Zod response schema
+// ---------------------------------------------------------------------------
+
+const ResponseSchema = z.object({
+  user: z.object({
+    issues: z.object({
+      nodes: z.array(
+        z.object({
+          title: z.string().trim(),
+          url: z.string().trim(),
+          isPullRequest: z.boolean(),
+          repository: z.object({
+            nameWithOwner: z.string().trim(),
+          }),
+          reactions: z.object({
+            totalCount: z.number(),
+          }),
+          reactionGroups: z.array(
+            z.object({
+              content: z.string().trim(),
+              users: z.object({ totalCount: z.number() }),
+            }),
+          ),
+        }),
+      ),
+    }),
+  }),
+});
+
+// ---------------------------------------------------------------------------
+// Fetch
+// ---------------------------------------------------------------------------
+
 /**
  * Fetch reaction data from the user's recent issues.
  *
- * Uses the GitHub search API to find issues with reactions.
+ * Uses the GitHub GraphQL API to find issues with reactions.
  */
 export async function fetchReactions(
   api: ApiClient,
@@ -56,21 +98,6 @@ export async function fetchReactions(
   const since = new Date();
   since.setDate(since.getDate() - config.days);
 
-  const items: ReactionSummary[] = [];
-  const totals: Record<string, number> = {
-    total_count: 0,
-    "+1": 0,
-    "-1": 0,
-    laugh: 0,
-    hooray: 0,
-    confused: 0,
-    heart: 0,
-    rocket: 0,
-    eyes: 0,
-  };
-  let scanned = 0;
-
-  // Use GraphQL to query issues with reactions
   const query = `
     query($login: String!, $since: DateTime!) {
       user(login: $login) {
@@ -97,32 +124,30 @@ export async function fetchReactions(
     }
   `;
 
-  interface ReactionGroup {
-    content: string;
-    users: { totalCount: number };
-  }
-
-  interface IssueNode {
-    title: string;
-    url: string;
-    isPullRequest: boolean;
-    repository: { nameWithOwner: string };
-    reactions: { totalCount: number };
-    reactionGroups: ReactionGroup[];
-  }
-
-  interface GraphQLResponse {
-    user: {
-      issues: {
-        nodes: IssueNode[];
-      };
-    };
-  }
-
-  const data = await api.graphql<GraphQLResponse>(query, {
+  const raw = await api.graphql(query, {
     login: user,
     since: since.toISOString(),
   });
+  const parsed = ResponseSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(
+      `Invalid GraphQL response for reactions: ${parsed.error.message}`,
+    );
+  }
+
+  const items: ReactionSummary[] = [];
+  const totals: Record<string, number> = {
+    total_count: 0,
+    "+1": 0,
+    "-1": 0,
+    laugh: 0,
+    hooray: 0,
+    confused: 0,
+    heart: 0,
+    rocket: 0,
+    eyes: 0,
+  };
+  let scanned = 0;
 
   const reactionMap: Record<string, string> = {
     THUMBS_UP: "+1",
@@ -135,7 +160,7 @@ export async function fetchReactions(
     EYES: "eyes",
   };
 
-  for (const issue of data.user.issues.nodes) {
+  for (const issue of parsed.data.user.issues.nodes) {
     scanned++;
 
     if (issue.reactions.totalCount === 0) continue;

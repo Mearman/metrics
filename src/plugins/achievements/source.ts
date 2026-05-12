@@ -3,7 +3,10 @@
  *
  * Fetches user statistics used to derive achievements and badges.
  * Uses only fields accessible with github.token (repository-scoped).
+ * Zod validates the GraphQL response at runtime.
  */
+
+import * as z from "zod";
 
 const ACHIEVEMENTS_QUERY = `
   query($login: String!) {
@@ -48,21 +51,23 @@ export interface AchievementsData {
   achievements: Achievement[];
 }
 
-interface GraphQLResponse {
-  user: {
-    followers: { totalCount: number };
-    following: { totalCount: number };
-    repositories: { totalCount: number };
-    gists: { totalCount: number };
-    issues: { totalCount: number };
-    pullRequests: { totalCount: number };
-    contributionsCollection: {
-      totalCommitContributions: number;
-    };
-    starredRepositories: { totalCount: number };
-    watching: { totalCount: number };
-  };
-}
+const TotalCount = z.object({ totalCount: z.number() });
+
+const ResponseSchema = z.object({
+  user: z.object({
+    followers: TotalCount,
+    following: TotalCount,
+    repositories: TotalCount,
+    gists: TotalCount,
+    issues: TotalCount,
+    pullRequests: TotalCount,
+    contributionsCollection: z.object({
+      totalCommitContributions: z.number(),
+    }),
+    starredRepositories: TotalCount,
+    watching: TotalCount,
+  }),
+});
 
 /** Derive achievements from user statistics. */
 function deriveAchievements(stats: AchievementStats): Achievement[] {
@@ -186,16 +191,22 @@ function deriveAchievements(stats: AchievementStats): Achievement[] {
  */
 export async function fetchAchievements(
   api: {
-    graphql<T>(query: string, variables?: Record<string, unknown>): Promise<T>;
+    graphql(
+      query: string,
+      variables?: Record<string, unknown>,
+    ): Promise<unknown>;
   },
   user: string,
 ): Promise<AchievementsData> {
-  const data: GraphQLResponse = await api.graphql<GraphQLResponse>(
-    ACHIEVEMENTS_QUERY,
-    { login: user },
-  );
+  const raw = await api.graphql(ACHIEVEMENTS_QUERY, { login: user });
+  const parsed = ResponseSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(
+      `Invalid GraphQL response for achievements: ${parsed.error.message}`,
+    );
+  }
 
-  const u = data.user;
+  const u = parsed.data.user;
   const stats: AchievementStats = {
     followers: u.followers.totalCount,
     following: u.following.totalCount,

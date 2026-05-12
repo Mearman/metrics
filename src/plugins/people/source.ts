@@ -2,13 +2,14 @@
  * People plugin — data source.
  *
  * Fetches followers and following users from GitHub.
+ * Zod validates the GraphQL response at runtime.
  */
 
 import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
 
 // ---------------------------------------------------------------------------
-// Schema
+// Config
 // ---------------------------------------------------------------------------
 
 export const PeopleConfig = z.object({
@@ -41,7 +42,7 @@ export interface PeopleData {
 }
 
 // ---------------------------------------------------------------------------
-// GraphQL query
+// GraphQL queries
 // ---------------------------------------------------------------------------
 
 const FOLLOWERS_QUERY = `
@@ -71,26 +72,30 @@ query($login: String!, $limit: Int!) {
 }`;
 
 // ---------------------------------------------------------------------------
-// Fetch
+// Zod response schemas
 // ---------------------------------------------------------------------------
 
-interface FollowersResult {
-  user: {
-    followers: {
-      totalCount: number;
-      nodes: { login: string; avatarUrl: string }[];
-    };
-  };
-}
+const UserListSchema = z.object({
+  totalCount: z.number(),
+  nodes: z.array(
+    z.object({
+      login: z.string().trim(),
+      avatarUrl: z.string().trim(),
+    }),
+  ),
+});
 
-interface FollowingResult {
-  user: {
-    following: {
-      totalCount: number;
-      nodes: { login: string; avatarUrl: string }[];
-    };
-  };
-}
+const FollowersResponseSchema = z.object({
+  user: z.object({ followers: UserListSchema }),
+});
+
+const FollowingResponseSchema = z.object({
+  user: z.object({ following: UserListSchema }),
+});
+
+// ---------------------------------------------------------------------------
+// Fetch
+// ---------------------------------------------------------------------------
 
 export async function fetchPeople(
   ctx: FetchContext,
@@ -99,15 +104,21 @@ export async function fetchPeople(
   const sections: PeopleSection[] = [];
 
   if (config.types.includes("followers")) {
-    const result = await ctx.api.graphql<FollowersResult>(FOLLOWERS_QUERY, {
+    const raw = await ctx.api.graphql(FOLLOWERS_QUERY, {
       login: ctx.user,
       limit: config.limit,
     });
+    const parsed = FollowersResponseSchema.safeParse(raw);
+    if (!parsed.success) {
+      throw new Error(
+        `Invalid GraphQL response for followers: ${parsed.error.message}`,
+      );
+    }
 
     sections.push({
       type: "followers",
-      totalCount: result.user.followers.totalCount,
-      people: result.user.followers.nodes.map((n) => ({
+      totalCount: parsed.data.user.followers.totalCount,
+      people: parsed.data.user.followers.nodes.map((n) => ({
         login: n.login,
         avatarUrl: n.avatarUrl,
       })),
@@ -115,15 +126,21 @@ export async function fetchPeople(
   }
 
   if (config.types.includes("following")) {
-    const result = await ctx.api.graphql<FollowingResult>(FOLLOWING_QUERY, {
+    const raw = await ctx.api.graphql(FOLLOWING_QUERY, {
       login: ctx.user,
       limit: config.limit,
     });
+    const parsed = FollowingResponseSchema.safeParse(raw);
+    if (!parsed.success) {
+      throw new Error(
+        `Invalid GraphQL response for following: ${parsed.error.message}`,
+      );
+    }
 
     sections.push({
       type: "following",
-      totalCount: result.user.following.totalCount,
-      people: result.user.following.nodes.map((n) => ({
+      totalCount: parsed.data.user.following.totalCount,
+      people: parsed.data.user.following.nodes.map((n) => ({
         login: n.login,
         avatarUrl: n.avatarUrl,
       })),

@@ -2,15 +2,14 @@
  * Stargazers plugin — data source.
  *
  * Fetches stargazer counts per repository to render a star history chart.
- * Uses a simplified approach: aggregates star counts from user repos
- * rather than paginating through individual star events.
+ * Zod validates the GraphQL response at runtime.
  */
 
 import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
 
 // ---------------------------------------------------------------------------
-// Schema
+// Config
 // ---------------------------------------------------------------------------
 
 export const StargazersConfig = z.object({
@@ -56,27 +55,42 @@ query($login: String!, $limit: Int!) {
 }`;
 
 // ---------------------------------------------------------------------------
-// Fetch
+// Zod response schema
 // ---------------------------------------------------------------------------
 
-interface QueryResult {
-  user: {
-    repositories: {
-      nodes: { name: string; stargazerCount: number }[];
-    };
-  };
-}
+const ResponseSchema = z.object({
+  user: z.object({
+    repositories: z.object({
+      nodes: z.array(
+        z.object({
+          name: z.string().trim(),
+          stargazerCount: z.number(),
+        }),
+      ),
+    }),
+  }),
+});
+
+// ---------------------------------------------------------------------------
+// Fetch
+// ---------------------------------------------------------------------------
 
 export async function fetchStargazers(
   ctx: FetchContext,
   config: StargazersConfig,
 ): Promise<StargazersData> {
-  const result = await ctx.api.graphql<QueryResult>(QUERY, {
+  const raw = await ctx.api.graphql(QUERY, {
     login: ctx.user,
     limit: config.limit,
   });
+  const parsed = ResponseSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(
+      `Invalid GraphQL response for stargazers: ${parsed.error.message}`,
+    );
+  }
 
-  const repos = result.user.repositories.nodes.map((node) => ({
+  const repos = parsed.data.user.repositories.nodes.map((node) => ({
     name: node.name,
     stars: node.stargazerCount,
   }));

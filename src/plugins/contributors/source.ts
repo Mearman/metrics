@@ -2,10 +2,15 @@
  * Contributors plugin — data source.
  *
  * Fetches contributor breakdown for the user's repositories.
+ * Zod validates the GraphQL response at runtime.
  */
 
 import * as z from "zod";
 import type { ApiClient } from "../types.ts";
+
+// ---------------------------------------------------------------------------
+// Config
+// ---------------------------------------------------------------------------
 
 export const ContributorsConfig = z.object({
   /** Maximum repositories to show */
@@ -16,6 +21,10 @@ export const ContributorsConfig = z.object({
   threshold: z.int().min(1).default(1),
 });
 export type ContributorsConfig = z.infer<typeof ContributorsConfig>;
+
+// ---------------------------------------------------------------------------
+// Data types
+// ---------------------------------------------------------------------------
 
 export interface Contributor {
   login: string;
@@ -32,22 +41,9 @@ export interface ContributorsData {
   repos: RepoContributors[];
 }
 
-interface GraphQLResponse {
-  user: {
-    repositories: {
-      nodes: {
-        nameWithOwner: string;
-        contributors: {
-          nodes: {
-            login: string;
-            avatarUrl: string;
-            contributions: number;
-          }[];
-        };
-      }[];
-    };
-  };
-}
+// ---------------------------------------------------------------------------
+// GraphQL query
+// ---------------------------------------------------------------------------
 
 const QUERY = `
   query($login: String!, $first: Int!, $after: String) {
@@ -78,6 +74,35 @@ const QUERY = `
   }
 ` as const;
 
+// ---------------------------------------------------------------------------
+// Zod response schema
+// ---------------------------------------------------------------------------
+
+const ResponseSchema = z.object({
+  user: z.object({
+    repositories: z.object({
+      nodes: z.array(
+        z.object({
+          nameWithOwner: z.string().trim(),
+          contributors: z.object({
+            nodes: z.array(
+              z.object({
+                login: z.string().trim(),
+                avatarUrl: z.string().trim(),
+                contributions: z.number(),
+              }),
+            ),
+          }),
+        }),
+      ),
+    }),
+  }),
+});
+
+// ---------------------------------------------------------------------------
+// Fetch
+// ---------------------------------------------------------------------------
+
 /**
  * Fetch contributors for the user's top repositories.
  */
@@ -88,12 +113,18 @@ export async function fetchContributors(
 ): Promise<ContributorsData> {
   const repos: RepoContributors[] = [];
 
-  const data = await api.graphql<GraphQLResponse>(QUERY, {
+  const raw = await api.graphql(QUERY, {
     login: user,
     first: config.limit,
   });
+  const parsed = ResponseSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(
+      `Invalid GraphQL response for contributors: ${parsed.error.message}`,
+    );
+  }
 
-  for (const repo of data.user.repositories.nodes) {
+  for (const repo of parsed.data.user.repositories.nodes) {
     const contributors: Contributor[] = [];
 
     for (const c of repo.contributors.nodes) {

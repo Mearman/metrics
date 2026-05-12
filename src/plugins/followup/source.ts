@@ -3,13 +3,14 @@
  *
  * Fetches issue and PR status across user repositories.
  * Shows open/closed issue ratio and open/merged PR ratio.
+ * Zod validates the GraphQL response at runtime.
  */
 
 import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
 
 // ---------------------------------------------------------------------------
-// Schema
+// Config
 // ---------------------------------------------------------------------------
 
 export const FollowupConfig = z.object({
@@ -69,6 +70,38 @@ query($login: String!) {
 }`;
 
 // ---------------------------------------------------------------------------
+// Zod response schemas
+// ---------------------------------------------------------------------------
+
+const TotalCount = z.object({ totalCount: z.number() });
+
+const ReposResponseSchema = z.object({
+  user: z.object({
+    repositories: z.object({
+      nodes: z.array(
+        z.object({
+          issues: TotalCount,
+          closedIssues: TotalCount,
+          pullRequests: TotalCount,
+          mergedPullRequests: TotalCount,
+          closedPullRequests: TotalCount,
+        }),
+      ),
+    }),
+  }),
+});
+
+const UserResponseSchema = z.object({
+  user: z.object({
+    openIssues: TotalCount,
+    closedIssues: TotalCount,
+    openPRs: TotalCount,
+    mergedPRs: TotalCount,
+    closedPRs: TotalCount,
+  }),
+});
+
+// ---------------------------------------------------------------------------
 // Fetch
 // ---------------------------------------------------------------------------
 
@@ -79,19 +112,16 @@ export async function fetchFollowup(
   const sections: FollowupSection[] = [];
 
   if (config.sections.includes("repositories")) {
-    const result = await ctx.api.graphql<{
-      user: {
-        repositories: {
-          nodes: {
-            issues: { totalCount: number };
-            closedIssues: { totalCount: number };
-            pullRequests: { totalCount: number };
-            mergedPullRequests: { totalCount: number };
-            closedPullRequests: { totalCount: number };
-          }[];
-        };
-      };
-    }>(REPOS_QUERY, { login: ctx.user, limit: 100 });
+    const raw = await ctx.api.graphql(REPOS_QUERY, {
+      login: ctx.user,
+      limit: 100,
+    });
+    const parsed = ReposResponseSchema.safeParse(raw);
+    if (!parsed.success) {
+      throw new Error(
+        `Invalid GraphQL response for followup repos: ${parsed.error.message}`,
+      );
+    }
 
     let openIssues = 0;
     let closedIssues = 0;
@@ -99,7 +129,7 @@ export async function fetchFollowup(
     let mergedPRs = 0;
     let closedPRs = 0;
 
-    for (const repo of result.user.repositories.nodes) {
+    for (const repo of parsed.data.user.repositories.nodes) {
       openIssues += repo.issues.totalCount;
       closedIssues += repo.closedIssues.totalCount;
       openPRs += repo.pullRequests.totalCount;
@@ -115,26 +145,24 @@ export async function fetchFollowup(
   }
 
   if (config.sections.includes("user")) {
-    const result = await ctx.api.graphql<{
-      user: {
-        openIssues: { totalCount: number };
-        closedIssues: { totalCount: number };
-        openPRs: { totalCount: number };
-        mergedPRs: { totalCount: number };
-        closedPRs: { totalCount: number };
-      };
-    }>(USER_QUERY, { login: ctx.user });
+    const raw = await ctx.api.graphql(USER_QUERY, { login: ctx.user });
+    const parsed = UserResponseSchema.safeParse(raw);
+    if (!parsed.success) {
+      throw new Error(
+        `Invalid GraphQL response for followup user: ${parsed.error.message}`,
+      );
+    }
 
     sections.push({
       title: "Your issues and PRs",
       issues: {
-        open: result.user.openIssues.totalCount,
-        closed: result.user.closedIssues.totalCount,
+        open: parsed.data.user.openIssues.totalCount,
+        closed: parsed.data.user.closedIssues.totalCount,
       },
       pullRequests: {
-        open: result.user.openPRs.totalCount,
-        merged: result.user.mergedPRs.totalCount,
-        closed: result.user.closedPRs.totalCount,
+        open: parsed.data.user.openPRs.totalCount,
+        merged: parsed.data.user.mergedPRs.totalCount,
+        closed: parsed.data.user.closedPRs.totalCount,
       },
     });
   }

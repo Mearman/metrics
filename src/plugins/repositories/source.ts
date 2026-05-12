@@ -2,13 +2,14 @@
  * Repositories plugin — data source.
  *
  * Fetches pinned and featured repositories from GitHub.
+ * Zod validates the GraphQL response at runtime.
  */
 
 import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
 
 // ---------------------------------------------------------------------------
-// Schema
+// Config
 // ---------------------------------------------------------------------------
 
 export const RepositoriesConfig = z.object({
@@ -116,23 +117,60 @@ query($login: String!, $limit: Int!, $affiliations: [RepositoryAffiliation]) {
 }`;
 
 // ---------------------------------------------------------------------------
+// Zod response schemas
+// ---------------------------------------------------------------------------
+
+const TotalCount = z.object({ totalCount: z.number() });
+
+const RepoNodeSchema = z.object({
+  createdAt: z.string().trim(),
+  description: z.string().trim().nullable(),
+  forkCount: z.number(),
+  isFork: z.boolean(),
+  issues: TotalCount,
+  nameWithOwner: z.string().trim(),
+  licenseInfo: z
+    .object({ spdxId: z.string().trim(), name: z.string().trim() })
+    .nullable(),
+  pullRequests: TotalCount,
+  stargazerCount: z.number(),
+  primaryLanguage: z
+    .object({ name: z.string().trim(), color: z.string().trim() })
+    .nullable(),
+});
+
+const RepoQuerySchema = z.object({
+  repository: RepoNodeSchema,
+});
+
+const PinnedQuerySchema = z.object({
+  user: z.object({
+    pinnedItems: z.object({
+      edges: z.array(
+        z.object({
+          node: RepoNodeSchema.nullable(),
+        }),
+      ),
+    }),
+  }),
+});
+
+const StarredQuerySchema = z.object({
+  user: z.object({
+    repositories: z.object({
+      nodes: z.array(RepoNodeSchema),
+    }),
+  }),
+});
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-interface RepoNode {
-  createdAt: string;
-  description: string | null;
-  forkCount: number;
-  isFork: boolean;
-  issues: { totalCount: number };
-  nameWithOwner: string;
-  licenseInfo: { spdxId: string; name: string } | null;
-  pullRequests: { totalCount: number };
-  stargazerCount: number;
-  primaryLanguage: { name: string; color: string } | null;
-}
-
-function formatRepo(node: RepoNode, sorting: SortingKey): RepositoryInfo {
+function formatRepo(
+  node: z.infer<typeof RepoNodeSchema>,
+  sorting: SortingKey,
+): RepositoryInfo {
   return {
     nameWithOwner: node.nameWithOwner,
     description: node.description,
@@ -166,55 +204,52 @@ export async function fetchRepositories(
     const { owner, name } = match.groups;
     const repoOwner = owner ?? ctx.user;
 
-    const result = await ctx.api.graphql<{ repository: RepoNode }>(REPO_QUERY, {
+    const raw = await ctx.api.graphql(REPO_QUERY, {
       owner: repoOwner,
       name,
     });
+    const parsed = RepoQuerySchema.safeParse(raw);
+    if (!parsed.success) continue;
 
-    if (!processed.has(result.repository.nameWithOwner)) {
-      list.push(formatRepo(result.repository, "featured"));
-      processed.add(result.repository.nameWithOwner);
+    if (!processed.has(parsed.data.repository.nameWithOwner)) {
+      list.push(formatRepo(parsed.data.repository, "featured"));
+      processed.add(parsed.data.repository.nameWithOwner);
     }
   }
 
   // Pinned repositories
   if (config.pinned > 0) {
-    const result = await ctx.api.graphql<{
-      user: {
-        pinnedItems: {
-          edges: { node: RepoNode | null }[];
-        };
-      };
-    }>(PINNED_QUERY, { login: ctx.user, limit: config.pinned });
-
-    for (const edge of result.user.pinnedItems.edges) {
-      if (edge.node === null) continue;
-      if (processed.has(edge.node.nameWithOwner)) continue;
-      processed.add(edge.node.nameWithOwner);
-      list.push(formatRepo(edge.node, "pinned"));
+    const raw = await ctx.api.graphql(PINNED_QUERY, {
+      login: ctx.user,
+      limit: config.pinned,
+    });
+    const parsed = PinnedQuerySchema.safeParse(raw);
+    if (parsed.success) {
+      for (const edge of parsed.data.user.pinnedItems.edges) {
+        if (edge.node === null) continue;
+        if (processed.has(edge.node.nameWithOwner)) continue;
+        processed.add(edge.node.nameWithOwner);
+        list.push(formatRepo(edge.node, "pinned"));
+      }
     }
   }
 
   // Most starred repositories
   if (config.starred > 0) {
-    const result = await ctx.api.graphql<{
-      user: {
-        repositories: {
-          nodes: RepoNode[];
-        };
-      };
-    }>(STARRED_QUERY, {
+    const raw = await ctx.api.graphql(STARRED_QUERY, {
       login: ctx.user,
       limit: Math.min(config.starred + 10, 100),
       affiliations: ["OWNER"],
     });
-
-    let count = 0;
-    for (const node of result.user.repositories.nodes) {
-      if (processed.has(node.nameWithOwner)) continue;
-      processed.add(node.nameWithOwner);
-      list.push(formatRepo(node, "starred"));
-      if (++count >= config.starred) break;
+    const parsed = StarredQuerySchema.safeParse(raw);
+    if (parsed.success) {
+      let count = 0;
+      for (const node of parsed.data.user.repositories.nodes) {
+        if (processed.has(node.nameWithOwner)) continue;
+        processed.add(node.nameWithOwner);
+        list.push(formatRepo(node, "starred"));
+        if (++count >= config.starred) break;
+      }
     }
   }
 

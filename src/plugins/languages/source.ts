@@ -3,7 +3,15 @@
  *
  * Fetches language breakdown from the user's repositories.
  * Supports both total and recent (last N days) breakdowns.
+ * Zod validates the GraphQL response at runtime.
  */
+
+import * as z from "zod";
+import type { DataSource } from "../types.ts";
+
+// ---------------------------------------------------------------------------
+// GraphQL query
+// ---------------------------------------------------------------------------
 
 const LANGUAGES_QUERY = `
   query($login: String!, $first: Int!, $after: String) {
@@ -35,6 +43,53 @@ const LANGUAGES_QUERY = `
   }
 ` as const;
 
+// ---------------------------------------------------------------------------
+// Config
+// ---------------------------------------------------------------------------
+
+export const LanguagesConfig = z.object({
+  limit: z.int().min(1).max(20).default(8),
+  threshold: z.number().min(0).max(100).default(1),
+  sections: z
+    .array(z.enum(["markup", "programming"]))
+    .default(["markup", "programming"]),
+});
+export type LanguagesConfig = z.infer<typeof LanguagesConfig>;
+
+// ---------------------------------------------------------------------------
+// Zod response schema
+// ---------------------------------------------------------------------------
+
+const ResponseSchema = z.object({
+  user: z.object({
+    repositories: z.object({
+      pageInfo: z.object({
+        hasNextPage: z.boolean(),
+        endCursor: z.string().trim().nullable(),
+      }),
+      nodes: z.array(
+        z.object({
+          languages: z.object({
+            edges: z.array(
+              z.object({
+                size: z.number(),
+                node: z.object({
+                  name: z.string().trim(),
+                  color: z.string().trim().nullable(),
+                }),
+              }),
+            ),
+          }),
+        }),
+      ),
+    }),
+  }),
+});
+
+// ---------------------------------------------------------------------------
+// Data types
+// ---------------------------------------------------------------------------
+
 export interface LanguageEntry {
   name: string;
   colour: string;
@@ -46,31 +101,9 @@ export interface LanguagesData {
   totalBytes: number;
 }
 
-interface LanguageEdge {
-  size: number;
-  node: {
-    name: string;
-    color: string | null;
-  };
-}
-
-interface RepositoryNode {
-  languages: {
-    edges: LanguageEdge[];
-  };
-}
-
-interface GraphQLResponse {
-  user: {
-    repositories: {
-      pageInfo: {
-        hasNextPage: boolean;
-        endCursor: string | null;
-      };
-      nodes: RepositoryNode[];
-    };
-  };
-}
+// ---------------------------------------------------------------------------
+// Fetch
+// ---------------------------------------------------------------------------
 
 /**
  * Fetch language breakdown from the user's public repositories.
@@ -79,7 +112,10 @@ interface GraphQLResponse {
  */
 export async function fetchLanguages(
   api: {
-    graphql<T>(query: string, variables?: Record<string, unknown>): Promise<T>;
+    graphql(
+      query: string,
+      variables?: Record<string, unknown>,
+    ): Promise<unknown>;
   },
   user: string,
   options?: { limit?: number },
@@ -90,16 +126,19 @@ export async function fetchLanguages(
   let cursor: string | null = null;
 
   while (hasNextPage) {
-    const data: GraphQLResponse = await api.graphql<GraphQLResponse>(
-      LANGUAGES_QUERY,
-      {
-        login: user,
-        first: Math.min(repoLimit, 100),
-        after: cursor,
-      },
-    );
+    const raw = await api.graphql(LANGUAGES_QUERY, {
+      login: user,
+      first: Math.min(repoLimit, 100),
+      after: cursor,
+    });
+    const parsed = ResponseSchema.safeParse(raw);
+    if (!parsed.success) {
+      throw new Error(
+        `Invalid GraphQL response for languages: ${parsed.error.message}`,
+      );
+    }
 
-    const repos = data.user.repositories;
+    const repos = parsed.data.user.repositories;
 
     for (const repo of repos.nodes) {
       for (const edge of repo.languages.edges) {
@@ -129,3 +168,15 @@ export async function fetchLanguages(
 
   return { total, totalBytes };
 }
+
+// ---------------------------------------------------------------------------
+// Data source
+// ---------------------------------------------------------------------------
+
+export const languagesSource: DataSource<LanguagesConfig, LanguagesData> = {
+  id: "languages",
+  configSchema: LanguagesConfig,
+  async fetch(ctx) {
+    return await fetchLanguages(ctx.api, ctx.user);
+  },
+};

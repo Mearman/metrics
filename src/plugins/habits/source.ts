@@ -2,8 +2,15 @@
  * Habits plugin — data source.
  *
  * Fetches commit timing and language habits from the user's
- * recent activity.
+ * recent activity. Zod validates the GraphQL response at runtime.
  */
+
+import * as z from "zod";
+import type { DataSource } from "../types.ts";
+
+// ---------------------------------------------------------------------------
+// GraphQL query
+// ---------------------------------------------------------------------------
 
 const HABITS_QUERY = `
   query($login: String!, $from: DateTime!, $to: DateTime!) {
@@ -24,6 +31,44 @@ const HABITS_QUERY = `
   }
 ` as const;
 
+// ---------------------------------------------------------------------------
+// Config
+// ---------------------------------------------------------------------------
+
+export const HabitsConfig = z.object({
+  days: z.int().min(1).max(365).default(14),
+});
+export type HabitsConfig = z.infer<typeof HabitsConfig>;
+
+// ---------------------------------------------------------------------------
+// Zod response schema
+// ---------------------------------------------------------------------------
+
+const ResponseSchema = z.object({
+  user: z.object({
+    contributionsCollection: z.object({
+      totalCommitContributions: z.number(),
+      restrictedContributionsCount: z.number(),
+      contributionCalendar: z.object({
+        weeks: z.array(
+          z.object({
+            contributionDays: z.array(
+              z.object({
+                contributionCount: z.number(),
+                date: z.string().trim(),
+              }),
+            ),
+          }),
+        ),
+      }),
+    }),
+  }),
+});
+
+// ---------------------------------------------------------------------------
+// Data types
+// ---------------------------------------------------------------------------
+
 export interface DayActivity {
   date: string;
   count: number;
@@ -38,29 +83,19 @@ export interface HabitsData {
   streak: number;
 }
 
-interface GraphQLResponse {
-  user: {
-    contributionsCollection: {
-      totalCommitContributions: number;
-      restrictedContributionsCount: number;
-      contributionCalendar: {
-        weeks: {
-          contributionDays: {
-            contributionCount: number;
-            date: string;
-          }[];
-        }[];
-      };
-    };
-  };
-}
+// ---------------------------------------------------------------------------
+// Fetch
+// ---------------------------------------------------------------------------
 
 /**
  * Fetch contribution habits from recent activity.
  */
 export async function fetchHabits(
   api: {
-    graphql<T>(query: string, variables?: Record<string, unknown>): Promise<T>;
+    graphql(
+      query: string,
+      variables?: Record<string, unknown>,
+    ): Promise<unknown>;
   },
   user: string,
   days = 14,
@@ -69,16 +104,19 @@ export async function fetchHabits(
   const from = new Date(to);
   from.setDate(from.getDate() - days);
 
-  const data: GraphQLResponse = await api.graphql<GraphQLResponse>(
-    HABITS_QUERY,
-    {
-      login: user,
-      from: from.toISOString(),
-      to: to.toISOString(),
-    },
-  );
+  const raw = await api.graphql(HABITS_QUERY, {
+    login: user,
+    from: from.toISOString(),
+    to: to.toISOString(),
+  });
+  const parsed = ResponseSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(
+      `Invalid GraphQL response for habits: ${parsed.error.message}`,
+    );
+  }
 
-  const collection = data.user.contributionsCollection;
+  const collection = parsed.data.user.contributionsCollection;
   const calendar = collection.contributionCalendar;
 
   const dayList: DayActivity[] = [];
@@ -122,3 +160,15 @@ export async function fetchHabits(
     streak,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Data source
+// ---------------------------------------------------------------------------
+
+export const habitsSource: DataSource<HabitsConfig, HabitsData> = {
+  id: "habits",
+  configSchema: HabitsConfig,
+  async fetch(ctx, config) {
+    return await fetchHabits(ctx.api, ctx.user, config.days);
+  },
+};
