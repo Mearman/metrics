@@ -52,7 +52,7 @@ export function renderIntroduction(
   elements.push(
     text(padding + avatarSize + 12, y + 14, data.name, {
       fill: colours.text,
-      "font-size": 14,
+      "font-size": 13,
       "font-weight": 600,
       "font-family": fontStack,
     }),

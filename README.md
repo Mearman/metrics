@@ -142,9 +142,7 @@ outputs:
         secrets: true
         threshold: C
       lines:
-        sections: [base]
-        repositories_limit: 4
-        history_limit: 1
+        limit: 4
 ```
 
 Config is loaded via [cosmiconfig](https://github.com/cosmiconfig/cosmiconfig), which searches for:
