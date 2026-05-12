@@ -1,3 +1,9 @@
+## [1.12.0](https://github.com/Mearman/metrics/compare/v1.11.1...v1.12.0) (2026-05-12)
+
+### Features
+
+* **ci:** fork sync workflow and remove sync config ([4bf9bb6](https://github.com/Mearman/metrics/commit/4bf9bb6b6d3f1f3970fddb6ee1be7303d43acbf6))
+
 ## [1.11.1](https://github.com/Mearman/metrics/compare/v1.11.0...v1.11.1) (2026-05-12)
 
 ### Refactoring
