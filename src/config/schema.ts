@@ -111,6 +111,8 @@ export const RootConfig = z.object({
   embed_fonts: z.boolean().default(true),
   /** Repository fetching and filtering rules */
   repos: ReposConfigSchema.default({ fetch: "public", rules: [] }),
+  /** Global user ignore list (e.g. bots). Propagated to activity, reactions, contributors. */
+  users_ignored: z.array(z.string().trim()).default([]),
   /** Custom colour overrides — merge into the theme's colours */
   colours: z
     .object({

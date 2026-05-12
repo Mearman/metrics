@@ -201,7 +201,7 @@ export async function fetchActivity(
   }
 
   const filterSet = new Set(config.filter);
-  const ignoredSet = new Set(config.ignored);
+  const ignoredSet = new Set([...ctx.usersIgnored, ...config.ignored]);
   const filtered = allEvents
     .filter((e) => filterSet.has("all") || filterSet.has(e.type))
     .filter((e) => !ignoredSet.has(e.repo.split("/")[0] ?? ""))

@@ -174,6 +174,7 @@ export async function runPipeline(
             signal: controller.signal,
             token,
             repos: config.repos,
+            usersIgnored: config.users_ignored,
           },
           resolvedConfig,
         );

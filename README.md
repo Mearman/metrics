@@ -204,6 +204,23 @@ outputs:
 
 Plugins listed in `order` render first (in that order). Any plugins not listed are appended in their YAML key order.
 
+### Global user ignore list
+
+Use `users_ignored` to filter out bot accounts and specific users across plugins:
+
+```yaml
+users_ignored:              # Global list — propagated to activity, reactions, contributors
+  - dependabot[bot]
+  - github-actions[bot]
+  - renovate-bot
+
+outputs:
+  - path: output/github-metrics.svg
+    plugins:
+      activity:
+        ignored: [internal-bot]  # Combined with global users_ignored
+```
+
 ### PNG output
 
 Change `format: svg` to `format: png` to render a raster image instead. PNGs are generated at 2× pixel ratio for retina displays via [resvg-js](https://github.com/nicejam/resvg-js) — a pure WASM SVG renderer with no native dependencies.

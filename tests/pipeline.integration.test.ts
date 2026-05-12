@@ -164,6 +164,7 @@ function makeConfig(overrides?: Record<string, unknown>): RootConfig {
     template: "classic",
     embed_fonts: false,
     repos: { fetch: "public", rules: [] },
+    users_ignored: [],
     outputs: [
       {
         path: "/tmp/test-metrics.svg",

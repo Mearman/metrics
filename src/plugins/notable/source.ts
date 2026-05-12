@@ -20,6 +20,10 @@ export const NotableConfig = z.object({
   types: z.enum(["all", "organization", "user"]).default("organization"),
   /** Include own repositories */
   self: z.boolean().default(false),
+  /** Contribution types to include */
+  contribution_types: z
+    .array(z.enum(["commit", "pull_request", "issue"]))
+    .default(["commit"]),
 });
 
 export type NotableConfig = z.infer<typeof NotableConfig>;

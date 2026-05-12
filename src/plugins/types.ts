@@ -28,6 +28,8 @@ export interface FetchContext {
   token: string;
   /** Repository fetching and filtering rules */
   repos: import("../repos/filter.ts").ReposConfig;
+  /** Global user ignore list (e.g. bots) */
+  usersIgnored: string[];
 }
 
 /** Context passed to every renderer. */
