@@ -1,3 +1,9 @@
+## [1.5.0](https://github.com/Mearman/metrics/compare/v1.4.0...v1.5.0) (2026-05-12)
+
+### Features
+
+* wire repo filter into all 13 plugins (query level) ([43b75e8](https://github.com/Mearman/metrics/commit/43b75e8be330d5d6698561d24b892912c169d2b3))
+
 ## [1.4.0](https://github.com/Mearman/metrics/compare/v1.3.0...v1.4.0) (2026-05-12)
 
 ### Features
