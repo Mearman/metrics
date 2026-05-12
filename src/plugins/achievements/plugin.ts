@@ -7,7 +7,7 @@ import type { Plugin } from "../types.ts";
 import { fetchAchievements, type AchievementsData } from "./source.ts";
 import { renderAchievements } from "./render.ts";
 
-const AchievementsPluginConfig = z.object({
+export const AchievementsPluginConfig = z.object({
   display: z.enum(["compact", "detailed"]).default("detailed"),
   secrets: z.boolean().default(false),
   threshold: z.enum(["C", "B", "A", "S", "X"]).default("C"),

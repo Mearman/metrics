@@ -4,6 +4,9 @@
  * Single source of truth: Zod schema → inferred type → runtime validation.
  * The schema is the canonical definition of all configuration.
  *
+ * Each plugin defines its own Zod config schema in its source file.
+ * This module imports them all and composes the root config.
+ *
  * Config is loaded via cosmiconfig, which searches for:
  *   - .github/metrics.yml
  *   - .github/metrics.yaml
@@ -17,149 +20,67 @@
 import { cosmiconfig } from "cosmiconfig";
 import * as z from "zod";
 import { ReposConfigSchema } from "../repos/filter.ts";
+import { BasePluginConfig } from "../plugins/base/source.ts";
+import { IsocalendarConfig } from "../plugins/isocalendar/source.ts";
+import { LanguagesConfig } from "../plugins/languages/source.ts";
+import { HabitsConfig } from "../plugins/habits/source.ts";
+import { AchievementsPluginConfig } from "../plugins/achievements/plugin.ts";
+import { LinesConfig } from "../plugins/lines/source.ts";
+import { RepositoriesConfig } from "../plugins/repositories/source.ts";
+import { ActivityConfig } from "../plugins/activity/source.ts";
+import { StarsConfig } from "../plugins/stars/source.ts";
+import { FollowupConfig } from "../plugins/followup/source.ts";
+import { StargazersConfig } from "../plugins/stargazers/source.ts";
+import { PeopleConfig } from "../plugins/people/source.ts";
+import { GistsConfig } from "../plugins/gists/source.ts";
+import { DiscussionsConfig } from "../plugins/discussions/source.ts";
+import { NotableConfig } from "../plugins/notable/source.ts";
+import { CalendarConfig } from "../plugins/calendar/source.ts";
+import { CodeConfig } from "../plugins/code/source.ts";
+import { IntroductionConfig } from "../plugins/introduction/source.ts";
+import { ReactionsConfig } from "../plugins/reactions/source.ts";
+import { ContributorsConfig } from "../plugins/contributors/source.ts";
+import { ProjectsConfig } from "../plugins/projects/source.ts";
+import { SponsorsConfig } from "../plugins/sponsors/source.ts";
+import { SponsorshipsConfig } from "../plugins/sponsorships/source.ts";
+import { TrafficConfig } from "../plugins/traffic/source.ts";
+import { LocConfig } from "../plugins/loc/source.ts";
+import { TopicsConfig } from "../plugins/topics/source.ts";
+import { LicencesConfig } from "../plugins/licenses/source.ts";
 
 // ---------------------------------------------------------------------------
-// Plugin config schemas — each plugin defines its own
+// Plugin config — composed from each plugin's own schema
 // ---------------------------------------------------------------------------
 
-const BasePluginConfig = z.object({
-  sections: z
-    .array(
-      z.enum(["header", "activity", "community", "repositories", "metadata"]),
-    )
-    .default(["header", "activity", "community", "repositories", "metadata"]),
-  indepth: z.boolean().default(false),
+const PluginsConfig = z.object({
+  base: BasePluginConfig.optional(),
+  isocalendar: IsocalendarConfig.optional(),
+  languages: LanguagesConfig.optional(),
+  habits: HabitsConfig.optional(),
+  achievements: AchievementsPluginConfig.optional(),
+  lines: LinesConfig.optional(),
+  repositories: RepositoriesConfig.optional(),
+  activity: ActivityConfig.optional(),
+  stars: StarsConfig.optional(),
+  followup: FollowupConfig.optional(),
+  stargazers: StargazersConfig.optional(),
+  people: PeopleConfig.optional(),
+  gists: GistsConfig.optional(),
+  discussions: DiscussionsConfig.optional(),
+  notable: NotableConfig.optional(),
+  calendar: CalendarConfig.optional(),
+  code: CodeConfig.optional(),
+  introduction: IntroductionConfig.optional(),
+  reactions: ReactionsConfig.optional(),
+  contributors: ContributorsConfig.optional(),
+  projects: ProjectsConfig.optional(),
+  sponsors: SponsorsConfig.optional(),
+  sponsorships: SponsorshipsConfig.optional(),
+  traffic: TrafficConfig.optional(),
+  loc: LocConfig.optional(),
+  topics: TopicsConfig.optional(),
+  licenses: LicencesConfig.optional(),
 });
-
-const IsocalendarPluginConfig = z.object({
-  duration: z.enum(["half-year", "full-year"]).default("full-year"),
-});
-
-const LanguagesPluginConfig = z.object({
-  limit: z.int().min(1).max(20).default(8),
-  threshold: z.number().min(0).max(100).default(5),
-  categories: z
-    .array(z.enum(["markup", "programming"]))
-    .default(["markup", "programming"]),
-  recent_days: z.int().min(1).default(14),
-  recent_load: z.int().min(1).default(300),
-});
-
-const HabitsPluginConfig = z.object({
-  days: z.int().min(1).default(14),
-  from: z.int().min(1).default(200),
-  charts: z.boolean().default(false),
-  facts: z.boolean().default(false),
-});
-
-const AchievementsPluginConfig = z.object({
-  display: z.enum(["compact", "detailed"]).default("detailed"),
-  secrets: z.boolean().default(false),
-  threshold: z.enum(["C", "B", "A", "S", "X"]).default("C"),
-});
-
-const LinesPluginConfig = z.object({
-  sections: z.array(z.enum(["base", "history"])).default(["base"]),
-  repositories_limit: z.int().min(1).default(4),
-  history_limit: z.int().min(1).default(1),
-});
-
-const RepositoriesPluginConfig = z.object({
-  pinned: z.int().min(0).max(6).default(0),
-  featured: z.array(z.string().trim()).default([]),
-  starred: z.int().min(0).max(100).default(0),
-  order: z
-    .array(z.enum(["featured", "pinned", "starred"]))
-    .default(["featured", "pinned", "starred"]),
-});
-
-const ActivityPluginConfig = z.object({
-  limit: z.int().min(1).max(100).default(5),
-  load: z.int().min(100).max(1000).default(300),
-  days: z.int().min(0).max(365).default(14),
-  filter: z
-    .array(
-      z.enum([
-        "all",
-        "push",
-        "issue",
-        "pr",
-        "review",
-        "comment",
-        "release",
-        "fork",
-        "star",
-        "wiki",
-        "ref/create",
-        "ref/delete",
-      ]),
-    )
-    .default(["all"]),
-  timestamps: z.boolean().default(false),
-});
-
-// Plugin configs are keyed by plugin ID, all optional.
-// .loose() allows plugins we haven't defined schemas for yet.
-const PluginsConfig = z
-  .object({
-    base: BasePluginConfig.optional(),
-    isocalendar: IsocalendarPluginConfig.optional(),
-    languages: LanguagesPluginConfig.optional(),
-    habits: HabitsPluginConfig.optional(),
-    achievements: AchievementsPluginConfig.optional(),
-    lines: LinesPluginConfig.optional(),
-    repositories: RepositoriesPluginConfig.optional(),
-    activity: ActivityPluginConfig.optional(),
-    stars: z.object({ limit: z.int().min(1).max(100).default(4) }).optional(),
-    followup: z
-      .object({
-        sections: z
-          .array(z.enum(["repositories", "user"]))
-          .default(["repositories"]),
-        indepth: z.boolean().default(false),
-      })
-      .optional(),
-    stargazers: z
-      .object({
-        limit: z.int().min(1).max(30).default(8),
-      })
-      .optional(),
-    people: z
-      .object({
-        limit: z.int().min(0).max(100).default(24),
-        size: z.int().min(8).max(64).default(28),
-        types: z
-          .array(z.enum(["followers", "following"]))
-          .default(["followers", "following"]),
-      })
-      .optional(),
-    gists: z.object({}).optional(),
-    discussions: z
-      .object({
-        categories: z.boolean().default(true),
-        limit: z.int().min(1).max(20).default(5),
-      })
-      .optional(),
-    notable: z
-      .object({
-        indepth: z.boolean().default(false),
-        from: z.int().min(1).default(5),
-      })
-      .optional(),
-    calendar: z
-      .object({
-        years: z.int().min(1).max(10).default(3),
-      })
-      .optional(),
-    code: z
-      .object({
-        max_length: z.int().min(20).max(500).default(200),
-        scan_limit: z.int().min(1).max(50).default(20),
-      })
-      .optional(),
-    // TODO: remaining 11 plugin schemas
-  })
-  .loose();
 
 // ---------------------------------------------------------------------------
 // Output schema
