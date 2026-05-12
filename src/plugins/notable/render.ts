@@ -36,9 +36,13 @@ export function renderNotable(
   );
 
   const avatarSize = 32;
-  const gap = 8;
+  const labelWidth = 80;
+  const gap = labelWidth - avatarSize;
   const step = avatarSize + gap;
-  const cols = Math.floor(ctx.contentWidth / step);
+  const cols = Math.min(
+    data.contributions.length,
+    Math.floor(ctx.contentWidth / step),
+  );
 
   const avatarElements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
