@@ -14,6 +14,11 @@ export function serialise(element: SvgElement): string {
   const tag = element.tag;
 
   if (element.text !== undefined) {
+    // <style> content must not be XML-escaped — browsers parse
+    // it as CSS, not XML. Wrap in CDATA for XML compliance.
+    if (tag === "style") {
+      return `<${tag}${attrs}><![CDATA[${element.text}]]></${tag}>`;
+    }
     return `<${tag}${attrs}>${escapeXml(element.text)}</${tag}>`;
   }
 

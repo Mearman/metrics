@@ -364,28 +364,22 @@ export function renderSkyline(
   );
 
   // CSS animation for a subtle rocking motion.
-  // The skyline sways ±2° around its centre, giving a sense
+  // The skyline sways ±1.5° around its centre, giving a sense
   // of 3D depth without requiring re-projection.
   elements.push({
     tag: "style",
     attrs: {},
-    children: [
-      {
-        tag: "",
-        attrs: {},
-        text: [
-          "@keyframes skyline-rock {",
-          "  0%, 100% { transform: rotate(0deg) }",
-          "  25% { transform: rotate(1.5deg) }",
-          "  75% { transform: rotate(-1.5deg) }",
-          "}",
-          ".skyline-scene {",
-          `  transform-origin: ${sceneCentreX}px center`,
-          "  animation: skyline-rock 12s ease-in-out infinite",
-          "}",
-        ].join("\n"),
-      },
-    ],
+    text: [
+      "@keyframes skyline-rock {",
+      "  0%, 100% { transform: rotate(0deg) }",
+      "  25% { transform: rotate(1.5deg) }",
+      "  75% { transform: rotate(-1.5deg) }",
+      "}",
+      ".skyline-scene {",
+      `  transform-origin: ${sceneCentreX}px center`,
+      "  animation: skyline-rock 12s ease-in-out infinite",
+      "}",
+    ].join("\n"),
   });
 
   const totalHeight = baseY + sceneDepth + 30;
