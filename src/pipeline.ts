@@ -72,9 +72,25 @@ export async function runPipeline(
 
       // Parse plugin config through its Zod schema to apply defaults
       const parsedConfig = plugin.source.configSchema.safeParse(pluginConfig);
-      const resolvedConfig = parsedConfig.success
+      let resolvedConfig = parsedConfig.success
         ? parsedConfig.data
         : pluginConfig;
+
+      // Inject LoC cache directory from environment if not explicitly set
+      if (
+        plugin.id === "loc" &&
+        typeof resolvedConfig === "object" &&
+        resolvedConfig !== null &&
+        "cache_dir" in resolvedConfig &&
+        resolvedConfig.cache_dir === "" &&
+        process.env.METRICS_LOC_CACHE !== undefined &&
+        process.env.METRICS_LOC_CACHE !== ""
+      ) {
+        resolvedConfig = {
+          ...resolvedConfig,
+          cache_dir: process.env.METRICS_LOC_CACHE,
+        };
+      }
 
       // Fetch data
       let data: unknown;

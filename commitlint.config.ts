@@ -17,6 +17,7 @@ const config: UserConfig = {
         "action",
         "api",
         "config",
+        "loc",
         "plugins",
         "render",
         "output",

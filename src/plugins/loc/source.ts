@@ -27,6 +27,9 @@ export const LocConfig = z.object({
   limit: z.int().min(1).max(20).default(4),
   /** Explicit repository list (owner/repo). If empty, uses top repos. */
   repositories: z.array(z.string().trim()).default([]),
+  /** Directory to cache cloned repos. If set, repos are cloned here
+   *  and reused across runs. Set to empty string to disable caching. */
+  cache_dir: z.string().trim().default(""),
 });
 export type LocConfig = z.infer<typeof LocConfig>;
 
@@ -90,30 +93,72 @@ const REPOS_QUERY = `
 // ---------------------------------------------------------------------------
 
 /**
- * Shallow-clone a repo to a temp directory, count lines, clean up.
+ * Shallow-clone or update a repo and count lines.
+ *
+ * If cacheDir is set, clones are stored there and reused across runs.
+ * A cached repo is updated with `git pull` instead of re-cloned.
  */
 function countRepoLines(
   repoUrl: string,
+  repoName: string,
   token: string,
+  cacheDir: string,
 ): Map<string, { lines: number; colour: string }> {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "metrics-loc-"));
+  const useCache = cacheDir.length > 0;
+  // Convert "Mearman/repo" to a safe directory name
+  const safeName = repoName.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const repoDir = useCache
+    ? path.join(cacheDir, safeName)
+    : fs.mkdtempSync(path.join(os.tmpdir(), "metrics-loc-"));
 
   try {
-    // Clone with token auth, depth 1
     const authedUrl = repoUrl.replace(
       "https://github.com",
       `https://x-access-token:${token}@github.com`,
     );
-    execFileSync("git", ["clone", "--depth", "1", authedUrl, tmpDir], {
-      stdio: "pipe",
-      timeout: 60_000,
-    });
+
+    if (useCache && fs.existsSync(path.join(repoDir, ".git"))) {
+      // Repo already cached — pull latest
+      try {
+        execFileSync(
+          "git",
+          ["-C", repoDir, "fetch", "--depth", "1", "origin"],
+          {
+            stdio: "pipe",
+            timeout: 30_000,
+          },
+        );
+        execFileSync("git", ["-C", repoDir, "reset", "--hard", "FETCH_HEAD"], {
+          stdio: "pipe",
+          timeout: 10_000,
+        });
+      } catch {
+        // Cache corrupted — remove and re-clone
+        fs.rmSync(repoDir, { recursive: true, force: true });
+        execFileSync("git", ["clone", "--depth", "1", authedUrl, repoDir], {
+          stdio: "pipe",
+          timeout: 60_000,
+        });
+      }
+    } else {
+      // Fresh clone
+      if (useCache) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+      }
+      execFileSync("git", ["clone", "--depth", "1", authedUrl, repoDir], {
+        stdio: "pipe",
+        timeout: 60_000,
+      });
+    }
 
     const langCounts = new Map<string, { lines: number; colour: string }>();
-    walkDir(tmpDir, langCounts);
+    walkDir(repoDir, langCounts);
     return langCounts;
   } finally {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
+    // Only clean up temp dirs (not cached ones)
+    if (!useCache) {
+      fs.rmSync(repoDir, { recursive: true, force: true });
+    }
   }
 }
 
@@ -194,6 +239,7 @@ export async function fetchLoc(
   explicitRepos: string[],
   token: string,
   reposConfig: ReposConfig,
+  cacheDir: string,
 ): Promise<LocData> {
   // Resolve repo list
   let repos: { name: string; url: string; isPrivate: boolean }[];
@@ -237,7 +283,7 @@ export async function fetchLoc(
 
   for (const repo of repos) {
     try {
-      const langMap = countRepoLines(repo.url, token);
+      const langMap = countRepoLines(repo.url, repo.name, token, cacheDir);
       const languages = [...langMap.entries()]
         .map(([name, { lines, colour }]) => ({ name, lines, colour }))
         .sort((a, b) => b.lines - a.lines);
@@ -277,6 +323,7 @@ export const locSource: DataSource<LocConfig, LocData> = {
       config.repositories,
       ctx.token,
       ctx.repos,
+      config.cache_dir,
     );
   },
 };

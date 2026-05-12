@@ -67,8 +67,9 @@ outputs:
         limit: 15
       licenses:
         limit: 8
-      loc:
-        limit: 4
+      # loc:  # opt-in — clones repos, adds ~2min to CI
+      #   limit: 4
+      #   cache_dir: ~/.cache/metrics-loc
       projects:
         limit: 4
       sponsors: {}

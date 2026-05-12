@@ -24,6 +24,7 @@ export const locPlugin: Plugin<LocConfigType, LocData> = {
         config.repositories,
         ctx.token,
         ctx.repos,
+        config.cache_dir,
       );
     },
   },
