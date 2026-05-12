@@ -1,3 +1,9 @@
+## [1.0.6](https://github.com/Mearman/metrics/compare/v1.0.5...v1.0.6) (2026-05-12)
+
+### Bug Fixes
+
+* place follow-up bar labels below bars with proper clearance ([622e0a9](https://github.com/Mearman/metrics/commit/622e0a96034c215fd038999f59a563f9fe165d02))
+
 ## [1.0.5](https://github.com/Mearman/metrics/compare/v1.0.4...v1.0.5) (2026-05-12)
 
 ### Bug Fixes
