@@ -1,3 +1,9 @@
+## [1.0.1](https://github.com/Mearman/metrics/compare/v1.0.0...v1.0.1) (2026-05-12)
+
+### Bug Fixes
+
+* compose transforms instead of overwriting in pipeline offset ([18a2aca](https://github.com/Mearman/metrics/commit/18a2aca097c4cf9934909c779a009a1c2b2acd7d))
+
 ## 1.0.0 (2026-05-12)
 
 ### Features
