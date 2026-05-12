@@ -1,3 +1,17 @@
+## [1.18.0](https://github.com/Mearman/metrics/compare/v1.17.0...v1.18.0) (2026-05-12)
+
+### Features
+
+* **plugins:** add ignored option to contributors and reactions ([fc75d44](https://github.com/Mearman/metrics/commit/fc75d442509dcbcaa77cfc66100a1d26ffd06c70))
+
+### Refactoring
+
+* **plugins:** type all renderer configs with z.input<typeof> ([e5c6793](https://github.com/Mearman/metrics/commit/e5c67932ddb74d2487fcbe8e33d1d8bac008d683))
+
+### Tests
+
+* add 24 config option tests across 13 plugins ([83c0b86](https://github.com/Mearman/metrics/commit/83c0b86550aaffbc06002a64f7e616307d9c023a))
+
 ## [1.17.0](https://github.com/Mearman/metrics/compare/v1.16.0...v1.17.0) (2026-05-12)
 
 ### Features
