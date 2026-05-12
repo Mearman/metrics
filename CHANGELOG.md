@@ -1,3 +1,9 @@
+## [1.9.0](https://github.com/Mearman/metrics/compare/v1.8.0...v1.9.0) (2026-05-12)
+
+### Features
+
+* **ci:** add robots.txt to output for noindex ([b762205](https://github.com/Mearman/metrics/commit/b7622051624c49b4a5367c96115e1d3f52c9ab95))
+
 ## [1.8.0](https://github.com/Mearman/metrics/compare/v1.7.0...v1.8.0) (2026-05-12)
 
 ### Features
