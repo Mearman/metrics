@@ -1,3 +1,9 @@
+## [1.11.0](https://github.com/Mearman/metrics/compare/v1.10.0...v1.11.0) (2026-05-12)
+
+### Features
+
+* **plugins:** explicit section ordering via config ([4802cc9](https://github.com/Mearman/metrics/commit/4802cc94fc9207e70b4e5f26ad1a748f7ed68f83))
+
 ## [1.10.0](https://github.com/Mearman/metrics/compare/v1.9.1...v1.10.0) (2026-05-12)
 
 ### Features
