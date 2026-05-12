@@ -1,3 +1,9 @@
+## [1.9.1](https://github.com/Mearman/metrics/compare/v1.9.0...v1.9.1) (2026-05-12)
+
+### Bug Fixes
+
+* **plugins:** visual polish — second pass ([439bb37](https://github.com/Mearman/metrics/commit/439bb37a4dd88cc04428784be2ea98a8fb633a7e))
+
 ## [1.9.0](https://github.com/Mearman/metrics/compare/v1.8.0...v1.9.0) (2026-05-12)
 
 ### Features
