@@ -123,6 +123,37 @@ Config is loaded via [cosmiconfig](https://github.com/cosmiconfig/cosmiconfig), 
 - `.metricsrc`, `.metricsrc.yml`, `.metricsrc.json`
 - `metrics.config.ts`, `metrics.config.js`
 
+### Repository filtering
+
+By default, only public repositories are included in metrics. To include private repositories (requires a PAT with `repo` scope):
+
+```yaml
+repos:
+  fetch: all              # "public" (default) or "all"
+  rules:                  # Evaluated top-to-bottom, first match wins
+    - match: "secret-project"   # Exact name match
+      action: exclude           # Skip entirely (not counted or named)
+    - match: "Mearman/*"        # Glob pattern
+      action: include           # Count and name
+    - match: /internal-/        # Regex (wrapped in /.../)
+      action: count             # Count in totals, but don't name
+    - match:                     # Property match
+        visibility: private
+        org: AcmeCorp
+      action: count
+```
+
+**Actions:**
+- `include` — repo contributes to totals **and** appears in per-repo lists by name
+- `count` — repo contributes to aggregate totals but is **not named** in per-repo lists
+- `exclude` — repo is skipped entirely
+
+**Defaults (when no rule matches):**
+- Public repos → `include`
+- Private repos → `count`
+
+This means `repos: { fetch: all }` with no rules is safe — private repos boost your language stats and totals without revealing their names.
+
 ---
 
 ## Token tiers
