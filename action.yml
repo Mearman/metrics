@@ -75,16 +75,58 @@ inputs:
     description: >-
       Enable languages: stacked bar chart of language distribution.
     default: "true"
+  plugin_languages_ignored:
+    description: "Comma-separated languages to ignore (e.g. html,css)"
+    default: ""
+  plugin_languages_other:
+    description: "Group small/ignored languages into Other"
+    default: "false"
+  plugin_languages_details:
+    description: "Comma-separated details: bytes-size, percentage"
+    default: ""
+  plugin_languages_colors:
+    description: "JSON colour overrides (e.g. {\"javascript\":\"red\"})"
+    default: "{}"
+  plugin_languages_aliases:
+    description: "JSON name aliases (e.g. {\"javascript\":\"JS\"})"
+    default: "{}"
 
   plugin_habits:
     description: >-
       Enable habits: commit timing stats with daily activity chart.
     default: "true"
+  plugin_habits_charts:
+    description: "Show hour-of-day and day-of-week charts"
+    default: "false"
+  plugin_habits_facts:
+    description: "Show mildly interesting facts"
+    default: "true"
+  plugin_habits_days:
+    description: "Number of days to analyse (1-365)"
+    default: "14"
+  plugin_habits_from:
+    description: "Number of events to load for accuracy (1-1000)"
+    default: "200"
+  plugin_habits_trim:
+    description: "Trim unused hours on charts"
+    default: "false"
 
   plugin_achievements:
     description: >-
       Enable achievements: derived badges with tier indicators.
     default: "true"
+  plugin_achievements_threshold:
+    description: "Minimum tier to show: C, B, A, S, X (unlocked)"
+    default: "C"
+  plugin_achievements_display:
+    description: "Display style: detailed or compact"
+    default: "detailed"
+  plugin_achievements_limit:
+    description: "Max achievements to display (0 = all)"
+    default: "0"
+  plugin_achievements_ignored:
+    description: "Comma-separated achievement IDs to ignore"
+    default: ""
 
   plugin_lines:
     description: >-
@@ -95,6 +137,9 @@ inputs:
     description: >-
       Enable activity: recent events timeline.
     default: "true"
+  plugin_activity_ignored:
+    description: "Comma-separated usernames to ignore (e.g. bots)"
+    default: ""
 
   plugin_stars:
     description: >-
@@ -105,11 +150,17 @@ inputs:
     description: >-
       Enable follow-up: issue/PR status progress bars.
     default: "true"
+  plugin_followup_archived:
+    description: "Include archived repositories"
+    default: "true"
 
   plugin_stargazers:
     description: >-
       Enable stargazers: per-repo star count bar chart.
     default: "true"
+  plugin_stargazers_days:
+    description: "Time range in days (0 = since account creation)"
+    default: "14"
 
   plugin_people:
     description: >-
@@ -134,6 +185,9 @@ inputs:
   plugin_repositories:
     description: >-
       Enable repositories: featured/pinned/starred repo cards.
+    default: "false"
+  plugin_repositories_forks:
+    description: "Include forked repositories"
     default: "false"
 
   plugin_gists:
@@ -170,6 +224,15 @@ inputs:
     description: >-
       Enable code: random code snippet from recent push events.
     default: "false"
+  plugin_code_days:
+    description: "Events maximum age in days (0 = no limit)"
+    default: "3"
+  plugin_code_languages:
+    description: "Comma-separated languages to show (empty = all)"
+    default: ""
+  plugin_code_visibility:
+    description: "Event visibility: public or all (requires repo scope)"
+    default: "public"
 
   plugin_projects:
     description: >-

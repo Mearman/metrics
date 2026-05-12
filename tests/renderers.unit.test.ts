@@ -63,7 +63,7 @@ function makeLanguagesData(
   langs: { name: string; colour: string; size: number }[],
 ): LanguagesData {
   const totalBytes = langs.reduce((sum, l) => sum + l.size, 0);
-  return { total: langs, totalBytes };
+  return { total: langs, totalBytes, otherBytes: 0 };
 }
 
 // ---------------------------------------------------------------------------

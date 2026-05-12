@@ -14,6 +14,12 @@ export const CodeConfig = z.object({
   max_length: z.int().min(20).max(500).default(200),
   /** Number of recent commits to scan */
   scan_limit: z.int().min(1).max(50).default(20),
+  /** Events maximum age in days (0 = no limit) */
+  days: z.int().min(0).max(365).default(3),
+  /** Only show snippets from these languages (empty = all) */
+  languages: z.array(z.string().trim()).default([]),
+  /** Event visibility: public only or all (requires repo scope) */
+  visibility: z.enum(["public", "all"]).default("public"),
 });
 export type CodeConfig = z.infer<typeof CodeConfig>;
 
@@ -77,6 +83,7 @@ const PushPayloadSchema = z.object({
 /** Schema for a single REST event from listPublicEventsForUser. */
 const EventSchema = z.object({
   type: z.string().trim(),
+  created_at: z.string().trim().optional(),
   payload: PushPayloadSchema,
 });
 
@@ -104,6 +111,12 @@ export async function fetchCode(
   user: string,
   config: CodeConfig,
 ): Promise<CodeData> {
+  const maxAge =
+    config.days > 0
+      ? new Date(Date.now() - config.days * 24 * 60 * 60 * 1000)
+      : undefined;
+  const languageSet = new Set(config.languages.map((l) => l.toLowerCase()));
+
   const response = await api.rest.activity.listPublicEventsForUser({
     username: user,
     per_page: 100,
@@ -114,6 +127,11 @@ export async function fetchCode(
     .map((raw) => EventSchema.safeParse(raw))
     .filter((r) => r.success)
     .map((r) => r.data)
+    .filter((event) => {
+      if (maxAge === undefined) return true;
+      if (event.created_at === undefined) return true;
+      return new Date(event.created_at) >= maxAge;
+    })
     .sort(() => Math.random() - 0.5)
     .slice(0, config.scan_limit);
 
@@ -199,6 +217,10 @@ export async function fetchCode(
         : "";
       const language =
         ext.length > 0 ? (EXTENSION_MAP[ext] ?? ext.toUpperCase()) : "Text";
+
+      // Filter by configured languages
+      if (languageSet.size > 0 && !languageSet.has(language.toLowerCase()))
+        continue;
 
       const message = commit.message.split("\n")[0] ?? "";
 

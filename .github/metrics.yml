@@ -22,31 +22,38 @@ outputs:
       languages:
         limit: 8
         threshold: 1
-        categories: [markup, programming]
-        recent_days: 14
+        ignored: []
+        other: false
+        details: [percentage]
       habits:
         days: 14
         from: 200
         charts: true
         facts: true
+        trim: false
       achievements:
         display: detailed
         secrets: true
         threshold: C
+        limit: 0
       lines:
         limit: 4
       repositories:
         pinned: 4
         starred: 2
+        forks: false
       activity:
         limit: 5
         days: 14
+        ignored: []
       stars:
         limit: 4
       followup:
         sections: [repositories, user]
+        archived: true
       stargazers:
         limit: 6
+        days: 14
       people:
         limit: 14
         types: [followers, following]

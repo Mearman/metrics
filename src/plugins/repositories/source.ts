@@ -20,6 +20,8 @@ export const RepositoriesConfig = z.object({
   order: z
     .array(z.enum(["featured", "pinned", "starred"]))
     .default(["featured", "pinned", "starred"]),
+  /** Include forked repositories */
+  forks: z.boolean().default(false),
 });
 
 export type RepositoriesConfig = z.infer<typeof RepositoriesConfig>;
@@ -219,8 +221,11 @@ export async function fetchRepositories(
     if (!parsed.success) continue;
 
     if (!processed.has(parsed.data.repository.nameWithOwner)) {
-      list.push(formatRepo(parsed.data.repository, "featured"));
-      processed.add(parsed.data.repository.nameWithOwner);
+      const repo = formatRepo(parsed.data.repository, "featured");
+      if (!repo.isFork || config.forks) {
+        list.push(repo);
+        processed.add(parsed.data.repository.nameWithOwner);
+      }
     }
   }
 
@@ -235,8 +240,11 @@ export async function fetchRepositories(
       for (const edge of parsed.data.user.pinnedItems.edges) {
         if (edge.node === null) continue;
         if (processed.has(edge.node.nameWithOwner)) continue;
-        processed.add(edge.node.nameWithOwner);
-        list.push(formatRepo(edge.node, "pinned"));
+        const repo = formatRepo(edge.node, "pinned");
+        if (!repo.isFork || config.forks) {
+          processed.add(edge.node.nameWithOwner);
+          list.push(repo);
+        }
       }
     }
   }
@@ -257,9 +265,12 @@ export async function fetchRepositories(
       let count = 0;
       for (const node of parsed.data.user.repositories.nodes) {
         if (processed.has(node.nameWithOwner)) continue;
-        processed.add(node.nameWithOwner);
-        list.push(formatRepo(node, "starred"));
-        if (++count >= config.starred) break;
+        const repo = formatRepo(node, "starred");
+        if (!repo.isFork || config.forks) {
+          processed.add(node.nameWithOwner);
+          list.push(repo);
+          if (++count >= config.starred) break;
+        }
       }
     }
   }

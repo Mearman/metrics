@@ -16,6 +16,8 @@ import { repoPrivacyFilter } from "../../repos/graphql.ts";
 export const StargazersConfig = z.object({
   /** Number of recent repos to show (sorted by stars) */
   limit: z.int().min(1).max(30).default(8),
+  /** Time range in days for star history (0 = since account creation) */
+  days: z.int().min(0).max(365).default(14),
 });
 
 export type StargazersConfig = z.infer<typeof StargazersConfig>;

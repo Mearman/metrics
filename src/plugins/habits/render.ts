@@ -1,35 +1,94 @@
 /**
  * Habits plugin — renderer.
  *
- * Renders commit timing habits as a summary with optional chart.
+ * Renders commit habits with summary stats, optional hour-of-day and
+ * day-of-week charts, and "mildly interesting facts".
  */
 
 import { text, rect } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
-import type { HabitsData } from "./source.ts";
+import type { HabitsData, WeekdayActivity } from "./source.ts";
 
-/** Format a date string to short form. */
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr);
-  return d.toLocaleDateString("en-GB", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
+// ---------------------------------------------------------------------------
+// Chart helpers
+// ---------------------------------------------------------------------------
+
+/** Render a mini bar chart and return the final Y position. */
+function renderBarChart(
+  elements: import("../../render/svg/builder.ts").SvgElement[],
+  items: { label: string; count: number }[],
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  colour: string,
+  labelColour: string,
+  fontStack: string,
+  trim: boolean,
+): number {
+  // Trim leading/trailing zero items
+  let slice = items;
+  if (trim) {
+    let start = 0;
+    let end = items.length;
+    while (start < end && items[start]?.count === 0) start++;
+    while (end > start && items[end - 1]?.count === 0) end--;
+    slice = items.slice(start, end);
+  }
+
+  if (slice.length === 0) return y;
+
+  const maxCount = Math.max(...slice.map((i) => i.count), 1);
+  const barWidth = Math.max(width / slice.length - 2, 2);
+
+  for (let i = 0; i < slice.length; i++) {
+    const item = slice[i];
+    if (item === undefined) continue;
+    const barHeight = (item.count / maxCount) * height;
+    const barX = x + i * (barWidth + 2);
+
+    elements.push(
+      rect(barX, y + height - barHeight, barWidth, barHeight, {
+        fill: item.count > 0 ? colour : "#21262d",
+        rx: 1,
+      }),
+    );
+
+    // Label (every Nth item to avoid crowding)
+    const labelInterval = Math.ceil(slice.length / 8);
+    if (i % labelInterval === 0) {
+      elements.push(
+        text(barX, y + height + 12, item.label, {
+          fill: labelColour,
+          "font-size": 8,
+          "font-family": fontStack,
+        }),
+      );
+    }
+  }
+
+  return y + height + 18;
 }
 
-/**
- * Render the habits section.
- */
+// ---------------------------------------------------------------------------
+// Renderer
+// ---------------------------------------------------------------------------
+
 export function renderHabits(
   data: HabitsData,
-  config: { charts?: boolean; facts?: boolean },
+  config: {
+    charts?: boolean;
+    facts?: boolean;
+    trim?: boolean;
+  },
   ctx: RenderContext,
 ): RenderResult {
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
   const contentWidth = ctx.contentWidth;
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
+  const showCharts = config.charts ?? false;
+  const showFacts = config.facts ?? true;
 
   // Title
   const titleY = 14;
@@ -44,47 +103,89 @@ export function renderHabits(
 
   let y = titleY + 24;
 
-  // Summary stats
-  const stats = [
-    `${String(data.totalCommits)} commits in period`,
-    `Busiest day: ${formatDate(data.busiestDay)} (${String(data.busiestDayCount)} commits)`,
-    `Average: ${data.avgPerDay.toFixed(1)} commits/day`,
-    `Current streak: ${String(data.streak)} days`,
-  ];
+  // Facts section — "mildly interesting facts"
+  if (showFacts) {
+    for (const fact of data.facts) {
+      elements.push(
+        text(padding + 8, y, `${fact.label}:`, {
+          fill: colours.textTertiary,
+          "font-size": 11,
+          "font-family": fontStack,
+        }),
+      );
+      const labelWidth = ctx.measure.textWidth(`${fact.label}: `, 11);
+      elements.push(
+        text(padding + 8 + labelWidth, y, fact.value, {
+          fill: colours.textSecondary,
+          "font-size": 11,
+          "font-weight": 600,
+          "font-family": fontStack,
+        }),
+      );
+      y += 16;
+    }
+    y += 4;
+  }
 
-  for (const stat of stats) {
+  // Charts
+  if (showCharts) {
+    // Day-of-week chart
+    const dayLabels: { label: string; count: number }[] = data.weekdays.map(
+      (wd: WeekdayActivity) => ({
+        label: wd.day.slice(0, 2),
+        count: wd.count,
+      }),
+    );
+
     elements.push(
-      text(padding + 8, y, stat, {
+      text(padding, y, "Activity per day of week", {
         fill: colours.textSecondary,
-        "font-size": 12,
+        "font-size": 10,
         "font-family": fontStack,
       }),
     );
-    y += 18;
-  }
+    y += 14;
 
-  // Activity bar chart
-  if (config.charts) {
-    y += 8;
-    const maxCount = Math.max(...data.days.map((d) => d.count), 1);
-    const barHeight = 40;
-    const barWidth = Math.max(contentWidth / data.days.length - 2, 2);
+    y = renderBarChart(
+      elements,
+      dayLabels,
+      padding,
+      y,
+      contentWidth,
+      32,
+      colours.accent,
+      colours.textTertiary,
+      fontStack,
+      false,
+    );
 
-    for (let i = 0; i < data.days.length; i++) {
-      const day = data.days[i];
-      if (day === undefined) continue;
-      const height = (day.count / maxCount) * barHeight;
-      const x = padding + i * (barWidth + 2);
+    // Activity timeline (per day over the period)
+    elements.push(
+      text(padding, y, "Activity over time", {
+        fill: colours.textSecondary,
+        "font-size": 10,
+        "font-family": fontStack,
+      }),
+    );
+    y += 14;
 
-      elements.push(
-        rect(x, y + barHeight - height, barWidth, height, {
-          fill: day.count > 0 ? colours.accent : colours.border,
-          rx: 1,
-        }),
-      );
-    }
+    const dayItems = data.days.map((d) => ({
+      label: "",
+      count: d.count,
+    }));
 
-    y += barHeight + 8;
+    y = renderBarChart(
+      elements,
+      dayItems,
+      padding,
+      y,
+      contentWidth,
+      32,
+      colours.accent,
+      colours.textTertiary,
+      fontStack,
+      config.trim ?? false,
+    );
   }
 
   const totalHeight = y + padding - titleY;

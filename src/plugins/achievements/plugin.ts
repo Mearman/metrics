@@ -11,6 +11,10 @@ export const AchievementsPluginConfig = z.object({
   display: z.enum(["compact", "detailed"]).default("detailed"),
   secrets: z.boolean().default(false),
   threshold: z.enum(["C", "B", "A", "S", "X"]).default("C"),
+  /** Maximum number of achievements to display (0 = all) */
+  limit: z.int().min(0).default(0),
+  /** Achievement IDs to ignore */
+  ignored: z.array(z.string().trim()).default([]),
 });
 
 export const achievementsPlugin: Plugin<

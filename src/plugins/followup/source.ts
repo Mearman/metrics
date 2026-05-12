@@ -17,6 +17,8 @@ import { repoPrivacyFilter } from "../../repos/graphql.ts";
 export const FollowupConfig = z.object({
   sections: z.array(z.enum(["repositories", "user"])).default(["repositories"]),
   indepth: z.boolean().default(false),
+  /** Include archived repositories */
+  archived: z.boolean().default(true),
 });
 
 export type FollowupConfig = z.infer<typeof FollowupConfig>;

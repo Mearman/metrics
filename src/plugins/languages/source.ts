@@ -50,11 +50,20 @@ const LANGUAGES_QUERY = `
 // ---------------------------------------------------------------------------
 
 export const LanguagesConfig = z.object({
+  /** Maximum number of languages to display */
   limit: z.int().min(1).max(20).default(8),
+  /** Minimum percentage to display a language */
   threshold: z.number().min(0).max(100).default(1),
-  sections: z
-    .array(z.enum(["markup", "programming"]))
-    .default(["markup", "programming"]),
+  /** Languages to ignore (e.g. ["html", "css"]) */
+  ignored: z.array(z.string().trim()).default([]),
+  /** Group unknown, ignored and over-limit languages into "Other" */
+  other: z.boolean().default(false),
+  /** Custom colour overrides (e.g. { "javascript": "red" }) */
+  colors: z.record(z.string(), z.string().trim()).default({}),
+  /** Custom name aliases (e.g. { "javascript": "JS" }) */
+  aliases: z.record(z.string(), z.string().trim()).default({}),
+  /** Additional details to show: bytes-size, percentage */
+  details: z.array(z.enum(["bytes-size", "percentage"])).default([]),
 });
 export type LanguagesConfig = z.infer<typeof LanguagesConfig>;
 
@@ -101,6 +110,8 @@ export interface LanguageEntry {
 export interface LanguagesData {
   total: LanguageEntry[];
   totalBytes: number;
+  /** Bytes that went into "Other" bucket (0 if other is false) */
+  otherBytes: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -171,7 +182,7 @@ export async function fetchLanguages(
 
   const totalBytes = total.reduce((sum, lang) => sum + lang.size, 0);
 
-  return { total, totalBytes };
+  return { total, totalBytes, otherBytes: 0 };
 }
 
 // ---------------------------------------------------------------------------

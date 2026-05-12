@@ -21,17 +21,29 @@ const TIER_COLOURS: Record<string, string> = {
  */
 export function renderAchievements(
   data: AchievementsData,
-  config: { display?: string; threshold?: string },
+  config: {
+    display?: string;
+    threshold?: string;
+    limit?: number;
+    ignored?: string[];
+  },
   ctx: RenderContext,
 ): RenderResult {
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
   const threshold = config.threshold ?? "C";
   const tierOrder: Record<string, number> = { C: 0, B: 1, A: 2, S: 3, X: 4 };
   const minTier = tierOrder[threshold] ?? 0;
+  const ignoredSet = new Set(config.ignored ?? []);
 
-  const filtered = data.achievements.filter(
-    (a) => (tierOrder[a.tier] ?? 0) >= minTier,
-  );
+  let filtered = data.achievements
+    .filter((a) => (tierOrder[a.tier] ?? 0) >= minTier)
+    .filter((a) => !ignoredSet.has(a.id));
+
+  // Apply limit (0 = all)
+  const limit = config.limit ?? 0;
+  if (limit > 0) {
+    filtered = filtered.slice(0, limit);
+  }
 
   if (filtered.length === 0) {
     return { height: 0, elements: [] };

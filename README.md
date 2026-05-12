@@ -394,7 +394,11 @@ isocalendar:
 languages:
   limit: 8               # top N languages (1–20)
   threshold: 1           # minimum percentage to show (0–100)
-  sections: [markup, programming]  # language categories
+  ignored: []            # languages to exclude (e.g. [html, css])
+  other: false           # group small/ignored into "Other"
+  details: []            # extra info: bytes-size, percentage
+  colors: {}             # custom colour overrides (e.g. {javascript: red})
+  aliases: {}            # custom name aliases (e.g. {javascript: JS})
 ```
 
 #### habits
@@ -402,6 +406,11 @@ languages:
 ```yaml
 habits:
   days: 14              # lookback period (1–365)
+  charts: false          # show day-of-week and timeline charts
+  facts: true            # show mildly interesting facts
+  from: 200             # events to load for accuracy (1–1000)
+  trim: false            # trim unused hours on charts
+  languages_limit: 8    # max recent languages (0–8)
 ```
 
 #### achievements
@@ -411,6 +420,8 @@ achievements:
   display: detailed     # detailed | compact
   secrets: false         # include secret achievements
   threshold: C          # minimum tier: C, B, A, S, X
+  limit: 0              # max achievements (0 = all)
+  ignored: []           # achievement IDs to exclude
 ```
 
 #### lines (code size)
@@ -430,6 +441,7 @@ repositories:
   featured: []          # specific repos by name
   starred: 0             # show N starred repos (0–100)
   order: [featured, pinned, starred]  # display order
+  forks: false           # include forked repositories
 ```
 
 #### activity
@@ -441,6 +453,7 @@ activity:
   days: 14              # lookback period (0–365)
   filter: [all]         # event types (all, push, issue, pr, review, comment, release, fork, star, wiki)
   timestamps: false     # show event timestamps
+  ignored: []           # usernames to ignore (e.g. bots)
 ```
 
 #### stars
@@ -456,6 +469,7 @@ stars:
 followup:
   sections: [repositories]  # repositories | user
   indepth: false        # per-repo breakdown
+  archived: true         # include archived repositories
 ```
 
 #### stargazers
@@ -463,6 +477,7 @@ followup:
 ```yaml
 stargazers:
   limit: 8              # top repos by stars (1–30)
+  days: 14              # time range (0 = since account creation)
 ```
 
 #### people
@@ -532,6 +547,9 @@ contributors:
 code:
   max_length: 200       # snippet max chars (20–500)
   scan_limit: 20        # events to scan (1–50)
+  days: 3              # events max age (0 = no limit)
+  languages: []         # only these languages (empty = all)
+  visibility: public    # public | all (requires repo scope)
 ```
 
 #### topics

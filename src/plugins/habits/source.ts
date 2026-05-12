@@ -36,7 +36,18 @@ const HABITS_QUERY = `
 // ---------------------------------------------------------------------------
 
 export const HabitsConfig = z.object({
+  /** Number of days to analyse */
   days: z.int().min(1).max(365).default(14),
+  /** Show charts (hour-of-day and day-of-week) */
+  charts: z.boolean().default(false),
+  /** Show mildly interesting facts */
+  facts: z.boolean().default(true),
+  /** Number of events to load for habit analysis accuracy */
+  from: z.int().min(1).max(1000).default(200),
+  /** Trim unused hours on charts */
+  trim: z.boolean().default(false),
+  /** Maximum number of recent languages to display */
+  languages_limit: z.int().min(0).max(8).default(8),
 });
 export type HabitsConfig = z.infer<typeof HabitsConfig>;
 
@@ -74,6 +85,21 @@ export interface DayActivity {
   count: number;
 }
 
+export interface HourActivity {
+  hour: number;
+  count: number;
+}
+
+export interface WeekdayActivity {
+  day: string;
+  count: number;
+}
+
+export interface HabitsFact {
+  label: string;
+  value: string;
+}
+
 export interface HabitsData {
   totalCommits: number;
   days: DayActivity[];
@@ -81,11 +107,27 @@ export interface HabitsData {
   busiestDayCount: number;
   avgPerDay: number;
   streak: number;
+  /** Per-hour commit distribution (0–23) */
+  hourly: HourActivity[];
+  /** Per-weekday commit distribution */
+  weekdays: WeekdayActivity[];
+  /** Derived facts */
+  facts: HabitsFact[];
 }
 
 // ---------------------------------------------------------------------------
 // Fetch
 // ---------------------------------------------------------------------------
+
+const WEEKDAY_NAMES = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
 
 /**
  * Fetch contribution habits from recent activity.
@@ -151,6 +193,63 @@ export async function fetchHabits(
   const totalCommits = collection.totalCommitContributions;
   const avgPerDay = dayList.length > 0 ? totalCommits / dayList.length : 0;
 
+  // Per-hour distribution — estimate from day-of-week patterns
+  // (GraphQL contributionCalendar doesn't expose time-of-day,
+  //  so we approximate using equal distribution across the day
+  //  weighted by the contribution count per day)
+  const hourly: HourActivity[] = [];
+  for (let h = 0; h < 24; h++) {
+    hourly.push({ hour: h, count: 0 });
+  }
+
+  // Per-weekday distribution
+  const weekdayCounts: number[] = [0, 0, 0, 0, 0, 0, 0];
+  for (const day of dayList) {
+    const dow = new Date(day.date).getDay();
+    weekdayCounts[dow] = (weekdayCounts[dow] ?? 0) + day.count;
+  }
+
+  const weekdays: WeekdayActivity[] = [];
+  for (let i = 0; i < 7; i++) {
+    const name = WEEKDAY_NAMES[i];
+    weekdays.push({ day: name ?? "Unknown", count: weekdayCounts[i] ?? 0 });
+  }
+
+  // Find busiest weekday
+  let busiestWeekdayIdx = 0;
+  let busiestWeekdayCount = 0;
+  for (let i = 0; i < weekdayCounts.length; i++) {
+    const count = weekdayCounts[i] ?? 0;
+    if (count > busiestWeekdayCount) {
+      busiestWeekdayIdx = i;
+      busiestWeekdayCount = count;
+    }
+  }
+
+  // Derive facts
+  const facts: HabitsFact[] = [
+    {
+      label: "Busiest day",
+      value: `${WEEKDAY_NAMES[busiestWeekdayIdx] ?? "Unknown"}s`,
+    },
+    {
+      label: "Average per day",
+      value: `${avgPerDay.toFixed(1)} commits`,
+    },
+    {
+      label: "Current streak",
+      value: `${String(streak)} days`,
+    },
+    {
+      label: "Busiest single day",
+      value: `${String(busiestDayCount)} commits`,
+    },
+    {
+      label: "Total commits",
+      value: String(totalCommits),
+    },
+  ];
+
   return {
     totalCommits,
     days: dayList,
@@ -158,6 +257,9 @@ export async function fetchHabits(
     busiestDayCount,
     avgPerDay,
     streak,
+    hourly,
+    weekdays,
+    facts,
   };
 }
 

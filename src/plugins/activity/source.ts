@@ -39,6 +39,7 @@ export const ActivityConfig = z.object({
     )
     .default(["all"]),
   timestamps: z.boolean().default(false),
+  ignored: z.array(z.string().trim()).default([]),
 });
 
 export type ActivityConfig = z.infer<typeof ActivityConfig>;
@@ -200,8 +201,10 @@ export async function fetchActivity(
   }
 
   const filterSet = new Set(config.filter);
+  const ignoredSet = new Set(config.ignored);
   const filtered = allEvents
     .filter((e) => filterSet.has("all") || filterSet.has(e.type))
+    .filter((e) => !ignoredSet.has(e.repo.split("/")[0] ?? ""))
     .slice(0, config.limit);
 
   return { events: filtered, timestamps: config.timestamps };

@@ -292,6 +292,23 @@ describe("Habits renderer", () => {
     busiestDayCount: 368,
     avgPerDay: 14.3,
     streak: 15,
+    hourly: [],
+    weekdays: [
+      { day: "Sunday", count: 10 },
+      { day: "Monday", count: 50 },
+      { day: "Tuesday", count: 30 },
+      { day: "Wednesday", count: 25 },
+      { day: "Thursday", count: 40 },
+      { day: "Friday", count: 35 },
+      { day: "Saturday", count: 15 },
+    ],
+    facts: [
+      { label: "Busiest day", value: "Mondays" },
+      { label: "Average per day", value: "14.3 commits" },
+      { label: "Current streak", value: "15 days" },
+      { label: "Busiest single day", value: "368 commits" },
+      { label: "Total commits", value: "215" },
+    ],
   };
 
   it("renders section title", () => {
