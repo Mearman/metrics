@@ -86,7 +86,9 @@ export function renderFollowup(
     }
 
     // PRs progress bar — uses clipPath to give segments the
-    // track's rounded shape without gaps between segments
+    // track's rounded shape without gaps between segments.
+    // defs is inside the group so clipPath coordinates share
+    // the same local coordinate system as the segments.
     const totalPRs =
       section.pullRequests.open +
       section.pullRequests.merged +
@@ -99,21 +101,20 @@ export function renderFollowup(
 
       const clipId = `pr-clip-${String(yCursor)}`;
 
-      elements.push({
-        tag: "defs",
-        attrs: {},
-        children: [
-          {
-            tag: "clipPath",
-            attrs: { id: clipId },
-            children: [rect(padding, 0, barWidth, barHeight, { rx: 4 })],
-          },
-        ],
-      });
-
       elements.push(
         g(
           { transform: `translate(0,${String(yCursor)})` },
+          {
+            tag: "defs",
+            attrs: {},
+            children: [
+              {
+                tag: "clipPath",
+                attrs: { id: clipId },
+                children: [rect(padding, 0, barWidth, barHeight, { rx: 4 })],
+              },
+            ],
+          },
           rect(padding, 0, barWidth, barHeight, {
             fill: colours.border,
             rx: 4,
