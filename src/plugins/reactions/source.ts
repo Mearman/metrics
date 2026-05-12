@@ -23,6 +23,8 @@ export const ReactionsConfig = z.object({
   display: z.enum(["absolute", "relative"]).default("absolute"),
   /** Additional details to show */
   details: z.array(z.enum(["count", "percentage"])).default([]),
+  /** Usernames to ignore (e.g. bots). Merged with global users_ignored. */
+  ignored: z.array(z.string().trim()).default([]),
 });
 export type ReactionsConfig = z.infer<typeof ReactionsConfig>;
 

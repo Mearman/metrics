@@ -22,6 +22,8 @@ export const ContributorsConfig = z.object({
   contributors_per_repo: z.int().min(1).max(20).default(8),
   /** Minimum contribution count to show */
   threshold: z.int().min(1).default(1),
+  /** Usernames to ignore (e.g. bots). Merged with global users_ignored. */
+  ignored: z.array(z.string().trim()).default([]),
 });
 export type ContributorsConfig = z.infer<typeof ContributorsConfig>;
 
@@ -112,6 +114,7 @@ export async function fetchContributors(
   user: string,
   config: ContributorsConfig,
   repos: ReposConfig,
+  usersIgnored: string[] = [],
 ): Promise<ContributorsData> {
   const reposQuery = REPOS_QUERY.replace(
     "__PRIVACY__",
@@ -142,10 +145,12 @@ export async function fetchContributors(
         per_page: config.contributors_per_repo,
       });
 
+      const ignoredSet = new Set([...usersIgnored, ...config.ignored]);
       const contributors: Contributor[] = [];
       for (const c of contributorsRaw.data) {
         const parsedContributor = ContributorSchema.safeParse(c);
         if (!parsedContributor.success) continue;
+        if (ignoredSet.has(parsedContributor.data.login)) continue;
         if (parsedContributor.data.contributions >= config.threshold) {
           contributors.push({
             login: parsedContributor.data.login,
