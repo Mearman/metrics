@@ -1,3 +1,9 @@
+## [1.15.0](https://github.com/Mearman/metrics/compare/v1.14.1...v1.15.0) (2026-05-12)
+
+### Features
+
+* **plugins:** rss — fetch and display rss/atom feed items ([803f22e](https://github.com/Mearman/metrics/commit/803f22ea73934685910c3c5badb8531db6eeedf1))
+
 ## [1.14.1](https://github.com/Mearman/metrics/compare/v1.14.0...v1.14.1) (2026-05-12)
 
 ### Bug Fixes
