@@ -1,3 +1,9 @@
+## [1.6.3](https://github.com/Mearman/metrics/compare/v1.6.2...v1.6.3) (2026-05-12)
+
+### Bug Fixes
+
+* reactions and contributors GraphQL field errors ([d7bb1d2](https://github.com/Mearman/metrics/commit/d7bb1d25288fc073e508b9b51df86c600386309d))
+
 ## [1.6.2](https://github.com/Mearman/metrics/compare/v1.6.1...v1.6.2) (2026-05-12)
 
 ### Documentation
