@@ -76,3 +76,5 @@ outputs:
       sponsorships: {}
       traffic:
         limit: 4
+      skyline:
+        max_height: 100
