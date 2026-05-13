@@ -174,9 +174,8 @@ export function renderSkyline(
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
-  // Title
   // Header with icon
-  const { elements: headerElems } = sectionHeader("Skyline", ctx, {
+  const { elements: headerElems, contentY } = sectionHeader("Skyline", ctx, {
     pluginId: "skyline",
   });
   elements.push(...headerElems);
@@ -236,7 +235,12 @@ export function renderSkyline(
 
   // Offset so the scene is centred in the content area
   const offsetX = Math.max(padding, (targetWidth - sceneWidth) / 2);
-  const baseY = maxHeight + 10; // Ground level (from group top)
+  // Scene origin (ground level for building at row=0) in local coords
+  // is at Y=0. Buildings extend upward (negative Y) by their height.
+  // The tallest building reaches Y = -maxHeight in local coords.
+  // We place the scene origin at contentY + maxHeight so the tallest
+  // building top aligns with contentY (just below the header).
+  const sceneOriginY = contentY + maxHeight + 6;
 
   const buildingElements: import("../../render/svg/builder.ts").SvgElement[] =
     [];
@@ -371,13 +375,13 @@ export function renderSkyline(
   elements.push(
     g(
       {
-        transform: `translate(${String(offsetX)},${String(baseY - maxHeight)})`,
+        transform: `translate(${String(offsetX)},${String(sceneOriginY)})`,
       },
       innerGroup,
     ),
   );
 
-  const totalHeight = baseY + sceneDepth + 30;
+  const totalHeight = sceneOriginY + sceneDepth + 20;
 
   return { height: totalHeight, elements };
 }
