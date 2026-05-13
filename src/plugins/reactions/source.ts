@@ -224,7 +224,7 @@ export async function fetchReactions(
 
   // Fetch pull requests
   const prsQuery = `
-    query($login: String!, $since: DateTime!) {
+    query($login: String!) {
       user(login: $login) {
         pullRequests(first: 100, orderBy: {field: UPDATED_AT, direction: DESC}) {
           nodes {
@@ -244,7 +244,6 @@ export async function fetchReactions(
 
   const prsRaw = await api.graphql(prsQuery, {
     login: user,
-    since: sinceISO,
   });
   const prsParsed = PullRequestsResponseSchema.safeParse(prsRaw);
   if (prsParsed.success) {
