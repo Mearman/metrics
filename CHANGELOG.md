@@ -1,3 +1,9 @@
+## [1.25.0](https://github.com/Mearman/metrics/compare/v1.24.0...v1.25.0) (2026-05-13)
+
+### Features
+
+* eliminate __PRIVACY__ placeholder for static GraphQL analysis ([28d9b08](https://github.com/Mearman/metrics/commit/28d9b081d3a2cae55d3e4aedc687c98b3f6d02ac))
+
 ## [1.24.0](https://github.com/Mearman/metrics/compare/v1.23.2...v1.24.0) (2026-05-13)
 
 ### Features
