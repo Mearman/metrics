@@ -1,3 +1,9 @@
+## [1.27.0](https://github.com/Mearman/metrics/compare/v1.26.1...v1.27.0) (2026-05-13)
+
+### Features
+
+* add per-plugin custom mock data override via mock_data config ([bc346da](https://github.com/Mearman/metrics/commit/bc346dae2a65382015ce7ff92aef21058e70eeef))
+
 ## [1.26.1](https://github.com/Mearman/metrics/compare/v1.26.0...v1.26.1) (2026-05-13)
 
 ### Bug Fixes
