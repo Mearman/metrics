@@ -12,6 +12,7 @@ import type { RenderResult, RenderContext } from "../types.ts";
 import { LicencesConfig } from "./source.ts";
 import type { LicencesData } from "./source.ts";
 import { emptySection } from "../empty.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 /** Colour map for common licence SPDX IDs */
 const licenceColours: Record<string, string> = {
@@ -43,14 +44,11 @@ export function renderLicences(
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
-  elements.push(
-    text(padding, 14, "Licences", {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
-  );
+  // Header with icon
+  const { elements: headerElems } = sectionHeader("Licences", ctx, {
+    pluginId: "licenses",
+  });
+  elements.push(...headerElems);
 
   let yCursor = 28;
   const labelWidth = 140;

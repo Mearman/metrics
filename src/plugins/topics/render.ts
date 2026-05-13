@@ -11,6 +11,7 @@ import type { RenderResult, RenderContext } from "../types.ts";
 import { TopicsConfig } from "./source.ts";
 import type { TopicsData } from "./source.ts";
 import { emptySection } from "../empty.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 /**
  * Render topics as pill badges.
@@ -28,14 +29,11 @@ export function renderTopics(
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
-  elements.push(
-    text(padding, 14, "Topics", {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
-  );
+  // Header with icon
+  const { elements: headerElems, contentY } = sectionHeader("Topics", ctx, {
+    pluginId: "topics",
+  });
+  elements.push(...headerElems);
 
   // Pill layout
   const fontSize = 11;
@@ -86,10 +84,13 @@ export function renderTopics(
   }
 
   elements.push(
-    g({ transform: `translate(${String(padding)},24)` }, ...pillElements),
+    g(
+      { transform: `translate(${String(padding)},${String(contentY + 10)})` },
+      ...pillElements,
+    ),
   );
 
-  const totalHeight = 24 + y + pillHeight + padding;
+  const totalHeight = contentY + 10 + y + pillHeight + padding;
 
   return { height: totalHeight, elements };
 }

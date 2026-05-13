@@ -11,6 +11,7 @@ import type { RenderResult, RenderContext } from "../types.ts";
 import { NotableConfig } from "./source.ts";
 import type { NotableData } from "./source.ts";
 import { emptySection } from "../empty.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 /**
  * Render notable contributions as avatar row with org names.
@@ -32,14 +33,15 @@ export function renderNotable(
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
-  elements.push(
-    text(padding, 14, "Notable contributions", {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
+  // Header with icon
+  const { elements: headerElems } = sectionHeader(
+    "Notable contributions",
+    ctx,
+    {
+      pluginId: "notable",
+    },
   );
+  elements.push(...headerElems);
 
   const avatarSize = 32;
   const labelWidth = 90;

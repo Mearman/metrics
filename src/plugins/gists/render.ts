@@ -9,6 +9,7 @@ import { text } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import { GistsConfig } from "./source.ts";
 import type { GistsData } from "./source.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 /**
  * Render gist statistics.
@@ -22,14 +23,11 @@ export function renderGists(
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
-  elements.push(
-    text(padding, 14, "Gists", {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
-  );
+  // Header with icon
+  const { elements: headerElems } = sectionHeader("Gists", ctx, {
+    pluginId: "gists",
+  });
+  elements.push(...headerElems);
 
   if (data.totalCount === 0) {
     elements.push(

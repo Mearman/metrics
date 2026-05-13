@@ -11,6 +11,7 @@ import type { RenderResult, RenderContext } from "../types.ts";
 import { SponsorsConfig } from "./source.ts";
 import type { SponsorsData } from "./source.ts";
 import { emptySection } from "../empty.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 export function renderSponsors(
   data: SponsorsData,
@@ -33,14 +34,11 @@ export function renderSponsors(
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
-  elements.push(
-    text(padding, 14, "Sponsors", {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
-  );
+  // Header with icon
+  const { elements: headerElems } = sectionHeader("Sponsors", ctx, {
+    pluginId: "sponsors",
+  });
+  elements.push(...headerElems);
 
   let y = 28;
 

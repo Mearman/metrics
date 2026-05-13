@@ -12,9 +12,10 @@
  * Pure SVG — no WebGL, no foreignObject, no Puppeteer.
  */
 
-import { g, path, text } from "../../render/svg/builder.ts";
+import { g, path } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { IsocalendarData } from "../isocalendar/source.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 // ---------------------------------------------------------------------------
 // Isometric projection
@@ -168,20 +169,17 @@ export function renderSkyline(
   config: { max_height?: number },
   ctx: RenderContext,
 ): RenderResult {
-  const { colours, fontStack, sectionPadding: padding } = ctx.theme;
+  const { colours, sectionPadding: padding } = ctx.theme;
   const maxHeight = config.max_height ?? 100;
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
   // Title
-  elements.push(
-    text(padding, 14, "Skyline", {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
-  );
+  // Header with icon
+  const { elements: headerElems } = sectionHeader("Skyline", ctx, {
+    pluginId: "skyline",
+  });
+  elements.push(...headerElems);
 
   // Compute cell sizes to fit within content width
   const totalWeeks = data.weeks.length;

@@ -9,6 +9,7 @@ import { text, rect } from "../../render/svg/builder.ts";
 import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { ReactionsData } from "./source.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 /** Map reaction keys to display emoji */
 const REACTION_EMOJI: Record<string, string> = {
@@ -51,14 +52,11 @@ export function renderReactions(
   const showCount = details.includes("count");
   const showPct = details.includes("percentage");
 
-  elements.push(
-    text(padding, 14, "Reactions", {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
-  );
+  // Header with icon
+  const { elements: headerElems } = sectionHeader("Reactions", ctx, {
+    pluginId: "reactions",
+  });
+  elements.push(...headerElems);
 
   if (data.items.length === 0) {
     elements.push(

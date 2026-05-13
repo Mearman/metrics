@@ -14,6 +14,7 @@ import type { RenderResult, RenderContext } from "../types.ts";
 import { RepositoriesConfig } from "./source.ts";
 import type { RepositoriesData, RepositoryInfo } from "./source.ts";
 import { emptySection } from "../empty.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 /**
  * Format a large number compactly (e.g. 1234 → "1.2k").
@@ -42,17 +43,17 @@ export function renderRepositories(
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
   // Section title
-  const titleY = 14;
-  elements.push(
-    text(padding, titleY, "Featured repositories", {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
+  // Header with icon
+  const { elements: headerElems, contentY } = sectionHeader(
+    "Featured repositories",
+    ctx,
+    {
+      pluginId: "repositories",
+    },
   );
+  elements.push(...headerElems);
 
-  let yCursor = titleY + 16;
+  let yCursor = contentY + 16;
   const cardPadding = 12;
   const cardWidth = ctx.contentWidth;
 

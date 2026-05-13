@@ -10,6 +10,7 @@ import type { RenderResult, RenderContext } from "../types.ts";
 import { FollowupConfig } from "./source.ts";
 import type { FollowupData } from "./source.ts";
 import { emptySection } from "../empty.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 /** Vertical gap between a bar bottom and the label baseline. */
 const BAR_LABEL_GAP = 6;
@@ -43,14 +44,11 @@ export function renderFollowup(
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
-  elements.push(
-    text(padding, 14, "Follow-up", {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
-  );
+  // Header with icon
+  const { elements: headerElems } = sectionHeader("Follow-up", ctx, {
+    pluginId: "followup",
+  });
+  elements.push(...headerElems);
 
   let yCursor = 32;
   const barWidth = ctx.contentWidth;

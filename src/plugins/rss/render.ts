@@ -7,6 +7,7 @@
 import { text, rect } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { RssData } from "./source.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 // ---------------------------------------------------------------------------
 // Date formatting
@@ -37,7 +38,6 @@ function relativeDate(date: Date): string {
 // Renderer
 // ---------------------------------------------------------------------------
 
-const TITLE_Y = 14;
 const ROW_START_Y = 32;
 const ROW_HEIGHT = 22;
 const DOT_SIZE = 6;
@@ -51,14 +51,15 @@ export function renderRss(
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
   // Title — feed name + "RSS feed"
-  elements.push(
-    text(padding, TITLE_Y, `${data.feedTitle} RSS feed`, {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
+  // Header with icon
+  const { elements: headerElems } = sectionHeader(
+    `${data.feedTitle} RSS feed`,
+    ctx,
+    {
+      pluginId: "rss",
+    },
   );
+  elements.push(...headerElems);
 
   if (data.items.length === 0) {
     elements.push(

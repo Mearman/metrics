@@ -11,6 +11,7 @@ import type { RenderResult, RenderContext } from "../types.ts";
 import { StarsConfig } from "./source.ts";
 import type { StarsData } from "./source.ts";
 import { emptySection } from "../empty.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 /**
  * Render recently starred repositories.
@@ -33,14 +34,11 @@ export function renderStars(
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
   // Section title
-  elements.push(
-    text(padding, 14, "Recently starred", {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
-  );
+  // Header with icon
+  const { elements: headerElems } = sectionHeader("Recently starred", ctx, {
+    pluginId: "stars",
+  });
+  elements.push(...headerElems);
 
   let yCursor = 32;
 

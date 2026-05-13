@@ -13,6 +13,7 @@ import type { RenderResult, RenderContext } from "../types.ts";
 import { StargazersConfig } from "./source.ts";
 import type { StargazersData } from "./source.ts";
 import { emptySection } from "../empty.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 /**
  * Render stargazer breakdown as a horizontal bar chart.
@@ -31,14 +32,15 @@ export function renderStargazers(
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
   const maxStars = Math.max(...data.repos.map((r) => r.stars), 1);
 
-  elements.push(
-    text(padding, 14, `${String(data.totalStars)} total stars`, {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
+  // Header with icon
+  const { elements: headerElems } = sectionHeader(
+    `${String(data.totalStars)} total stars`,
+    ctx,
+    {
+      pluginId: "stargazers",
+    },
   );
+  elements.push(...headerElems);
 
   const startY = 32;
   const barHeight = 12;

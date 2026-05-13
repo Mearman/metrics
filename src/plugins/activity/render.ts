@@ -11,6 +11,7 @@ import type { RenderResult, RenderContext } from "../types.ts";
 import { ActivityConfig } from "./source.ts";
 import type { ActivityData } from "./source.ts";
 import { emptySection } from "../empty.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 /** Event type to colour mapping. */
 const EVENT_COLOURS: Record<string, string> = {
@@ -44,17 +45,15 @@ export function renderActivity(
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
   // Section title
-  const titleY = 14;
-  elements.push(
-    text(padding, titleY, "Recent activity", {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
+  // Header with icon
+  const { elements: headerElems, contentY } = sectionHeader(
+    "Recent activity",
+    ctx,
+    { pluginId: "activity" },
   );
+  elements.push(...headerElems);
 
-  let yCursor = titleY + 16;
+  let yCursor = contentY + 6;
 
   for (const event of data.events) {
     const colour = EVENT_COLOURS[event.type] ?? colours.textSecondary;

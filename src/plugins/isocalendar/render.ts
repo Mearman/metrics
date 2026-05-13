@@ -5,9 +5,10 @@
  * Cell size is computed to fit within the available content width.
  */
 
-import { rect, text, g } from "../../render/svg/builder.ts";
+import { rect, g } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { IsocalendarData } from "./source.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 /**
  * Render the isocalendar contribution heatmap.
@@ -17,7 +18,7 @@ export function renderIsocalendar(
   config: { duration?: string },
   ctx: RenderContext,
 ): RenderResult {
-  const { colours, fontStack, sectionPadding: padding } = ctx.theme;
+  const { colours, sectionPadding: padding } = ctx.theme;
 
   const weeks = data.weeks.length;
   const rows = 7;
@@ -30,24 +31,16 @@ export function renderIsocalendar(
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
-  // Title
-  const titleY = 14;
-  elements.push(
-    text(
-      padding,
-      titleY,
-      `${String(data.totalContributions)} contributions in the last year`,
-      {
-        fill: colours.text,
-        "font-size": 14,
-        "font-weight": 600,
-        "font-family": fontStack,
-      },
-    ),
+  // Header with icon
+  const { elements: headerElems, contentY } = sectionHeader(
+    `${String(data.totalContributions)} contributions in the last year`,
+    ctx,
+    { pluginId: "isocalendar" },
   );
+  elements.push(...headerElems);
 
   // Calendar grid — wrap cells in a group
-  const gridY = titleY + 12;
+  const gridY = contentY + 4;
   const cells: import("../../render/svg/builder.ts").SvgElement[] = [];
 
   for (let weekIndex = 0; weekIndex < data.weeks.length; weekIndex++) {

@@ -8,6 +8,7 @@
 
 import { text } from "../render/svg/builder.ts";
 import type { RenderContext, RenderResult } from "../plugins/types.ts";
+import { sectionHeader } from "../render/svg/header.ts";
 
 /** Render an empty-state section with a header and message. */
 export function emptySection(
@@ -17,19 +18,19 @@ export function emptySection(
 ): RenderResult {
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
-  const elements: import("../render/svg/builder.ts").SvgElement[] = [
-    text(padding, 14, title, {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
-    text(padding, 32, message, {
+  const parts = title.toLowerCase().split(" ");
+  const pluginId = parts[0] ?? "";
+  const { elements: headerElems } = sectionHeader(title, ctx, {
+    pluginId,
+  });
+  const messageY = 32;
+  const messageElements = [
+    text(padding, messageY, message, {
       fill: colours.textTertiary,
       "font-size": 11,
       "font-family": fontStack,
     }),
   ];
 
-  return { height: 48, elements };
+  return { height: 48, elements: [...headerElems, ...messageElements] };
 }

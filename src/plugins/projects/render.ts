@@ -9,6 +9,7 @@ import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { ProjectsData } from "./source.ts";
 import { emptySection } from "../empty.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 /**
  * Render projects section.
@@ -27,14 +28,15 @@ export function renderProjects(
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
-  elements.push(
-    text(padding, 14, `Projects (${String(data.totalProjects)})`, {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
+  // Header with icon
+  const { elements: headerElems } = sectionHeader(
+    `Projects (${String(data.totalProjects)})`,
+    ctx,
+    {
+      pluginId: "projects",
+    },
   );
+  elements.push(...headerElems);
 
   let y = 32;
   const nameFont = 12;

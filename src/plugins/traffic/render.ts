@@ -13,6 +13,7 @@ import type { RenderResult, RenderContext } from "../types.ts";
 import { TrafficConfig } from "./source.ts";
 import type { TrafficData } from "./source.ts";
 import { emptySection } from "../empty.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 export function renderTraffic(
   data: TrafficData,
@@ -27,14 +28,15 @@ export function renderTraffic(
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
-  elements.push(
-    text(padding, 14, `Traffic (${String(data.totalViews)} views)`, {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
+  // Header with icon
+  const { elements: headerElems } = sectionHeader(
+    `Traffic (${String(data.totalViews)} views)`,
+    ctx,
+    {
+      pluginId: "traffic",
+    },
   );
+  elements.push(...headerElems);
 
   const labelWidth = 160;
   const barMaxWidth = ctx.contentWidth - labelWidth - 50;

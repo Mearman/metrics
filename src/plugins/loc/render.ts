@@ -14,6 +14,7 @@ import type { RenderResult, RenderContext } from "../types.ts";
 import { LocConfig } from "./source.ts";
 import type { LocData } from "./source.ts";
 import { emptySection } from "../empty.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -51,9 +52,6 @@ function collectLanguages(
 // Layout constants
 // ---------------------------------------------------------------------------
 
-const TITLE_FONT_SIZE = 14;
-const TITLE_Y = 14;
-
 const REPO_NAME_FONT_SIZE = 12;
 const SIZE_LABEL_FONT_SIZE = 11;
 const BAR_HEIGHT = 6;
@@ -90,14 +88,12 @@ export function renderLoc(
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
-  elements.push(
-    text(padding, TITLE_Y, `Lines of code (${formatLines(data.totalLines)})`, {
-      fill: colours.text,
-      "font-size": TITLE_FONT_SIZE,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
+  const { elements: headerElems, contentY } = sectionHeader(
+    `Lines of code (${formatLines(data.totalLines)})`,
+    ctx,
+    { pluginId: "loc" },
   );
+  elements.push(...headerElems);
 
   // Language legend
   const visibleRepos = data.repos.filter((r) =>
@@ -105,7 +101,7 @@ export function renderLoc(
   );
   const legendLangs = collectLanguages(visibleRepos, MAX_LEGEND_LANGUAGES);
 
-  let y = TITLE_Y + 22;
+  let y = contentY + 14;
 
   if (legendLangs.length > 0) {
     let legendX = padding + 8;
@@ -217,7 +213,7 @@ export function renderLoc(
     y += BAR_HEIGHT + BAR_TO_TEXT_GAP + REPO_NAME_FONT_SIZE;
   }
 
-  const totalHeight = y + padding - TITLE_Y;
+  const totalHeight = y + padding - contentY;
 
   return { height: totalHeight, elements };
 }

@@ -10,6 +10,7 @@ import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { LanguagesData, LanguageEntry } from "./source.ts";
 import { emptySection } from "../empty.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 /** Format byte count as human-readable (e.g. "1.2 MB"). */
 function formatBytes(bytes: number): string {
@@ -111,19 +112,14 @@ export function renderLanguages(
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
-  // Section title
-  const titleY = 0;
-  elements.push(
-    text(padding, titleY + 14, "Languages", {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
-  );
+  // Header with icon
+  const { elements: headerElems, contentY } = sectionHeader("Languages", ctx, {
+    pluginId: "languages",
+  });
+  elements.push(...headerElems);
 
   // Stacked bar
-  const barY = titleY + 28;
+  const barY = contentY + 10;
   const barHeight = 8;
   let xOffset = padding;
 

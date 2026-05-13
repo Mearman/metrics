@@ -4,10 +4,11 @@
  * Renders followers/following as an avatar grid using <image> elements.
  */
 
-import { text, image, g } from "../../render/svg/builder.ts";
+import { image, g } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { PeopleData, PeopleConfig } from "./source.ts";
 import { emptySection } from "../empty.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 /**
  * Render people sections as avatar grids.
@@ -17,7 +18,7 @@ export function renderPeople(
   config: PeopleConfig,
   ctx: RenderContext,
 ): RenderResult {
-  const { colours, fontStack, sectionPadding: padding } = ctx.theme;
+  const { sectionPadding: padding } = ctx.theme;
 
   if (data.sections.length === 0) {
     return emptySection("People", "No followers or following yet", ctx);
@@ -36,16 +37,13 @@ export function renderPeople(
 
     const title = `${label} (${String(section.totalCount)})`;
 
-    elements.push(
-      text(padding, yCursor + 14, title, {
-        fill: colours.text,
-        "font-size": 14,
-        "font-weight": 600,
-        "font-family": fontStack,
-      }),
-    );
+    const { elements: headerElems, contentY } = sectionHeader(title, ctx, {
+      pluginId: "people",
+      y: yCursor,
+    });
+    elements.push(...headerElems);
 
-    yCursor += 24;
+    yCursor = contentY + 2;
 
     // Avatar grid
     const avatarElements: import("../../render/svg/builder.ts").SvgElement[] =

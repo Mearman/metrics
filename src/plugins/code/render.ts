@@ -11,6 +11,7 @@ import type { RenderResult, RenderContext } from "../types.ts";
 import { CodeConfig } from "./source.ts";
 import type { CodeData } from "./source.ts";
 import { emptySection } from "../empty.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 /**
  * Render a code snippet card.
@@ -28,19 +29,16 @@ export function renderCode(
     return emptySection("Code", "No recent code snippets found", ctx);
   }
 
-  elements.push(
-    text(padding, 14, "Code", {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
-  );
+  // Header with icon
+  const { elements: headerElems, contentY } = sectionHeader("Code", ctx, {
+    pluginId: "code",
+  });
+  elements.push(...headerElems);
 
   const snippet = data.snippet;
   const cardPadding = 12;
   const monospace = "'Courier New', monospace";
-  let y = 30;
+  let y = contentY + 16;
 
   // File path + language label
   const filePath = truncateText(

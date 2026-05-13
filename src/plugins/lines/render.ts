@@ -13,6 +13,7 @@ import type { RenderResult, RenderContext } from "../types.ts";
 import type { LinesData, LinesConfig } from "./source.ts";
 import * as z from "zod";
 import { emptySection } from "../empty.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -50,9 +51,6 @@ function collectLanguages(
 // ---------------------------------------------------------------------------
 // Layout constants
 // ---------------------------------------------------------------------------
-
-const TITLE_FONT_SIZE = 14;
-const TITLE_Y = 14;
 
 const REPO_NAME_FONT_SIZE = 12;
 const SIZE_LABEL_FONT_SIZE = 11;
@@ -93,15 +91,13 @@ export function renderLines(
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
-  // Title
-  elements.push(
-    text(padding, TITLE_Y, `Code size (${formatBytes(data.totalBytes)})`, {
-      fill: colours.text,
-      "font-size": TITLE_FONT_SIZE,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
+  // Header with icon
+  const { elements: headerElems, contentY } = sectionHeader(
+    `Code size (${formatBytes(data.totalBytes)})`,
+    ctx,
+    { pluginId: "lines" },
   );
+  elements.push(...headerElems);
 
   // Language legend
   const visibleRepos = data.repos.filter((r) =>
@@ -109,7 +105,7 @@ export function renderLines(
   );
   const legendLangs = collectLanguages(visibleRepos, MAX_LEGEND_LANGUAGES);
 
-  let y = TITLE_Y + 22;
+  let y = contentY + 14;
 
   if (legendLangs.length > 0) {
     let legendX = padding + 8;
@@ -213,7 +209,7 @@ export function renderLines(
     y += BAR_HEIGHT + BAR_BELOW_GAP + REPO_NAME_FONT_SIZE;
   }
 
-  const totalHeight = y + padding - TITLE_Y;
+  const totalHeight = y + padding - contentY;
 
   return { height: totalHeight, elements };
 }

@@ -10,6 +10,7 @@ import type { RenderResult, RenderContext } from "../types.ts";
 import { SponsorshipsConfig } from "./source.ts";
 import type { SponsorshipsData } from "./source.ts";
 import { emptySection } from "../empty.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 export function renderSponsorships(
   data: SponsorshipsData,
@@ -25,14 +26,11 @@ export function renderSponsorships(
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
-  elements.push(
-    text(padding, 14, "Sponsorships", {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
-  );
+  // Header with icon
+  const { elements: headerElems } = sectionHeader("Sponsorships", ctx, {
+    pluginId: "sponsorships",
+  });
+  elements.push(...headerElems);
 
   // Total amount
   if (data.totalAmount > 0) {

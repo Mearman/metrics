@@ -8,6 +8,7 @@
 import { text, rect } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { HabitsData, WeekdayActivity } from "./source.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 // ---------------------------------------------------------------------------
 // Chart helpers
@@ -91,17 +92,17 @@ export function renderHabits(
   const showFacts = config.facts ?? true;
 
   // Title
-  const titleY = 14;
-  elements.push(
-    text(padding, titleY, "Commit habits", {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
+  // Header with icon
+  const { elements: headerElems, contentY } = sectionHeader(
+    "Commit habits",
+    ctx,
+    {
+      pluginId: "habits",
+    },
   );
+  elements.push(...headerElems);
 
-  let y = titleY + 24;
+  let y = contentY + 24;
 
   // Facts section — "mildly interesting facts"
   if (showFacts) {
@@ -188,7 +189,7 @@ export function renderHabits(
     );
   }
 
-  const totalHeight = y + padding - titleY;
+  const totalHeight = y + padding - contentY;
 
   return { height: totalHeight, elements };
 }

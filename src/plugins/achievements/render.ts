@@ -8,6 +8,7 @@ import { text, rect } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { AchievementsData } from "./source.ts";
 import { emptySection } from "../empty.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 const TIER_COLOURS: Record<string, string> = {
   X: "#ff6600",
@@ -52,18 +53,17 @@ export function renderAchievements(
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
-  // Title
-  const titleY = 14;
-  elements.push(
-    text(padding, titleY, "Achievements", {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
+  // Header with icon
+  const { elements: headerElems, contentY } = sectionHeader(
+    "Achievements",
+    ctx,
+    {
+      pluginId: "achievements",
+    },
   );
+  elements.push(...headerElems);
 
-  let y = titleY + 20;
+  let y = contentY + 6;
 
   for (const achievement of filtered) {
     const tierColour = TIER_COLOURS[achievement.tier] ?? colours.textTertiary;
@@ -106,7 +106,7 @@ export function renderAchievements(
     y += 32;
   }
 
-  const totalHeight = y + padding - titleY;
+  const totalHeight = y + padding - contentY + 6;
 
   return { height: totalHeight, elements };
 }

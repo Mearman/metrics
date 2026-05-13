@@ -10,6 +10,7 @@ import type { RenderResult, RenderContext } from "../types.ts";
 import { DiscussionsConfig } from "./source.ts";
 import type { DiscussionsData } from "./source.ts";
 import { emptySection } from "../empty.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 /**
  * Render discussion statistics.
@@ -27,14 +28,15 @@ export function renderDiscussions(
     return emptySection("Discussions", "No discussions started yet", ctx);
   }
 
-  elements.push(
-    text(padding, 14, `💬 ${String(data.totalCount)} discussions`, {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
+  // Header with icon
+  const { elements: headerElems } = sectionHeader(
+    `💬 ${String(data.totalCount)} discussions`,
+    ctx,
+    {
+      pluginId: "discussions",
+    },
   );
+  elements.push(...headerElems);
 
   if (data.categories.length === 0) {
     return { height: 30 + padding, elements };

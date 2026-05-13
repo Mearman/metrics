@@ -12,6 +12,7 @@ import * as z from "zod";
 import type { RenderResult, RenderContext } from "../types.ts";
 import { IntroductionConfig } from "./source.ts";
 import type { IntroductionData } from "./source.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 /**
  * Format an ISO date string as "Joined Month Year".
@@ -36,14 +37,11 @@ export function renderIntroduction(
   const bio = typeof config.text === "string" ? config.text : data.bio;
 
   // Section title
-  elements.push(
-    text(padding, 14, "Introduction", {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
-  );
+  // Header with icon
+  const { elements: headerElems } = sectionHeader("Introduction", ctx, {
+    pluginId: "introduction",
+  });
+  elements.push(...headerElems);
 
   let y = 30;
 

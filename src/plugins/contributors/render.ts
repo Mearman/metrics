@@ -11,6 +11,7 @@ import type { RepoProperties } from "../../repos/filter.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import { ContributorsConfig } from "./source.ts";
 import type { ContributorsData } from "./source.ts";
+import { sectionHeader } from "../../render/svg/header.ts";
 
 /**
  * Render contributor avatar grids per repository.
@@ -23,14 +24,11 @@ export function renderContributors(
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
-  elements.push(
-    text(padding, 14, "Contributors", {
-      fill: colours.text,
-      "font-size": 14,
-      "font-weight": 600,
-      "font-family": fontStack,
-    }),
-  );
+  // Header with icon
+  const { elements: headerElems } = sectionHeader("Contributors", ctx, {
+    pluginId: "contributors",
+  });
+  elements.push(...headerElems);
 
   if (data.repos.length === 0) {
     elements.push(
