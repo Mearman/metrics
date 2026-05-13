@@ -1,3 +1,9 @@
+## [1.22.2](https://github.com/Mearman/metrics/compare/v1.22.1...v1.22.2) (2026-05-13)
+
+### Bug Fixes
+
+* strip output/ prefix from gallery page paths ([33a98fb](https://github.com/Mearman/metrics/commit/33a98fbc8728a330b6a30ee2e1ed50b07738492d))
+
 ## [1.22.1](https://github.com/Mearman/metrics/compare/v1.22.0...v1.22.1) (2026-05-13)
 
 ### Documentation
