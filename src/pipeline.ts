@@ -12,6 +12,7 @@ import { createClient } from "./api/client.ts";
 import { serialise } from "./render/svg/serialise.ts";
 import { svg, rect, line, g } from "./render/svg/builder.ts";
 import { getPlugin } from "./plugins/registry.ts";
+import { getMockData } from "./plugins/mock-registry.ts";
 import { registerAllPlugins } from "./plugins/register.ts";
 
 // ---------------------------------------------------------------------------
@@ -189,34 +190,49 @@ export async function runPipeline(
         };
       }
 
-      // Fetch data — use cache if available
-      const key =
-        plugin.computeFetchKey !== undefined
-          ? `${pluginId}:${JSON.stringify(plugin.computeFetchKey(resolvedConfig))}`
-          : cacheKey(pluginId, resolvedConfig);
-      let data = dataCache.get(key);
+      // Fetch data — use mock if requested, otherwise use cache or API
+      const mockList = output.mock ?? [];
+      let useMock = mockList.includes(pluginId);
+      let data: unknown;
 
-      if (data === undefined) {
-        try {
-          data = await plugin.fetch(
-            {
-              api,
-              user: username,
-              signal: controller.signal,
-              token,
-              repos: config.repos,
-              usersIgnored: config.users_ignored,
-            },
-            resolvedConfig,
-          );
-          dataCache.set(key, data);
-        } catch (error: unknown) {
-          const message =
-            error instanceof Error ? error.message : String(error);
+      if (useMock) {
+        data = getMockData(pluginId);
+        if (data === undefined) {
           console.warn(
-            `Plugin "${pluginId}" fetch failed: ${message} — skipping`,
+            `Plugin "${pluginId}" has no mock data — fetching normally`,
           );
-          continue;
+          useMock = false;
+        }
+      }
+      if (!useMock) {
+        const key =
+          plugin.computeFetchKey !== undefined
+            ? `${pluginId}:${JSON.stringify(plugin.computeFetchKey(resolvedConfig))}`
+            : cacheKey(pluginId, resolvedConfig);
+        data = dataCache.get(key);
+
+        if (data === undefined) {
+          try {
+            data = await plugin.fetch(
+              {
+                api,
+                user: username,
+                signal: controller.signal,
+                token,
+                repos: config.repos,
+                usersIgnored: config.users_ignored,
+              },
+              resolvedConfig,
+            );
+            dataCache.set(key, data);
+          } catch (error: unknown) {
+            const message =
+              error instanceof Error ? error.message : String(error);
+            console.warn(
+              `Plugin "${pluginId}" fetch failed: ${message} — skipping`,
+            );
+            continue;
+          }
         }
       }
 

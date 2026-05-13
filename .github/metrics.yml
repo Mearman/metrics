@@ -318,3 +318,70 @@ outputs:
         categories: true
       notable:
         from: 5
+
+  # ── Demo preset ──────────────────────────────────────────────
+  # All plugins populated with placeholder data. For showcase
+  # and gallery purposes — every card shows realistic content.
+
+  - path: output/demo.svg
+    template: classic
+    mock:
+      - base
+      - isocalendar
+      - languages
+      - habits
+      - achievements
+      - lines
+      - repositories
+      - activity
+      - stars
+      - followup
+      - stargazers
+      - people
+      - gists
+      - discussions
+      - notable
+      - calendar
+      - introduction
+      - reactions
+      - contributors
+      - code
+      - topics
+      - licenses
+      - loc
+      - projects
+      - sponsors
+      - sponsorships
+      - traffic
+      - skyline
+      - rss
+    plugins:
+      base: {}
+      isocalendar: { duration: full-year }
+      languages: { limit: 8 }
+      habits: { charts: true, facts: true }
+      achievements: { display: detailed }
+      lines: { limit: 4 }
+      repositories: { pinned: 2 }
+      activity: { limit: 5 }
+      stars: { limit: 4 }
+      followup: { sections: [repositories, user] }
+      stargazers: { limit: 6 }
+      people: { limit: 14, types: [followers, following] }
+      gists: {}
+      discussions: { categories: true }
+      notable: { from: 5 }
+      calendar: { years: 1 }
+      introduction: {}
+      reactions: { limit: 10 }
+      contributors: { limit: 4, contributors_per_repo: 6 }
+      code: {}
+      topics: { limit: 15 }
+      licenses: { limit: 8 }
+      loc: { limit: 4 }
+      projects: { limit: 4 }
+      sponsors: { sections: [goal, list] }
+      sponsorships: { limit: 20 }
+      traffic: { limit: 4 }
+      skyline: { max_height: 100 }
+      rss: { source: "https://github.blog/feed/", limit: 4 }

@@ -292,6 +292,7 @@ output/plugins/rss.svg
 | Code & languages | `output/code-languages.svg` | Languages, lines, licences, topics |
 | Social graph | `output/social.svg` | People, stargazers, contributors, sponsors |
 | Activity feed | `output/activity-feed.svg` | Activity, reactions, discussions, notable |
+| Demo (mock data) | `output/demo.svg` | All 29 plugins with placeholder data — showcase preset |
 
 Embed any combination in your profile README:
 
@@ -328,6 +329,27 @@ outputs:
     format: png
     plugins: { base: {} }
 ```
+
+### Mock data
+
+Populate plugins with realistic placeholder data instead of fetching from the API. Useful for showcase pages, demos, and development. The default config includes a `demo.svg` output with all 29 plugins in mock mode.
+
+```yaml
+outputs:
+  - path: output/demo.svg
+    mock:                       # Plugin IDs to populate with mock data
+      - sponsors
+      - sponsorships
+      - traffic
+      - discussions
+    plugins:
+      sponsors: { sections: [goal, list] }
+      sponsorships: { limit: 20 }
+      traffic: { limit: 4 }
+      discussions: { categories: true }
+```
+
+When a plugin is in the `mock` list, the pipeline skips the API fetch and uses built-in placeholder data. Plugins not in the list fetch normally. If a plugin has no registered mock data, it falls back to fetching.
 
 ---
 

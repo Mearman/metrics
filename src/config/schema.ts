@@ -123,6 +123,10 @@ const OutputConfig = z.object({
   template: z.string().trim().optional(),
   /** Per-output colour overrides (falls back to root colours). */
   colours: ColourOverrides,
+  /** Plugin IDs to populate with mock/placeholder data instead of
+   *  fetching from the API. Useful for showcase, demo, and gallery
+   *  pages where you want every plugin to show realistic content. */
+  mock: z.array(z.string().trim()).optional(),
   plugins: PluginsConfig,
 });
 
