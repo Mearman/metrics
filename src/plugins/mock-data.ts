@@ -1,24 +1,57 @@
 /**
- * Mock/placeholder data for all plugins.
+ * Mock/placeholder data for all 29 plugins.
  *
- * Used when the `mock` config option includes a plugin ID — the pipeline
- * skips the fetch step and uses this data instead. The data is realistic
- * but clearly placeholder (generic names, example repos, etc.).
+ * Used when the output config includes a plugin ID in its `mock` array.
+ * The pipeline skips the fetch step and uses the registered mock data.
  *
- * Each plugin's source.ts imports its mock data from here and exposes it
- * via the `mockData` property on the DataSource interface.
+ * Every shape matches the actual Data interface from each plugin's source.
  */
 
 // ---------------------------------------------------------------------------
 // Reusable helpers
 // ---------------------------------------------------------------------------
 
-/** Placeholder avatar URL — GitHub's identicon service. */
 const avatar = (login: string) =>
   `https://avatars.githubusercontent.com/${login}?s=56`;
 
+function calendarWeeks(count: number) {
+  const base = new Date("2026-04-14");
+  const weeks = [];
+  for (let w = 0; w < count; w++) {
+    const days = [];
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(base);
+      date.setDate(date.getDate() - (count - w) * 7 + d);
+      const count_ = Math.max(
+        0,
+        Math.round(
+          Math.sin(w * 0.3 + d) * 3 +
+            Math.cos(w * 0.15) * 2 +
+            (d >= 1 && d <= 5 ? 2 : -1),
+        ),
+      );
+      days.push({
+        date: date.toISOString().split("T")[0],
+        count: count_,
+        colour:
+          count_ === 0
+            ? "#161b22"
+            : count_ <= 2
+              ? "#0e4429"
+              : count_ <= 5
+                ? "#006d32"
+                : count_ <= 8
+                  ? "#26a641"
+                  : "#39d353",
+      });
+    }
+    weeks.push({ contributionDays: days });
+  }
+  return weeks;
+}
+
 // ---------------------------------------------------------------------------
-// base
+// base — UserProfile
 // ---------------------------------------------------------------------------
 
 export const base = {
@@ -28,192 +61,165 @@ export const base = {
   bio: "GitHub's mascot and demo user",
   company: "@github",
   location: "San Francisco, CA",
-  website: "https://github.blog",
-  twitter: "octocat",
-  publicRepos: 8,
-  publicGists: 3,
+  createdAt: "2011-01-25T18:44:36Z",
   followers: 24_600,
   following: 0,
-  createdAt: "2011-01-25T18:44:36Z",
+  publicRepositories: 8,
+  issues: 284,
+  pullRequests: 612,
   totalCommits: 3452,
-  totalIssues: 284,
-  totalPullRequests: 612,
-  totalStars: 834,
-  repos: [
-    { name: "Hello-World", stars: 2451, forks: 1402, language: "JavaScript" },
-    { name: "git-consortium", stars: 84, forks: 142, language: "Ruby" },
-    { name: "linguist", stars: 12_463, forks: 4237, language: "Ruby" },
-    { name: "octokit.rb", stars: 2341, forks: 786, language: "Ruby" },
-    { name: "test-repo1", stars: 5, forks: 0, language: "TypeScript" },
-  ],
-} as const;
+  totalPullRequestContributions: 612,
+  totalIssueContributions: 284,
+  totalRepositoryContributions: 45,
+};
 
 // ---------------------------------------------------------------------------
-// isocalendar
+// isocalendar — IsocalendarData
 // ---------------------------------------------------------------------------
 
-export const isocalendar = generateCalendarData();
-
-function generateCalendarData() {
-  const weeks = [];
-  const base = new Date("2026-04-14");
-  for (let w = 0; w < 52; w++) {
-    const days = [];
-    for (let d = 0; d < 7; d++) {
-      const date = new Date(base);
-      date.setDate(date.getDate() - (52 - w) * 7 + d);
-      const count = Math.max(
-        0,
-        Math.round(
-          Math.sin(w * 0.3 + d) * 3 +
-            Math.cos(w * 0.15) * 2 +
-            (d >= 1 && d <= 5 ? 2 : -1),
-        ),
-      );
-      days.push({
-        contributionCount: count,
-        date: date.toISOString().split("T")[0],
-        color:
-          count === 0
-            ? "#161b22"
-            : count <= 2
-              ? "#0e4429"
-              : count <= 5
-                ? "#006d32"
-                : count <= 8
-                  ? "#26a641"
-                  : "#39d353",
-      });
-    }
-    weeks.push({ contributionDays: days });
-  }
-  return { weeks };
-}
+export const isocalendar = {
+  weeks: calendarWeeks(52),
+  totalContributions: 867,
+};
 
 // ---------------------------------------------------------------------------
-// languages
+// languages — LanguagesData
 // ---------------------------------------------------------------------------
 
 export const languages = {
-  languages: [
-    { name: "TypeScript", totalSize: 2_450_000, colour: "#3178c6" },
-    { name: "JavaScript", totalSize: 1_832_000, colour: "#f1e05a" },
-    { name: "Python", totalSize: 1_240_000, colour: "#3572A5" },
-    { name: "Rust", totalSize: 890_000, colour: "#dea584" },
-    { name: "Go", totalSize: 720_000, colour: "#00ADD8" },
-    { name: "HTML", totalSize: 580_000, colour: "#e34c26" },
-    { name: "CSS", totalSize: 340_000, colour: "#663399" },
-    { name: "Shell", totalSize: 120_000, colour: "#89e051" },
+  total: [
+    { name: "TypeScript", colour: "#3178c6", size: 2_450_000 },
+    { name: "JavaScript", colour: "#f1e05a", size: 1_832_000 },
+    { name: "Python", colour: "#3572A5", size: 1_240_000 },
+    { name: "Rust", colour: "#dea584", size: 890_000 },
+    { name: "Go", colour: "#00ADD8", size: 720_000 },
+    { name: "HTML", colour: "#e34c26", size: 580_000 },
+    { name: "CSS", colour: "#663399", size: 340_000 },
+    { name: "Shell", colour: "#89e051", size: 120_000 },
   ],
-  totalSize: 8_172_000,
-} as const;
+  totalBytes: 8_172_000,
+  otherBytes: 0,
+};
 
 // ---------------------------------------------------------------------------
-// habits
+// habits — HabitsData
 // ---------------------------------------------------------------------------
 
 export const habits = {
-  hourlyDistribution: [
-    0, 0, 0, 0, 0, 1, 3, 8, 14, 18, 22, 20, 24, 26, 28, 25, 22, 18, 15, 12, 8,
-    5, 3, 1,
-  ],
-  dailyDistribution: [42, 38, 45, 52, 48, 12, 8],
-  mostActiveDay: "Tuesday",
-  mostActiveHour: 14,
   totalCommits: 867,
-  recentLanguages: [
-    { name: "TypeScript", count: 124 },
-    { name: "Python", count: 67 },
-    { name: "Rust", count: 43 },
-    { name: "Go", count: 31 },
+  days: Array.from({ length: 14 }, (_, i) => {
+    const d = new Date("2026-05-13");
+    d.setDate(d.getDate() - (13 - i));
+    return {
+      date: d.toISOString().split("T")[0],
+      count: Math.round(Math.random() * 12),
+    };
+  }),
+  busiestDay: "Tuesday",
+  busiestDayCount: 28,
+  avgPerDay: 5.2,
+  streak: 14,
+  hourly: Array.from({ length: 24 }, (_, h) => ({
+    hour: h,
+    count: [
+      0, 0, 0, 0, 0, 1, 3, 8, 14, 18, 22, 20, 24, 26, 28, 25, 22, 18, 15, 12, 8,
+      5, 3, 1,
+    ][h],
+  })),
+  weekdays: [
+    { day: "Sunday", count: 42 },
+    { day: "Monday", count: 38 },
+    { day: "Tuesday", count: 45 },
+    { day: "Wednesday", count: 52 },
+    { day: "Thursday", count: 48 },
+    { day: "Friday", count: 12 },
+    { day: "Saturday", count: 8 },
   ],
-} as const;
+  facts: [
+    { label: "Most productive day", value: "Tuesday" },
+    { label: "Most productive hour", value: "2 PM" },
+    { label: "Commit streak", value: "14 days" },
+  ],
+};
 
 // ---------------------------------------------------------------------------
-// achievements
+// achievements — AchievementsData
 // ---------------------------------------------------------------------------
 
 export const achievements = {
   stats: {
+    followers: 24_600,
+    following: 0,
+    publicRepos: 8,
+    gists: 3,
+    issues: 284,
+    pullRequests: 612,
     totalCommits: 3452,
-    totalIssues: 284,
-    totalPullRequests: 612,
-    totalStars: 834,
-    totalFollowers: 24600,
-    totalForks: 6842,
-    totalRepos: 45,
-    totalGists: 3,
+    starred: 834,
+    watching: 42,
   },
   achievements: [
     {
-      id: "infomaniac",
-      title: "Infomaniac",
-      desc: "Repository list is exhaustive",
-      icon: "📖",
-      tier: "S",
-      threshold: 0,
-    },
-    {
       id: "autobiographer",
       title: "Autobiographer",
-      desc: "Profile is complete",
+      description: "Profile is complete",
       icon: "📝",
-      tier: "A",
-      threshold: 0,
+      tier: "A" as const,
     },
     {
       id: "collaborator",
       title: "Collaborator",
-      desc: "Has pull requests in other repos",
+      description: "Has pull requests in other repos",
       icon: "🤝",
-      tier: "A",
-      threshold: 0,
+      tier: "A" as const,
     },
     {
       id: "pull-shark",
       title: "Pull Shark",
-      desc: "Opened 100+ pull requests",
+      description: "Opened 100+ pull requests",
       icon: "🦈",
-      tier: "X",
-      threshold: 100,
+      tier: "X" as const,
     },
     {
       id: "yolo",
       title: "YOLO",
-      desc: "Commits directly to main",
+      description: "Commits directly to main",
       icon: "🕶️",
-      tier: "B",
-      threshold: 0,
+      tier: "B" as const,
     },
     {
       id: "starstruck",
       title: "Starstruck",
-      desc: "Has 500+ stars",
+      description: "Has 500+ stars",
       icon: "⭐",
-      tier: "A",
-      threshold: 500,
+      tier: "A" as const,
     },
     {
       id: "galaxy-brain",
       title: "Galaxy Brain",
-      desc: "Thought leader with insightful answers",
+      description: "Thought leader",
       icon: "🧠",
-      tier: "B",
-      threshold: 0,
+      tier: "B" as const,
     },
     {
       id: "public-sponsor",
       title: "Public Sponsor",
-      desc: "Sponsored open source projects",
+      description: "Sponsored open source",
       icon: "💖",
-      tier: "C",
-      threshold: 0,
+      tier: "C" as const,
+    },
+    {
+      id: "infomaniac",
+      title: "Infomaniac",
+      description: "Repository list is exhaustive",
+      icon: "📖",
+      tier: "S" as const,
     },
   ],
-} as const;
+};
 
 // ---------------------------------------------------------------------------
-// lines
+// lines — LinesData
 // ---------------------------------------------------------------------------
 
 export const lines = {
@@ -250,448 +256,487 @@ export const lines = {
     },
   ],
   totalBytes: 3_099_960,
-} as const;
+};
 
 // ---------------------------------------------------------------------------
-// repositories
+// repositories — RepositoriesData
 // ---------------------------------------------------------------------------
 
 export const repositories = {
-  pinned: [
+  list: [
     {
-      name: "metrics",
+      nameWithOwner: "octocat/metrics",
       description: "📊 Generate GitHub metrics as pure SVG",
-      language: "TypeScript",
-      languageColour: "#3178c6",
-      stars: 42,
-      forks: 8,
+      isFork: false,
+      isPrivate: false,
+      stargazerCount: 42,
+      forkCount: 8,
+      issues: { totalCount: 8 },
+      pullRequests: { totalCount: 3 },
+      primaryLanguage: { name: "TypeScript", color: "#3178c6" },
+      licenseInfo: { spdxId: "MIT", name: "MIT License" },
+      createdAt: "2024-01-15T10:00:00Z",
+      sorting: "pinned" as const,
     },
     {
-      name: "Hello-World",
+      nameWithOwner: "octocat/Hello-World",
       description: "Example repository for demonstrations",
-      language: "JavaScript",
-      languageColour: "#f1e05a",
-      stars: 2451,
-      forks: 1402,
+      isFork: false,
+      isPrivate: false,
+      stargazerCount: 2451,
+      forkCount: 1402,
+      issues: { totalCount: 142 },
+      pullRequests: { totalCount: 67 },
+      primaryLanguage: { name: "JavaScript", color: "#f1e05a" },
+      licenseInfo: null,
+      createdAt: "2011-01-26T19:01:12Z",
+      sorting: "pinned" as const,
     },
   ],
-  featured: [],
-  starred: [],
-} as const;
+};
 
 // ---------------------------------------------------------------------------
-// activity
+// activity — ActivityData
 // ---------------------------------------------------------------------------
 
 export const activity = {
   events: [
     {
-      type: "PushEvent",
+      type: "PushEvent" as const,
       repo: "octocat/metrics",
-      createdAt: "2026-05-13T09:30:00Z",
-      payload: { ref: "refs/heads/main", size: 3 },
+      timestamp: new Date("2026-05-13T09:30:00Z"),
+      description: "Pushed 3 commits to main",
     },
     {
-      type: "PullRequestEvent",
+      type: "PullRequestEvent" as const,
       repo: "octocat/linguist",
-      createdAt: "2026-05-13T08:15:00Z",
-      payload: { action: "opened", number: 6724 },
+      timestamp: new Date("2026-05-13T08:15:00Z"),
+      description: "Opened pull request #6724",
     },
     {
-      type: "IssuesEvent",
+      type: "IssuesEvent" as const,
       repo: "octocat/Hello-World",
-      createdAt: "2026-05-12T22:00:00Z",
-      payload: { action: "closed", number: 1423 },
+      timestamp: new Date("2026-05-12T22:00:00Z"),
+      description: "Closed issue #1423",
     },
     {
-      type: "WatchEvent",
+      type: "WatchEvent" as const,
       repo: "vercel/next.js",
-      createdAt: "2026-05-12T18:30:00Z",
-      payload: {},
+      timestamp: new Date("2026-05-12T18:30:00Z"),
+      description: "Starred vercel/next.js",
     },
     {
-      type: "PushEvent",
+      type: "PushEvent" as const,
       repo: "octocat/metrics",
-      createdAt: "2026-05-12T14:00:00Z",
-      payload: { ref: "refs/heads/main", size: 1 },
+      timestamp: new Date("2026-05-12T14:00:00Z"),
+      description: "Pushed 1 commit to main",
     },
   ],
-} as const;
+  timestamps: true,
+};
 
 // ---------------------------------------------------------------------------
-// stars
+// stars — StarsData
 // ---------------------------------------------------------------------------
 
 export const stars = {
   repositories: [
     {
-      name: "vercel/next.js",
+      nameWithOwner: "vercel/next.js",
       description: "The React framework",
-      stars: 132_000,
-      language: "JavaScript",
+      stargazerCount: 132_000,
+      forkCount: 28_400,
+      primaryLanguage: { name: "JavaScript", color: "#f1e05a" },
+      starredAt: "2026-05-12T18:30:00Z",
     },
     {
-      name: "denoland/deno",
+      nameWithOwner: "denoland/deno",
       description: "A modern runtime for JavaScript and TypeScript",
-      stars: 98_600,
-      language: "Rust",
+      stargazerCount: 98_600,
+      forkCount: 5_400,
+      primaryLanguage: { name: "Rust", color: "#dea584" },
+      starredAt: "2026-05-10T12:00:00Z",
     },
     {
-      name: "oven-sh/bun",
-      description:
-        "Incredibly fast JavaScript runtime, bundler, test framework",
-      stars: 74_200,
-      language: "Zig",
+      nameWithOwner: "oven-sh/bun",
+      description: "Incredibly fast JavaScript runtime",
+      stargazerCount: 74_200,
+      forkCount: 2_900,
+      primaryLanguage: { name: "Zig", color: "#ec915c" },
+      starredAt: "2026-05-08T09:00:00Z",
     },
     {
-      name: "astral-sh/uv",
+      nameWithOwner: "astral-sh/uv",
       description: "An extremely fast Python package manager",
-      stars: 52_100,
-      language: "Rust",
+      stargazerCount: 52_100,
+      forkCount: 1_800,
+      primaryLanguage: { name: "Rust", color: "#dea584" },
+      starredAt: "2026-05-05T16:00:00Z",
     },
   ],
-} as const;
+};
 
 // ---------------------------------------------------------------------------
-// followup
+// followup — FollowupData
 // ---------------------------------------------------------------------------
 
 export const followup = {
   sections: [
     {
-      title: "Repositories",
-      type: "repositories" as const,
-      items: [
-        {
-          name: "octocat/metrics",
-          openIssues: 8,
-          openPRs: 3,
-          closedIssues: 24,
-          mergedPRs: 12,
-        },
-        {
-          name: "octocat/Hello-World",
-          openIssues: 2,
-          openPRs: 1,
-          closedIssues: 142,
-          mergedPRs: 67,
-        },
-      ],
+      title: "octocat/metrics",
+      issues: { open: 8, closed: 24 },
+      pullRequests: { open: 3, merged: 12, closed: 1 },
+    },
+    {
+      title: "octocat/Hello-World",
+      issues: { open: 2, closed: 142 },
+      pullRequests: { open: 1, merged: 67, closed: 5 },
     },
     {
       title: "User",
-      type: "user" as const,
-      items: [
-        { openIssues: 15, openPRs: 6, closedIssues: 269, mergedPRs: 606 },
-      ],
+      issues: { open: 15, closed: 269 },
+      pullRequests: { open: 6, merged: 606, closed: 23 },
     },
   ],
-} as const;
+};
 
 // ---------------------------------------------------------------------------
-// stargazers
+// stargazers — StargazersData
 // ---------------------------------------------------------------------------
 
 export const stargazers = {
   repos: [
-    { name: "octocat/Hello-World", stars: 2451, recentStars: 23 },
-    { name: "octocat/linguist", stars: 12_463, recentStars: 14 },
-    { name: "octocat/octokit.rb", stars: 2341, recentStars: 5 },
-    { name: "octocat/git-consortium", stars: 84, recentStars: 2 },
-    { name: "octocat/metrics", stars: 42, recentStars: 8 },
-    { name: "octocat/test-repo1", stars: 5, recentStars: 1 },
+    { name: "Hello-World", stars: 2451, isPrivate: false },
+    { name: "linguist", stars: 12_463, isPrivate: false },
+    { name: "octokit.rb", stars: 2341, isPrivate: false },
+    { name: "git-consortium", stars: 84, isPrivate: false },
+    { name: "metrics", stars: 42, isPrivate: false },
+    { name: "test-repo1", stars: 5, isPrivate: false },
   ],
   totalStars: 17_386,
-} as const;
+};
 
 // ---------------------------------------------------------------------------
-// people
+// people — PeopleData
 // ---------------------------------------------------------------------------
 
 export const people = {
   sections: [
     {
       type: "followers" as const,
-      total: 24_600,
-      users: Array.from({ length: 24 }, (_, i) => ({
+      totalCount: 24,
+      people: Array.from({ length: 24 }, (_, i) => ({
         login: `follower-${String(i + 1)}`,
         avatarUrl: avatar(`follower-${String(i + 1)}`),
       })),
     },
     {
       type: "following" as const,
-      total: 12,
-      users: Array.from({ length: 12 }, (_, i) => ({
+      totalCount: 12,
+      people: Array.from({ length: 12 }, (_, i) => ({
         login: `followed-${String(i + 1)}`,
         avatarUrl: avatar(`followed-${String(i + 1)}`),
       })),
     },
   ],
-} as const;
+};
 
 // ---------------------------------------------------------------------------
-// gists
+// gists — GistsData
 // ---------------------------------------------------------------------------
 
 export const gists = {
-  total: 3,
-  files: [
-    { name: "example.json", language: "JSON", size: 256 },
-    { name: "config.yml", language: "YAML", size: 512 },
-    { name: "notes.md", language: "Markdown", size: 1024 },
-  ],
-} as const;
+  totalCount: 3,
+  stargazers: 12,
+  forks: 4,
+  files: 7,
+  comments: 8,
+};
 
 // ---------------------------------------------------------------------------
-// discussions
+// discussions — DiscussionsData
 // ---------------------------------------------------------------------------
 
 export const discussions = {
   totalCount: 342,
   categories: [
-    { name: "General", count: 156 },
-    { name: "Ideas", count: 87 },
-    { name: "Q&A", count: 64 },
-    { name: "Show and Tell", count: 35 },
+    { name: "General", discussionCount: 156 },
+    { name: "Ideas", discussionCount: 87 },
+    { name: "Q&A", discussionCount: 64 },
+    { name: "Show and Tell", discussionCount: 35 },
   ],
-} as const;
+};
 
 // ---------------------------------------------------------------------------
-// notable
+// notable — NotableData
 // ---------------------------------------------------------------------------
 
 export const notable = {
   contributions: [
     {
-      organisation: "github",
-      login: "github",
+      name: "GitHub",
       avatarUrl: avatar("github"),
-      repos: 12,
+      url: "https://github.com/github",
     },
     {
-      organisation: "vercel",
-      login: "vercel",
+      name: "Vercel",
       avatarUrl: avatar("vercel"),
-      repos: 3,
+      url: "https://github.com/vercel",
     },
     {
-      organisation: "denoland",
-      login: "denoland",
+      name: "Deno Land",
       avatarUrl: avatar("denoland"),
-      repos: 2,
+      url: "https://github.com/denoland",
     },
     {
-      organisation: "microsoft",
-      login: "microsoft",
+      name: "Microsoft",
       avatarUrl: avatar("microsoft"),
-      repos: 5,
+      url: "https://github.com/microsoft",
     },
     {
-      organisation: "oven-sh",
-      login: "oven-sh",
+      name: "Bun",
       avatarUrl: avatar("oven-sh"),
-      repos: 1,
+      url: "https://github.com/oven-sh",
     },
   ],
-} as const;
+};
 
 // ---------------------------------------------------------------------------
-// calendar
+// calendar — CalendarData
 // ---------------------------------------------------------------------------
 
 export const calendar = {
   years: [
     {
       year: 2026,
-      total: 2345,
-      weeks: generateCalendarData().weeks.slice(0, 20),
+      contributionDays: calendarWeeks(20).flatMap((w) =>
+        w.contributionDays.map((d) => ({
+          date: d.date,
+          contributionCount: d.count,
+          colour: d.colour,
+        })),
+      ),
     },
-    { year: 2025, total: 4812, weeks: generateCalendarData().weeks },
-    { year: 2024, total: 3967, weeks: generateCalendarData().weeks },
   ],
-} as const;
+};
 
 // ---------------------------------------------------------------------------
-// introduction
+// introduction — IntroductionData
 // ---------------------------------------------------------------------------
 
 export const introduction = {
-  login: "octocat",
   name: "Octocat",
+  login: "octocat",
+  avatarUrl: avatar("octocat"),
   bio: "GitHub's mascot and demo user. I love open source, collaboration, and code review 🐙",
-} as const;
+  company: "@github",
+  location: "San Francisco, CA",
+  twitter: "octocat",
+  website: "https://github.blog",
+  joinedAt: "2011-01-25T18:44:36Z",
+};
 
 // ---------------------------------------------------------------------------
-// reactions
+// reactions — ReactionsData
 // ---------------------------------------------------------------------------
 
 export const reactions = {
   totals: {
-    heart: 42,
-    "+1": 156,
-    rocket: 23,
-    eyes: 18,
-    laugh: 7,
-    hooray: 12,
-    "-1": 0,
-    confused: 0,
+    "👍": 156,
+    "❤️": 42,
+    "🚀": 23,
+    "👀": 18,
+    "😂": 7,
+    "🎉": 12,
+    "😕": 2,
+    "👎": 0,
   },
   items: [
     {
       repository: "octocat/metrics",
-      type: "PR",
+      type: "PullRequest",
       title: "Add GraphQL schema validation",
-      reactions: { total_count: 12 },
+      reactions: {
+        total_count: 12,
+        "+1": 5,
+        "-1": 0,
+        laugh: 1,
+        hooray: 2,
+        confused: 0,
+        heart: 3,
+        rocket: 1,
+        eyes: 0,
+      },
     },
     {
       repository: "octocat/linguist",
       type: "Issue",
       title: "Support for new language detection",
-      reactions: { total_count: 8 },
+      reactions: {
+        total_count: 8,
+        "+1": 3,
+        "-1": 0,
+        laugh: 0,
+        hooray: 1,
+        confused: 0,
+        heart: 2,
+        rocket: 2,
+        eyes: 0,
+      },
     },
     {
       repository: "octocat/Hello-World",
-      type: "PR",
+      type: "PullRequest",
       title: "Fix README formatting",
-      reactions: { total_count: 5 },
+      reactions: {
+        total_count: 5,
+        "+1": 2,
+        "-1": 0,
+        laugh: 0,
+        hooray: 0,
+        confused: 0,
+        heart: 1,
+        rocket: 0,
+        eyes: 2,
+      },
     },
   ],
   scanned: 86,
-} as const;
+};
 
 // ---------------------------------------------------------------------------
-// contributors
+// contributors — ContributorsData
 // ---------------------------------------------------------------------------
 
 export const contributors = {
   repos: [
     {
-      name: "octocat/metrics",
-      contributors: Array.from({ length: 8 }, (_, i) => ({
+      repository: "octocat/metrics",
+      isPrivate: false,
+      contributors: Array.from({ length: 6 }, (_, i) => ({
         login: `contributor-${String(i + 1)}`,
         avatarUrl: avatar(`contributor-${String(i + 1)}`),
         contributions: 50 - i * 5,
       })),
     },
     {
-      name: "octocat/linguist",
-      contributors: Array.from({ length: 6 }, (_, i) => ({
+      repository: "octocat/linguist",
+      isPrivate: false,
+      contributors: Array.from({ length: 4 }, (_, i) => ({
         login: `dev-${String(i + 1)}`,
         avatarUrl: avatar(`dev-${String(i + 1)}`),
         contributions: 200 - i * 25,
       })),
     },
-    {
-      name: "octocat/Hello-World",
-      contributors: Array.from({ length: 4 }, (_, i) => ({
-        login: `coder-${String(i + 1)}`,
-        avatarUrl: avatar(`coder-${String(i + 1)}`),
-        contributions: 30 - i * 5,
-      })),
-    },
-    {
-      name: "octocat/octokit.rb",
-      contributors: Array.from({ length: 6 }, (_, i) => ({
-        login: `rubyist-${String(i + 1)}`,
-        avatarUrl: avatar(`rubyist-${String(i + 1)}`),
-        contributions: 80 - i * 12,
-      })),
-    },
   ],
-} as const;
+};
 
 // ---------------------------------------------------------------------------
-// code
+// code — CodeData
 // ---------------------------------------------------------------------------
 
 export const code = {
   snippet: {
-    repo: "octocat/metrics",
-    language: "TypeScript",
-    filename: "src/pipeline.ts",
+    repository: "octocat/metrics",
+    file: "src/pipeline.ts",
     code: [
       "export async function runPipeline(",
       "  config: RootConfig,",
       "  token: string,",
       "): Promise<PipelineResult> {",
       "  const api = createClient(token);",
-      '  console.log(`Metrics: loaded config for user "${user}"`);',
-      "  const result = await runPipeline(configWithUser, token);",
+      "  console.log(`Metrics: loaded config`);",
       "  return result;",
       "}",
-    ],
+    ].join("\n"),
+    language: "TypeScript",
+    message: "feat: add mock data support for demo preset",
   },
-} as const;
+};
 
 // ---------------------------------------------------------------------------
-// topics
+// topics — TopicsData
 // ---------------------------------------------------------------------------
 
 export const topics = {
   topics: [
-    "typescript",
-    "javascript",
-    "python",
-    "rust",
-    "go",
-    "react",
-    "nodejs",
-    "graphql",
-    "api",
-    "cli",
-    "testing",
-    "devtools",
-    "automation",
-    "ci-cd",
-    "docker",
-    "machine-learning",
-    "data-science",
-    "web-development",
-    "open-source",
-    "github",
+    { name: "typescript", count: 24 },
+    { name: "javascript", count: 18 },
+    { name: "python", count: 12 },
+    { name: "rust", count: 8 },
+    { name: "react", count: 14 },
+    { name: "nodejs", count: 10 },
+    { name: "graphql", count: 7 },
+    { name: "api", count: 9 },
+    { name: "cli", count: 6 },
+    { name: "testing", count: 5 },
+    { name: "devtools", count: 4 },
+    { name: "automation", count: 8 },
+    { name: "docker", count: 3 },
+    { name: "open-source", count: 11 },
+    { name: "github", count: 16 },
   ],
-} as const;
+};
 
 // ---------------------------------------------------------------------------
-// licenses
+// licenses — LicencesData
 // ---------------------------------------------------------------------------
 
 export const licenses = {
   licences: [
-    { name: "MIT", count: 24 },
-    { name: "Apache-2.0", count: 8 },
-    { name: "GPL-3.0", count: 5 },
-    { name: "BSD-3-Clause", count: 3 },
-    { name: "ISC", count: 2 },
-    { name: "MPL-2.0", count: 1 },
+    { spdxId: "MIT", name: "MIT License", count: 24 },
+    { spdxId: "Apache-2.0", name: "Apache License 2.0", count: 8 },
+    { spdxId: "GPL-3.0", name: "GNU General Public License v3.0", count: 5 },
+    { spdxId: "BSD-3-Clause", name: "BSD 3-Clause License", count: 3 },
+    { spdxId: "ISC", name: "ISC License", count: 2 },
+    { spdxId: "MPL-2.0", name: "Mozilla Public License 2.0", count: 1 },
   ],
+  totalRepos: 45,
   unlicensed: 2,
-} as const;
+};
 
 // ---------------------------------------------------------------------------
-// loc
+// loc — LocData
 // ---------------------------------------------------------------------------
 
 export const loc = {
   repos: [
     {
-      name: "metrics",
-      languages: { TypeScript: 48_230, JavaScript: 124 },
-      total: 48_354,
+      name: "octocat/metrics",
+      totalLines: 48_354,
+      isPrivate: false,
+      languages: [
+        { name: "TypeScript", lines: 48_230, colour: "#3178c6" },
+        { name: "JavaScript", lines: 124, colour: "#f1e05a" },
+      ],
     },
-    { name: "Hello-World", languages: { JavaScript: 842 }, total: 842 },
     {
-      name: "linguist",
-      languages: { Ruby: 124_300, C: 8_200 },
-      total: 132_500,
+      name: "octocat/Hello-World",
+      totalLines: 842,
+      isPrivate: false,
+      languages: [{ name: "JavaScript", lines: 842, colour: "#f1e05a" }],
     },
-    { name: "octokit.rb", languages: { Ruby: 42_800 }, total: 42_800 },
+    {
+      name: "octocat/linguist",
+      totalLines: 132_500,
+      isPrivate: false,
+      languages: [
+        { name: "Ruby", lines: 124_300, colour: "#701516" },
+        { name: "C", lines: 8_200, colour: "#555555" },
+      ],
+    },
+    {
+      name: "octocat/octokit.rb",
+      totalLines: 42_800,
+      isPrivate: false,
+      languages: [{ name: "Ruby", lines: 42_800, colour: "#701516" }],
+    },
   ],
-  total: 224_496,
-} as const;
+  totalLines: 224_496,
+};
 
 // ---------------------------------------------------------------------------
-// projects
+// projects — ProjectsData
 // ---------------------------------------------------------------------------
 
 export const projects = {
@@ -699,29 +744,29 @@ export const projects = {
   projects: [
     {
       title: "Metrics v2",
-      shortDescription: "Next-generation SVG metrics with plugin system",
-      items: { totalCount: 24 },
+      description: "Next-generation SVG metrics with plugin system",
+      itemCount: 24,
     },
     {
       title: "Documentation",
-      shortDescription: "User guides and API reference",
-      items: { totalCount: 18 },
+      description: "User guides and API reference",
+      itemCount: 18,
     },
     {
       title: "Performance",
-      shortDescription: "Optimise generation speed and memory usage",
-      items: { totalCount: 7 },
+      description: "Optimise generation speed and memory usage",
+      itemCount: 7,
     },
     {
       title: "Community",
-      shortDescription: "Plugin ecosystem and contributor onboarding",
-      items: { totalCount: 12 },
+      description: "Plugin ecosystem and contributor onboarding",
+      itemCount: 12,
     },
   ],
-} as const;
+};
 
 // ---------------------------------------------------------------------------
-// sponsors
+// sponsors — SponsorsData
 // ---------------------------------------------------------------------------
 
 export const sponsors = {
@@ -735,86 +780,89 @@ export const sponsors = {
   sponsors: Array.from({ length: 8 }, (_, i) => ({
     login: `sponsor-${String(i + 1)}`,
     avatarUrl: avatar(`sponsor-${String(i + 1)}`),
+    amount: i === 0 ? 25 : i < 3 ? 10 : null,
+    isPrivate: i >= 5,
   })),
   totalCount: 8,
-} as const;
+};
 
 // ---------------------------------------------------------------------------
-// sponsorships
+// sponsorships — SponsorshipsData
 // ---------------------------------------------------------------------------
 
 export const sponsorships = {
   sponsorships: [
-    { login: "vercel", avatarUrl: avatar("vercel"), monthlyPriceInDollars: 10 },
-    {
-      login: "denoland",
-      avatarUrl: avatar("denoland"),
-      monthlyPriceInDollars: 5,
-    },
-    {
-      login: "oven-sh",
-      avatarUrl: avatar("oven-sh"),
-      monthlyPriceInDollars: 10,
-    },
-    {
-      login: "astral-sh",
-      avatarUrl: avatar("astral-sh"),
-      monthlyPriceInDollars: 5,
-    },
-    {
-      login: "railwayapp",
-      avatarUrl: avatar("railwayapp"),
-      monthlyPriceInDollars: 10,
-    },
+    { login: "vercel", avatarUrl: avatar("vercel"), amount: 10 },
+    { login: "denoland", avatarUrl: avatar("denoland"), amount: 5 },
+    { login: "oven-sh", avatarUrl: avatar("oven-sh"), amount: 10 },
+    { login: "astral-sh", avatarUrl: avatar("astral-sh"), amount: 5 },
+    { login: "railwayapp", avatarUrl: avatar("railwayapp"), amount: 10 },
   ],
   totalAmount: 40,
   totalCount: 5,
-} as const;
+};
 
 // ---------------------------------------------------------------------------
-// traffic
+// traffic — TrafficData
 // ---------------------------------------------------------------------------
 
 export const traffic = {
   repos: [
-    { name: "octocat/Hello-World", views: 8420 },
-    { name: "octocat/linguist", views: 6230 },
-    { name: "octocat/metrics", views: 4510 },
-    { name: "octocat/octokit.rb", views: 2340 },
+    {
+      name: "octocat/Hello-World",
+      views: 8420,
+      uniques: 4210,
+      isPrivate: false,
+    },
+    { name: "octocat/linguist", views: 6230, uniques: 3115, isPrivate: false },
+    { name: "octocat/metrics", views: 4510, uniques: 2255, isPrivate: false },
+    {
+      name: "octocat/octokit.rb",
+      views: 2340,
+      uniques: 1170,
+      isPrivate: false,
+    },
   ],
-} as const;
+  totalViews: 21_500,
+  totalUniques: 10_750,
+};
 
 // ---------------------------------------------------------------------------
-// skyline
+// skyline — IsocalendarData (reuses isocalendar shape)
 // ---------------------------------------------------------------------------
 
-export const skyline = generateCalendarData();
+export const skyline = {
+  weeks: calendarWeeks(52),
+  totalContributions: 867,
+};
 
 // ---------------------------------------------------------------------------
-// rss
+// rss — RssData
 // ---------------------------------------------------------------------------
 
 export const rss = {
+  feedTitle: "The GitHub Blog",
+  feedLink: "https://github.blog",
   items: [
     {
       title: "GitHub Copilot now available for all developers",
       link: "https://github.blog/example-1",
-      pubDate: "2026-05-13T08:00:00Z",
+      date: new Date("2026-05-13T08:00:00Z"),
     },
     {
       title: "Introducing GitHub Actions reusable workflows",
       link: "https://github.blog/example-2",
-      pubDate: "2026-05-12T14:30:00Z",
+      date: new Date("2026-05-12T14:30:00Z"),
     },
     {
       title: "How we built the new code search",
       link: "https://github.blog/example-3",
-      pubDate: "2026-05-11T10:00:00Z",
+      date: new Date("2026-05-11T10:00:00Z"),
     },
     {
       title: "Securing your supply chain with dependabot",
       link: "https://github.blog/example-4",
-      pubDate: "2026-05-10T16:45:00Z",
+      date: new Date("2026-05-10T16:45:00Z"),
     },
   ],
-} as const;
+};

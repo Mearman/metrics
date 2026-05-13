@@ -49,13 +49,15 @@ describe("mock data registry", () => {
     const data = getMockData("base") as Record<string, unknown>;
     assert.equal(data.login, "octocat");
     assert.equal(typeof data.followers, "number");
-    assert.ok(Array.isArray(data.repos));
+    assert.equal(typeof data.publicRepositories, "number");
+    assert.equal(typeof data.totalCommits, "number");
   });
 
   it("provides realistic languages mock data", () => {
     const data = getMockData("languages") as Record<string, unknown>;
-    assert.ok(Array.isArray(data.languages));
-    assert.ok((data.languages as unknown[]).length > 0);
-    assert.equal(typeof data.totalSize, "number");
+    assert.ok(Array.isArray(data.total));
+    assert.ok((data.total as unknown[]).length > 0);
+    assert.equal(typeof data.totalBytes, "number");
+    assert.equal(typeof data.otherBytes, "number");
   });
 });
