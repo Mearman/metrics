@@ -15,6 +15,9 @@ export const starsPlugin: Plugin<z.infer<typeof StarsConfig>, StarsData> = {
     async fetch(ctx, config) {
       return await fetchStars(ctx, config);
     },
+    isEmpty(data) {
+      return data.repositories.length === 0;
+    },
   },
   renderer: {
     render(data, config, ctx) {

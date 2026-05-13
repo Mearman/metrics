@@ -27,6 +27,9 @@ export const sponsorshipsPlugin: Plugin<
         config.limit,
       );
     },
+    isEmpty(data) {
+      return data.sponsorships.length === 0;
+    },
   },
   renderer: {
     render(data, config, ctx) {

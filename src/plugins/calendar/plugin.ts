@@ -18,6 +18,9 @@ export const calendarPlugin: Plugin<
     async fetch(ctx, config) {
       return await fetchCalendar(ctx, config);
     },
+    isEmpty(data) {
+      return data.years.length === 0;
+    },
   },
   renderer: {
     render(data, config, ctx) {

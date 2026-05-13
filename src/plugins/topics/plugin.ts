@@ -19,6 +19,9 @@ export const topicsPlugin: Plugin<TopicsConfigType, TopicsData> = {
     async fetch(ctx, config) {
       return await fetchTopics(ctx.api, ctx.user, config.limit, ctx.repos);
     },
+    isEmpty(data) {
+      return data.topics.length === 0;
+    },
   },
   renderer: {
     render(data, config, ctx) {

@@ -22,6 +22,9 @@ export const discussionsPlugin: Plugin<
     async fetch(ctx, config) {
       return await fetchDiscussions(ctx, config);
     },
+    isEmpty(data) {
+      return data.totalCount === 0;
+    },
   },
   renderer: {
     render(data, config, ctx) {

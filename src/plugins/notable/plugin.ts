@@ -18,6 +18,9 @@ export const notablePlugin: Plugin<
     async fetch(ctx, config) {
       return await fetchNotable(ctx, config);
     },
+    isEmpty(data) {
+      return data.contributions.length === 0;
+    },
   },
   renderer: {
     render(data, config, ctx) {

@@ -22,6 +22,9 @@ export const stargazersPlugin: Plugin<
     async fetch(ctx, config) {
       return await fetchStargazers(ctx, config);
     },
+    isEmpty(data) {
+      return data.repos.length === 0;
+    },
   },
   renderer: {
     render(data, config, ctx) {

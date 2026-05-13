@@ -18,6 +18,9 @@ export const followupPlugin: Plugin<
     async fetch(ctx, config) {
       return await fetchFollowup(ctx, config);
     },
+    isEmpty(data) {
+      return data.sections.length === 0;
+    },
   },
   renderer: {
     render(data, config, ctx) {

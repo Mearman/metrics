@@ -15,6 +15,9 @@ export const peoplePlugin: Plugin<z.infer<typeof PeopleConfig>, PeopleData> = {
     async fetch(ctx, config) {
       return await fetchPeople(ctx, config);
     },
+    isEmpty(data) {
+      return data.sections.length === 0;
+    },
   },
   renderer: {
     render(data, config, ctx) {

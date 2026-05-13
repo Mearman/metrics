@@ -18,6 +18,9 @@ export const activityPlugin: Plugin<
     async fetch(ctx, config) {
       return await fetchActivity(ctx, config);
     },
+    isEmpty(data) {
+      return data.events.length === 0;
+    },
   },
   renderer: {
     render(data, config, ctx) {

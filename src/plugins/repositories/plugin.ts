@@ -22,6 +22,9 @@ export const repositoriesPlugin: Plugin<
     async fetch(ctx, config) {
       return await fetchRepositories(ctx, config);
     },
+    isEmpty(data) {
+      return data.list.length === 0;
+    },
   },
   renderer: {
     render(data, config, ctx) {
