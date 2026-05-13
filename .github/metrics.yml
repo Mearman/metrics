@@ -9,6 +9,10 @@ repos:
     - match: { visibility: private }
       action: count
 
+# Multiple outputs are supported — add more entries to produce
+# separate SVGs/PNGs with different plugins, templates, or colours.
+# Per-output template and colours override the root settings.
+
 outputs:
   - path: output/github-metrics.svg
     format: svg

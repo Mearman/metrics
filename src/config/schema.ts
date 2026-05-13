@@ -86,6 +86,29 @@ const PluginsConfig = z.object({
   rss: RssConfig.optional(),
 });
 
+const ColourOverrides = z
+  .object({
+    text: z.string().trim().optional(),
+    textSecondary: z.string().trim().optional(),
+    textTertiary: z.string().trim().optional(),
+    accent: z.string().trim().optional(),
+    background: z.string().trim().optional(),
+    border: z.string().trim().optional(),
+    error: z.string().trim().optional(),
+    warning: z.string().trim().optional(),
+    success: z.string().trim().optional(),
+    calendar: z
+      .object({
+        L0: z.string().trim().optional(),
+        L1: z.string().trim().optional(),
+        L2: z.string().trim().optional(),
+        L3: z.string().trim().optional(),
+        L4: z.string().trim().optional(),
+      })
+      .optional(),
+  })
+  .optional();
+
 // ---------------------------------------------------------------------------
 // Output schema
 // ---------------------------------------------------------------------------
@@ -96,6 +119,10 @@ const OutputConfig = z.object({
   /** Explicit plugin rendering order. If set, plugins are rendered in this
    *  order; any plugins not listed are appended in their YAML key order. */
   order: z.array(z.string().trim()).default([]),
+  /** Per-output template override (falls back to root template). */
+  template: z.string().trim().optional(),
+  /** Per-output colour overrides (falls back to root colours). */
+  colours: ColourOverrides,
   plugins: PluginsConfig,
 });
 
@@ -114,28 +141,7 @@ export const RootConfig = z.object({
   /** Global user ignore list (e.g. bots). Propagated to activity, reactions, contributors. */
   users_ignored: z.array(z.string().trim()).default([]),
   /** Custom colour overrides — merge into the theme's colours */
-  colours: z
-    .object({
-      text: z.string().trim().optional(),
-      textSecondary: z.string().trim().optional(),
-      textTertiary: z.string().trim().optional(),
-      accent: z.string().trim().optional(),
-      background: z.string().trim().optional(),
-      border: z.string().trim().optional(),
-      error: z.string().trim().optional(),
-      warning: z.string().trim().optional(),
-      success: z.string().trim().optional(),
-      calendar: z
-        .object({
-          L0: z.string().trim().optional(),
-          L1: z.string().trim().optional(),
-          L2: z.string().trim().optional(),
-          L3: z.string().trim().optional(),
-          L4: z.string().trim().optional(),
-        })
-        .optional(),
-    })
-    .optional(),
+  colours: ColourOverrides,
   outputs: z.array(OutputConfig).min(1),
 });
 

@@ -4,7 +4,7 @@
  * This is the core of the metrics generator. It:
  * 1. Loads config via cosmiconfig
  * 2. Creates an authenticated API client
- * 3. For each output, fetches plugin data, renders SVG, writes file
+ * 3. For each output, fetches plugin data (cached across outputs), renders SVG, writes file
  */
 
 import type { RootConfig } from "./config/schema.ts";
@@ -49,12 +49,48 @@ function reorderPlugins(
 
   return result;
 }
+
 import { createMeasure } from "./render/layout/measure.ts";
 import { resolveTheme } from "./render/template/themes.ts";
 import { createIconLookup } from "./render/svg/icons.ts";
 import { embeddedFontCss } from "./render/svg/font-embed.ts";
 import { inlineImages, clearImageCache } from "./render/svg/inline-images.ts";
 import type { RenderResult, ApiClient } from "./plugins/types.ts";
+
+// ---------------------------------------------------------------------------
+// Colour override merging
+// ---------------------------------------------------------------------------
+
+/** Apply colour overrides onto a resolved theme. */
+function applyColourOverrides(
+  theme: ReturnType<typeof resolveTheme>,
+  overrides: NonNullable<RootConfig["colours"]>,
+): void {
+  const calOverrides = overrides.calendar;
+  if (calOverrides !== undefined) {
+    const merged = { ...theme.colours.calendar };
+    if (calOverrides.L0 !== undefined) merged.L0 = calOverrides.L0;
+    if (calOverrides.L1 !== undefined) merged.L1 = calOverrides.L1;
+    if (calOverrides.L2 !== undefined) merged.L2 = calOverrides.L2;
+    if (calOverrides.L3 !== undefined) merged.L3 = calOverrides.L3;
+    if (calOverrides.L4 !== undefined) merged.L4 = calOverrides.L4;
+    theme.colours.calendar = merged;
+  }
+  if (overrides.text !== undefined) theme.colours.text = overrides.text;
+  if (overrides.textSecondary !== undefined)
+    theme.colours.textSecondary = overrides.textSecondary;
+  if (overrides.textTertiary !== undefined)
+    theme.colours.textTertiary = overrides.textTertiary;
+  if (overrides.accent !== undefined) theme.colours.accent = overrides.accent;
+  if (overrides.background !== undefined)
+    theme.colours.background = overrides.background;
+  if (overrides.border !== undefined) theme.colours.border = overrides.border;
+  if (overrides.error !== undefined) theme.colours.error = overrides.error;
+  if (overrides.warning !== undefined)
+    theme.colours.warning = overrides.warning;
+  if (overrides.success !== undefined)
+    theme.colours.success = overrides.success;
+}
 
 // ---------------------------------------------------------------------------
 // Pipeline
@@ -67,6 +103,11 @@ export interface PipelineResult {
 export interface OutputResult {
   path: string;
   byteSize: number;
+}
+
+/** Cache key for plugin data: plugin ID + serialised config. */
+function cacheKey(pluginId: string, config: unknown): string {
+  return `${pluginId}:${JSON.stringify(config)}`;
 }
 
 // Register all known plugins on module load
@@ -92,39 +133,23 @@ export async function runPipeline(
 
   const username = config.user ?? "unknown";
 
+  // Plugin data cache — shared across outputs so that the same plugin
+  // with the same config is only fetched once per pipeline run.
+  const dataCache = new Map<string, unknown>();
+
   for (const output of config.outputs) {
-    const theme = resolveTheme(config.template);
-    // Apply colour overrides from config
+    // Resolve theme: per-output override → root template
+    const template = output.template ?? config.template;
+    const theme = resolveTheme(template);
+
+    // Apply colour overrides: root first, then per-output on top
     if (config.colours) {
-      const calOverrides = config.colours.calendar;
-      if (calOverrides !== undefined) {
-        const merged = { ...theme.colours.calendar };
-        if (calOverrides.L0 !== undefined) merged.L0 = calOverrides.L0;
-        if (calOverrides.L1 !== undefined) merged.L1 = calOverrides.L1;
-        if (calOverrides.L2 !== undefined) merged.L2 = calOverrides.L2;
-        if (calOverrides.L3 !== undefined) merged.L3 = calOverrides.L3;
-        if (calOverrides.L4 !== undefined) merged.L4 = calOverrides.L4;
-        theme.colours.calendar = merged;
-      }
-      if (config.colours.text !== undefined)
-        theme.colours.text = config.colours.text;
-      if (config.colours.textSecondary !== undefined)
-        theme.colours.textSecondary = config.colours.textSecondary;
-      if (config.colours.textTertiary !== undefined)
-        theme.colours.textTertiary = config.colours.textTertiary;
-      if (config.colours.accent !== undefined)
-        theme.colours.accent = config.colours.accent;
-      if (config.colours.background !== undefined)
-        theme.colours.background = config.colours.background;
-      if (config.colours.border !== undefined)
-        theme.colours.border = config.colours.border;
-      if (config.colours.error !== undefined)
-        theme.colours.error = config.colours.error;
-      if (config.colours.warning !== undefined)
-        theme.colours.warning = config.colours.warning;
-      if (config.colours.success !== undefined)
-        theme.colours.success = config.colours.success;
+      applyColourOverrides(theme, config.colours);
     }
+    if (output.colours) {
+      applyColourOverrides(theme, output.colours);
+    }
+
     const contentWidth = theme.width - theme.margin * 2;
     const renderResults: RenderResult[] = [];
     const renderPluginIds: string[] = [];
@@ -164,29 +189,35 @@ export async function runPipeline(
         };
       }
 
-      // Fetch data
-      let data: unknown;
-      try {
-        data = await plugin.source.fetch(
-          {
-            api,
-            user: username,
-            signal: controller.signal,
-            token,
-            repos: config.repos,
-            usersIgnored: config.users_ignored,
-          },
-          resolvedConfig,
-        );
-      } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : String(error);
-        console.warn(
-          `Plugin "${pluginId}" fetch failed: ${message} — skipping`,
-        );
-        continue;
+      // Fetch data — use cache if available
+      const key = cacheKey(pluginId, resolvedConfig);
+      let data = dataCache.get(key);
+
+      if (data === undefined) {
+        try {
+          data = await plugin.source.fetch(
+            {
+              api,
+              user: username,
+              signal: controller.signal,
+              token,
+              repos: config.repos,
+              usersIgnored: config.users_ignored,
+            },
+            resolvedConfig,
+          );
+          dataCache.set(key, data);
+        } catch (error: unknown) {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          console.warn(
+            `Plugin "${pluginId}" fetch failed: ${message} — skipping`,
+          );
+          continue;
+        }
       }
 
-      // Render
+      // Render (always re-render — theme/colours may differ per output)
       const result = plugin.renderer.render(data, resolvedConfig, {
         measure,
         theme,

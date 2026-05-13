@@ -370,4 +370,105 @@ describe("pipeline integration", () => {
     // The byteSize being > 0 confirms the pipeline ran
     assert.ok(result.outputs[0]?.byteSize ?? -1 > 0);
   });
+
+  it("generates multiple outputs from a single config", async () => {
+    const config = makeConfig({
+      outputs: [
+        {
+          path: "/tmp/test-output-1.svg",
+          format: "svg",
+          order: [],
+          plugins: { base: {}, languages: {} },
+        },
+        {
+          path: "/tmp/test-output-2.svg",
+          format: "svg",
+          order: [],
+          plugins: { isocalendar: {}, habits: {} },
+        },
+      ],
+    });
+    const result = await runPipeline(config, "fake-token", {
+      dryRun: true,
+      api: mockApi,
+    });
+    assert.strictEqual(result.outputs.length, 2);
+    assert.ok(result.outputs[0]?.byteSize ?? -1 > 0);
+    assert.ok(result.outputs[1]?.byteSize ?? -1 > 0);
+  });
+
+  it("caches shared plugin data across outputs", async () => {
+    let graphqlCallCount = 0;
+    const countingApi: ApiClient = {
+      async graphql<T>(): Promise<T> {
+        graphqlCallCount++;
+        return makeGraphQLResponse() as T;
+      },
+      rest: {
+        repos: { listContributors: async () => ({ data: [] }) },
+        pulls: { list: async () => ({ data: [] }) },
+        issues: { list: async () => ({ data: [] }) },
+      } as unknown as ApiClient["rest"],
+    };
+
+    const config = makeConfig({
+      outputs: [
+        {
+          path: "/tmp/test-cache-1.svg",
+          format: "svg",
+          order: [],
+          plugins: { base: {} },
+        },
+        {
+          path: "/tmp/test-cache-2.svg",
+          format: "svg",
+          order: [],
+          plugins: { base: {} },
+        },
+      ],
+    });
+
+    await runPipeline(config, "fake-token", {
+      dryRun: true,
+      api: countingApi,
+    });
+
+    // base plugin uses a single GraphQL query — should only be called
+    // once despite two outputs both using it
+    assert.strictEqual(
+      graphqlCallCount,
+      1,
+      "Shared plugin should be fetched once, not once per output",
+    );
+  });
+
+  it("applies per-output template override", async () => {
+    const config = makeConfig({
+      template: "classic",
+      outputs: [
+        {
+          path: "/tmp/test-dark.svg",
+          template: "classic",
+          format: "svg",
+          order: [],
+          plugins: { base: {} },
+        },
+        {
+          path: "/tmp/test-light.svg",
+          template: "light",
+          format: "svg",
+          order: [],
+          plugins: { base: {} },
+        },
+      ],
+    });
+    const result = await runPipeline(config, "fake-token", {
+      dryRun: true,
+      api: mockApi,
+    });
+    assert.strictEqual(result.outputs.length, 2);
+    // Both outputs should have content (different themes)
+    assert.ok(result.outputs[0]?.byteSize ?? -1 > 0);
+    assert.ok(result.outputs[1]?.byteSize ?? -1 > 0);
+  });
 });

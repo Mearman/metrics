@@ -204,6 +204,44 @@ outputs:
 
 Plugins listed in `order` render first (in that order). Any plugins not listed are appended in their YAML key order.
 
+### Multiple outputs
+
+Each entry in `outputs` produces a separate file with its own plugin set, template, and colours. This lets you split a large SVG into focused panels or render the same data in different themes:
+
+```yaml
+outputs:
+  # Full dashboard — dark theme
+  - path: output/github-metrics.svg
+    template: classic
+    plugins:
+      base: {}
+      isocalendar: { duration: full-year }
+      languages: { limit: 8 }
+      habits: { charts: true }
+
+  # Contribution calendar only — light theme
+  - path: output/calendar.svg
+    template: light
+    colours:
+      accent: "#0969da"
+    plugins:
+      isocalendar: { duration: full-year }
+
+  # Skyline as a standalone PNG
+  - path: output/skyline.png
+    format: png
+    plugins:
+      skyline: { max_height: 120 }
+```
+
+**Per-output overrides:**
+- `template` — light, classic, or terminal (falls back to root `template`)
+- `colours` — same schema as root `colours`, applied on top of root overrides
+- `format` — `svg` or `png`
+- `order` — plugin rendering order
+
+**Data caching:** when multiple outputs use the same plugin with the same config, the API response is fetched only once and reused across outputs. Rendering always re-runs per output (the theme may differ).
+
 ### Global user ignore list
 
 Use `users_ignored` to filter out bot accounts and specific users across plugins:

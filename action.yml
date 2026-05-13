@@ -25,6 +25,8 @@ inputs:
       Path to YAML config file (cosmiconfig format).
       If the file does not exist, a zero-config default is generated
       that produces a single SVG with the most popular plugins.
+      When using a custom config, multiple outputs can be defined —
+      each with its own plugins, template, and colour overrides.
     default: .github/metrics.yml
 
   # ── Output ──────────────────────────────────────────────────────────
