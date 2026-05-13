@@ -1,3 +1,9 @@
+## [1.20.1](https://github.com/Mearman/metrics/compare/v1.20.0...v1.20.1) (2026-05-13)
+
+### Documentation
+
+* remove stale counts from readme ([696e8ef](https://github.com/Mearman/metrics/commit/696e8ef2550571880f176a95956acd990ea2839e))
+
 ## [1.20.0](https://github.com/Mearman/metrics/compare/v1.19.0...v1.20.0) (2026-05-13)
 
 ### Features
