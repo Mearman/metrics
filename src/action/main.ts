@@ -7,8 +7,11 @@
 
 import * as core from "@actions/core";
 import * as github from "@actions/github";
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname } from "node:path";
 import { loadConfig } from "../config/schema.ts";
 import { runPipeline } from "../pipeline.ts";
+import { generateIndex } from "../output/gallery.ts";
 
 async function run(): Promise<void> {
   const configPath = core.getInput("config") || undefined;
@@ -27,6 +30,16 @@ async function run(): Promise<void> {
   for (const output of result.outputs) {
     core.info(`  → ${output.path} (${String(output.byteSize)} bytes)`);
   }
+
+  // Generate index.html gallery page
+  const indexPath = "output/index.html";
+  const html = generateIndex(
+    result.outputs.map((o) => o.path),
+    config.user ?? "unknown",
+  );
+  await mkdir(dirname(indexPath), { recursive: true });
+  await writeFile(indexPath, html, "utf-8");
+  core.info(`  → ${indexPath}`);
 
   core.setOutput("generated", String(result.outputs.length > 0));
 }

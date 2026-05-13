@@ -15,6 +15,7 @@ import { dirname, join } from "node:path";
 import { loadConfig } from "./config/schema.ts";
 import { runPipeline } from "./pipeline.ts";
 import { createClient } from "./api/client.ts";
+import { generateIndex } from "./output/gallery.ts";
 
 const { values } = parseArgs({
   options: {
@@ -59,6 +60,16 @@ async function main(): Promise<void> {
     await mkdir(outputDir, { recursive: true });
     await writeFile(robotsPath, "User-agent: *\nDisallow: /\n", "utf-8");
   }
+
+  // Generate index.html gallery page
+  const indexPath = "output/index.html";
+  const html = generateIndex(
+    result.outputs.map((o) => o.path),
+    configWithUser.user,
+  );
+  await mkdir(dirname(indexPath), { recursive: true });
+  await writeFile(indexPath, html, "utf-8");
+  console.log(`  → ${indexPath}`);
 }
 
 main().catch((error: unknown) => {
