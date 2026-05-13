@@ -10,6 +10,7 @@ import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import { StarsConfig } from "./source.ts";
 import type { StarsData } from "./source.ts";
+import { emptySection } from "../empty.ts";
 
 /**
  * Render recently starred repositories.
@@ -22,7 +23,11 @@ export function renderStars(
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   if (data.repositories.length === 0) {
-    return { height: 0, elements: [] };
+    return emptySection(
+      "Recently starred",
+      "No recently starred repositories",
+      ctx,
+    );
   }
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];

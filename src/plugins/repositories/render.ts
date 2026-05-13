@@ -13,6 +13,7 @@ import type { RepoProperties } from "../../repos/filter.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import { RepositoriesConfig } from "./source.ts";
 import type { RepositoriesData, RepositoryInfo } from "./source.ts";
+import { emptySection } from "../empty.ts";
 
 /**
  * Format a large number compactly (e.g. 1234 → "1.2k").
@@ -35,7 +36,7 @@ export function renderRepositories(
   const { icons } = ctx;
 
   if (data.list.length === 0) {
-    return { height: 0, elements: [] };
+    return emptySection("Repositories", "No repositories to display", ctx);
   }
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];

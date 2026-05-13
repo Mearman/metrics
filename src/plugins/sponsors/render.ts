@@ -10,6 +10,7 @@ import * as z from "zod";
 import type { RenderResult, RenderContext } from "../types.ts";
 import { SponsorsConfig } from "./source.ts";
 import type { SponsorsData } from "./source.ts";
+import { emptySection } from "../empty.ts";
 
 export function renderSponsors(
   data: SponsorsData,
@@ -27,7 +28,7 @@ export function renderSponsors(
     data.about.length === 0 &&
     data.goal === null
   ) {
-    return { height: 0, elements: [] };
+    return emptySection("Sponsors", "No sponsors yet", ctx);
   }
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];

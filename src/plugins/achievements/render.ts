@@ -7,6 +7,7 @@
 import { text, rect } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { AchievementsData } from "./source.ts";
+import { emptySection } from "../empty.ts";
 
 const TIER_COLOURS: Record<string, string> = {
   X: "#ff6600",
@@ -46,7 +47,7 @@ export function renderAchievements(
   }
 
   if (filtered.length === 0) {
-    return { height: 0, elements: [] };
+    return emptySection("Achievements", "No achievements unlocked yet", ctx);
   }
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];

@@ -82,8 +82,11 @@ describe("Projects renderer", () => {
   it("returns empty for no projects", () => {
     const data: ProjectsData = { totalProjects: 0, projects: [] };
     const result = renderProjects(data, {}, makeCtx());
-    assert.strictEqual(result.height, 0);
-    assert.strictEqual(result.elements.length, 0);
+    assert.ok(result.height > 0, "Expected non-zero height for empty state");
+    assert.ok(
+      result.elements.length > 0,
+      "Expected elements for empty state message",
+    );
   });
 
   it("renders section title with total count", () => {

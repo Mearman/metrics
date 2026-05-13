@@ -9,6 +9,7 @@ import { text, rect, g } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import { CalendarConfig } from "./source.ts";
 import type { CalendarData } from "./source.ts";
+import { emptySection } from "../empty.ts";
 
 /**
  * Render contribution calendars per year.
@@ -21,7 +22,7 @@ export function renderCalendar(
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   if (data.years.length === 0) {
-    return { height: 0, elements: [] };
+    return emptySection("Calendar", "No contribution data available", ctx);
   }
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];

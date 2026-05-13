@@ -10,6 +10,7 @@ import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import { ActivityConfig } from "./source.ts";
 import type { ActivityData } from "./source.ts";
+import { emptySection } from "../empty.ts";
 
 /** Event type to colour mapping. */
 const EVENT_COLOURS: Record<string, string> = {
@@ -37,7 +38,7 @@ export function renderActivity(
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   if (data.events.length === 0) {
-    return { height: 0, elements: [] };
+    return emptySection("Activity", "No recent activity found", ctx);
   }
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];

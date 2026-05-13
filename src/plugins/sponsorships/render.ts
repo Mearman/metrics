@@ -9,6 +9,7 @@ import * as z from "zod";
 import type { RenderResult, RenderContext } from "../types.ts";
 import { SponsorshipsConfig } from "./source.ts";
 import type { SponsorshipsData } from "./source.ts";
+import { emptySection } from "../empty.ts";
 
 export function renderSponsorships(
   data: SponsorshipsData,
@@ -19,7 +20,7 @@ export function renderSponsorships(
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   if (data.sponsorships.length === 0) {
-    return { height: 0, elements: [] };
+    return emptySection("Sponsorships", "Not sponsoring any accounts", ctx);
   }
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];

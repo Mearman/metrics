@@ -9,6 +9,7 @@ import { text, rect, g } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import { FollowupConfig } from "./source.ts";
 import type { FollowupData } from "./source.ts";
+import { emptySection } from "../empty.ts";
 
 /** Vertical gap between a bar bottom and the label baseline. */
 const BAR_LABEL_GAP = 6;
@@ -33,7 +34,11 @@ export function renderFollowup(
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   if (data.sections.length === 0) {
-    return { height: 0, elements: [] };
+    return emptySection(
+      "Follow-up",
+      "No open issues or pull requests found",
+      ctx,
+    );
   }
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];

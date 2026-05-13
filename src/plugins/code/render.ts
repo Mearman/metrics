@@ -10,6 +10,7 @@ import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import { CodeConfig } from "./source.ts";
 import type { CodeData } from "./source.ts";
+import { emptySection } from "../empty.ts";
 
 /**
  * Render a code snippet card.
@@ -24,7 +25,7 @@ export function renderCode(
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
   if (data.snippet === null) {
-    return { height: 0, elements: [] };
+    return emptySection("Code", "No recent code snippets found", ctx);
   }
 
   elements.push(

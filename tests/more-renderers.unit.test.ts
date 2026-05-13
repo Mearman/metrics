@@ -82,8 +82,11 @@ describe("Followup renderer", () => {
   it("returns empty result for no sections", () => {
     const data: FollowupData = { sections: [] };
     const result = renderFollowup(data, {}, makeCtx());
-    assert.strictEqual(result.height, 0);
-    assert.strictEqual(result.elements.length, 0);
+    assert.ok(result.height > 0, "Expected non-zero height for empty state");
+    assert.ok(
+      result.elements.length > 0,
+      "Expected elements for empty state message",
+    );
   });
 
   it("renders a section title", () => {
@@ -167,7 +170,7 @@ describe("Stars renderer", () => {
   it("returns empty for no repositories", () => {
     const data: StarsData = { repositories: [] };
     const result = renderStars(data, {}, makeCtx());
-    assert.strictEqual(result.height, 0);
+    assert.ok(result.height > 0, "Expected non-zero height for empty state");
   });
 
   it("renders section title", () => {
@@ -224,7 +227,7 @@ describe("Stargazers renderer", () => {
   it("returns empty for no repos", () => {
     const data: StargazersData = { totalStars: 0, repos: [] };
     const result = renderStargazers(data, {}, makeCtx());
-    assert.strictEqual(result.height, 0);
+    assert.ok(result.height > 0, "Expected non-zero height for empty state");
   });
 
   it("renders total star count in title", () => {
@@ -430,7 +433,7 @@ describe("Achievements renderer", () => {
       achievements: [],
     };
     const result = renderAchievements(data, {}, makeCtx());
-    assert.strictEqual(result.height, 0);
+    assert.ok(result.height > 0, "Expected non-zero height for empty state");
   });
 });
 
@@ -478,8 +481,11 @@ describe("Activity renderer", () => {
   it("returns empty for no events", () => {
     const data: ActivityData = { events: [], timestamps: false };
     const result = renderActivity(data, {}, makeCtx());
-    assert.strictEqual(result.height, 0);
-    assert.strictEqual(result.elements.length, 0);
+    assert.ok(result.height > 0, "Expected non-zero height for empty state");
+    assert.ok(
+      result.elements.length > 0,
+      "Expected elements for empty state message",
+    );
   });
 });
 
@@ -533,7 +539,7 @@ describe("People renderer", () => {
       { limit: 20, size: 28, types: ["followers"] },
       makeCtx(),
     );
-    assert.strictEqual(result.height, 0);
+    assert.ok(result.height > 0, "Expected non-zero height for empty state");
   });
 });
 
@@ -577,6 +583,6 @@ describe("Notable renderer", () => {
   it("returns empty for no contributions", () => {
     const data: NotableData = { contributions: [] };
     const result = renderNotable(data, {}, makeCtx());
-    assert.strictEqual(result.height, 0);
+    assert.ok(result.height > 0, "Expected non-zero height for empty state");
   });
 });

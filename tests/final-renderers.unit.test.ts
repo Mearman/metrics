@@ -194,7 +194,7 @@ describe("Repositories renderer", () => {
   it("returns empty for no repos", () => {
     const data: RepositoriesData = { list: [] };
     const result = renderRepositories(data, {}, makeCtx());
-    assert.strictEqual(result.height, 0);
+    assert.ok(result.height > 0, "Expected non-zero height for empty state");
   });
 
   it("renders section title", () => {
@@ -287,7 +287,7 @@ describe("Discussions renderer", () => {
       categories: [],
     };
     const result = renderDiscussions(data, {}, makeCtx());
-    assert.strictEqual(result.height, 0);
+    assert.ok(result.height > 0, "Expected non-zero height for empty state");
   });
 });
 
@@ -302,7 +302,7 @@ describe("Code renderer", () => {
   it("renders empty state when no snippet", () => {
     const data: CodeData = { snippet: null };
     const result = renderCode(data, {}, makeCtx());
-    assert.strictEqual(result.height, 0);
+    assert.ok(result.height > 0, "Expected non-zero height for empty state");
   });
 
   it("renders section title", () => {

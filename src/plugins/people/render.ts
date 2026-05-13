@@ -7,6 +7,7 @@
 import { text, image, g } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { PeopleData, PeopleConfig } from "./source.ts";
+import { emptySection } from "../empty.ts";
 
 /**
  * Render people sections as avatar grids.
@@ -19,7 +20,7 @@ export function renderPeople(
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   if (data.sections.length === 0) {
-    return { height: 0, elements: [] };
+    return emptySection("People", "No followers or following yet", ctx);
   }
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];

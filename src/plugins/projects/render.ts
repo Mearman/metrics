@@ -8,6 +8,7 @@ import { text } from "../../render/svg/builder.ts";
 import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { ProjectsData } from "./source.ts";
+import { emptySection } from "../empty.ts";
 
 /**
  * Render projects section.
@@ -21,7 +22,7 @@ export function renderProjects(
   const showDescriptions = config.descriptions ?? false;
 
   if (data.projects.length === 0) {
-    return { height: 0, elements: [] };
+    return emptySection("Projects", "No projects found", ctx);
   }
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];

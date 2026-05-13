@@ -12,6 +12,7 @@ import type { RepoProperties } from "../../repos/filter.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import { StargazersConfig } from "./source.ts";
 import type { StargazersData } from "./source.ts";
+import { emptySection } from "../empty.ts";
 
 /**
  * Render stargazer breakdown as a horizontal bar chart.
@@ -24,7 +25,7 @@ export function renderStargazers(
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   if (data.repos.length === 0) {
-    return { height: 0, elements: [] };
+    return emptySection("Stargazers", "No stargazer data available", ctx);
   }
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];

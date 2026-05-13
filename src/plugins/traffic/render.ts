@@ -12,6 +12,7 @@ import type { RepoProperties } from "../../repos/filter.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import { TrafficConfig } from "./source.ts";
 import type { TrafficData } from "./source.ts";
+import { emptySection } from "../empty.ts";
 
 export function renderTraffic(
   data: TrafficData,
@@ -21,7 +22,7 @@ export function renderTraffic(
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   if (data.repos.length === 0) {
-    return { height: 0, elements: [] };
+    return emptySection("Traffic", "No repository traffic data available", ctx);
   }
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];

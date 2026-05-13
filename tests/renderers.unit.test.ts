@@ -74,8 +74,11 @@ describe("Languages renderer", () => {
   it("returns empty result for zero languages", () => {
     const data = makeLanguagesData([]);
     const result = renderLanguages(data, {}, makeCtx());
-    assert.strictEqual(result.height, 0);
-    assert.strictEqual(result.elements.length, 0);
+    assert.ok(result.height > 0, "Expected non-zero height for empty state");
+    assert.ok(
+      result.elements.length > 0,
+      "Expected elements for empty state message",
+    );
   });
 
   it("renders a title element", () => {

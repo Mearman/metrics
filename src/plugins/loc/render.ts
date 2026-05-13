@@ -13,6 +13,7 @@ import type { RepoProperties } from "../../repos/filter.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import { LocConfig } from "./source.ts";
 import type { LocData } from "./source.ts";
+import { emptySection } from "../empty.ts";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -80,7 +81,11 @@ export function renderLoc(
   const contentWidth = ctx.contentWidth;
 
   if (data.repos.length === 0) {
-    return { height: 0, elements: [] };
+    return emptySection(
+      "Lines of code",
+      "No repositories with lines of code data",
+      ctx,
+    );
   }
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];

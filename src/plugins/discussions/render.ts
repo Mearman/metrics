@@ -9,6 +9,7 @@ import { text, rect } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import { DiscussionsConfig } from "./source.ts";
 import type { DiscussionsData } from "./source.ts";
+import { emptySection } from "../empty.ts";
 
 /**
  * Render discussion statistics.
@@ -23,7 +24,7 @@ export function renderDiscussions(
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
 
   if (data.totalCount === 0) {
-    return { height: 0, elements: [] };
+    return emptySection("Discussions", "No discussions started yet", ctx);
   }
 
   elements.push(

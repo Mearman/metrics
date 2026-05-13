@@ -11,6 +11,7 @@ import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import { LicencesConfig } from "./source.ts";
 import type { LicencesData } from "./source.ts";
+import { emptySection } from "../empty.ts";
 
 /** Colour map for common licence SPDX IDs */
 const licenceColours: Record<string, string> = {
@@ -37,7 +38,7 @@ export function renderLicences(
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
 
   if (data.licences.length === 0 && data.unlicensed === 0) {
-    return { height: 0, elements: [] };
+    return emptySection("Licences", "No licenced repositories found", ctx);
   }
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];

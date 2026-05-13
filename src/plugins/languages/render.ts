@@ -9,6 +9,7 @@ import { text, rect } from "../../render/svg/builder.ts";
 import { truncateText } from "../../render/layout/text.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { LanguagesData, LanguageEntry } from "./source.ts";
+import { emptySection } from "../empty.ts";
 
 /** Format byte count as human-readable (e.g. "1.2 MB"). */
 function formatBytes(bytes: number): string {
@@ -105,7 +106,7 @@ export function renderLanguages(
   const { languages, totalBytes } = transformLanguages(data, config);
 
   if (languages.length === 0) {
-    return { height: 0, elements: [] };
+    return emptySection("Languages", "No language data available", ctx);
   }
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
