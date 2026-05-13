@@ -247,7 +247,7 @@ Plugins with fetch-aware caching: `base`, `achievements`, `languages`, `gists`, 
 
 The default `.github/metrics.yml` generates a standalone SVG for each plugin, plus several preset combinations. A gallery page is also generated for browsing all outputs.
 
-**Gallery page:** `https://<username>.github.io/metrics/output/index.html`
+**Gallery page:** `https://<username>.github.io/metrics/`
 
 **Individual plugins** — one plugin per SVG:
 
