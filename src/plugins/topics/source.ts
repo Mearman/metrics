@@ -8,8 +8,9 @@
 
 import * as z from "zod";
 import type { DataSource } from "../types.ts";
-import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import { applyPublicFilter } from "../../repos/graphql.ts";
 import type { ReposConfig } from "../../repos/filter.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -60,13 +61,13 @@ export interface TopicsData {
 // GraphQL query
 // ---------------------------------------------------------------------------
 
-const QUERY = `
-  query($login: String!, $first: Int!, $after: String) {
+const QUERY = gql`
+  query ($login: String!, $first: Int!, $after: String) {
     user(login: $login) {
       repositories(
         first: $first
         after: $after
-        __PRIVACY__
+        privacy: PUBLIC
         ownerAffiliations: OWNER
         orderBy: { field: UPDATED_AT, direction: DESC }
       ) {
@@ -77,7 +78,9 @@ const QUERY = `
         nodes {
           repositoryTopics(first: 20) {
             nodes {
-              topic { name }
+              topic {
+                name
+              }
             }
           }
         }
@@ -101,7 +104,7 @@ export async function fetchTopics(
   limit: number,
   repos: ReposConfig,
 ): Promise<TopicsData> {
-  const query = QUERY.replace("__PRIVACY__", repoPrivacyFilter(repos));
+  const query = applyPublicFilter(QUERY, repos);
   const counts = new Map<string, number>();
   let hasNextPage = true;
   const cursor: string | null = null;

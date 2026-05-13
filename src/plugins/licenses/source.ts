@@ -7,8 +7,9 @@
 
 import * as z from "zod";
 import type { DataSource } from "../types.ts";
-import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import { applyPublicFilter } from "../../repos/graphql.ts";
 import type { ReposConfig } from "../../repos/filter.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -61,13 +62,13 @@ export interface LicencesData {
 // GraphQL query
 // ---------------------------------------------------------------------------
 
-const QUERY = `
-  query($login: String!, $first: Int!, $after: String) {
+const QUERY = gql`
+  query ($login: String!, $first: Int!, $after: String) {
     user(login: $login) {
       repositories(
         first: $first
         after: $after
-        __PRIVACY__
+        privacy: PUBLIC
         ownerAffiliations: OWNER
         orderBy: { field: UPDATED_AT, direction: DESC }
       ) {
@@ -101,7 +102,7 @@ export async function fetchLicences(
   limit: number,
   repos: ReposConfig,
 ): Promise<LicencesData> {
-  const query = QUERY.replace("__PRIVACY__", repoPrivacyFilter(repos));
+  const query = applyPublicFilter(QUERY, repos);
   const counts = new Map<string, { name: string; count: number }>();
   let totalRepos = 0;
   let hasNextPage = true;

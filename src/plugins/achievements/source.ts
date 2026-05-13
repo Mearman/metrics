@@ -7,23 +7,40 @@
  */
 
 import * as z from "zod";
-import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import { applyPublicFilter } from "../../repos/graphql.ts";
 import type { ReposConfig } from "../../repos/filter.ts";
+import { gql } from "../../util/gql.ts";
 
-const ACHIEVEMENTS_QUERY = `
-  query($login: String!) {
+const ACHIEVEMENTS_QUERY = gql`
+  query ($login: String!) {
     user(login: $login) {
-      followers { totalCount }
-      following { totalCount }
-      repositories(__PRIVACY__, ownerAffiliations: OWNER) { totalCount }
-      gists { totalCount }
-      issues { totalCount }
-      pullRequests { totalCount }
+      followers {
+        totalCount
+      }
+      following {
+        totalCount
+      }
+      repositories(privacy: PUBLIC, ownerAffiliations: OWNER) {
+        totalCount
+      }
+      gists {
+        totalCount
+      }
+      issues {
+        totalCount
+      }
+      pullRequests {
+        totalCount
+      }
       contributionsCollection {
         totalCommitContributions
       }
-      starredRepositories { totalCount }
-      watching { totalCount }
+      starredRepositories {
+        totalCount
+      }
+      watching {
+        totalCount
+      }
     }
   }
 `;
@@ -201,10 +218,7 @@ export async function fetchAchievements(
   user: string,
   repos: ReposConfig,
 ): Promise<AchievementsData> {
-  const query = ACHIEVEMENTS_QUERY.replace(
-    "__PRIVACY__",
-    repoPrivacyFilter(repos),
-  );
+  const query = applyPublicFilter(ACHIEVEMENTS_QUERY, repos);
   const raw = await api.graphql(query, { login: user });
   const parsed = ResponseSchema.safeParse(raw);
   if (!parsed.success) {

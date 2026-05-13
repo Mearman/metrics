@@ -8,8 +8,9 @@
 
 import * as z from "zod";
 import type { ApiClient } from "../types.ts";
-import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import { applyPublicFilter } from "../../repos/graphql.ts";
 import type { ReposConfig } from "../../repos/filter.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -51,13 +52,13 @@ export interface ContributorsData {
 // GraphQL query — fetches repo list only
 // ---------------------------------------------------------------------------
 
-const REPOS_QUERY = `
-  query($login: String!, $first: Int!, $after: String) {
+const REPOS_QUERY = gql`
+  query ($login: String!, $first: Int!, $after: String) {
     user(login: $login) {
       repositories(
         first: $first
         after: $after
-        __PRIVACY__
+        privacy: PUBLIC
         ownerAffiliations: OWNER
         orderBy: { field: STARGAZERS, direction: DESC }
       ) {
@@ -116,10 +117,7 @@ export async function fetchContributors(
   repos: ReposConfig,
   usersIgnored: string[] = [],
 ): Promise<ContributorsData> {
-  const reposQuery = REPOS_QUERY.replace(
-    "__PRIVACY__",
-    repoPrivacyFilter(repos),
-  );
+  const reposQuery = applyPublicFilter(REPOS_QUERY, repos);
   const reposResult: RepoContributors[] = [];
 
   const raw = await api.graphql(reposQuery, {

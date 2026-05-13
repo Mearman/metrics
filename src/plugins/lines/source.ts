@@ -7,20 +7,21 @@
 
 import * as z from "zod";
 import type { DataSource } from "../types.ts";
-import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import { applyPublicFilter } from "../../repos/graphql.ts";
 import type { ReposConfig } from "../../repos/filter.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // GraphQL query
 // ---------------------------------------------------------------------------
 
-const REPO_LANGUAGES_QUERY = `
-  query($login: String!, $first: Int!, $after: String) {
+const REPO_LANGUAGES_QUERY = gql`
+  query ($login: String!, $first: Int!, $after: String) {
     user(login: $login) {
       repositories(
         first: $first
         after: $after
-        __PRIVACY__
+        privacy: PUBLIC
         ownerAffiliations: OWNER
         orderBy: { field: UPDATED_AT, direction: DESC }
       ) {
@@ -123,10 +124,7 @@ export async function fetchLines(
   limit = 4,
   repos: ReposConfig,
 ): Promise<LinesData> {
-  const query = REPO_LANGUAGES_QUERY.replace(
-    "__PRIVACY__",
-    repoPrivacyFilter(repos),
-  );
+  const query = applyPublicFilter(REPO_LANGUAGES_QUERY, repos);
   const repoResults: RepoLines[] = [];
   let hasNextPage = true;
   let cursor: string | null = null;

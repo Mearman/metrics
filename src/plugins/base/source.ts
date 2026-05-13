@@ -10,15 +10,16 @@
 
 import * as z from "zod";
 import type { DataSource } from "../types.ts";
-import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import { applyPublicFilter } from "../../repos/graphql.ts";
 import type { ReposConfig } from "../../repos/filter.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // GraphQL query
 // ---------------------------------------------------------------------------
 
-const PROFILE_QUERY = `
-  query($login: String!) {
+const PROFILE_QUERY = gql`
+  query ($login: String!) {
     user(login: $login) {
       name
       login
@@ -33,7 +34,7 @@ const PROFILE_QUERY = `
       following {
         totalCount
       }
-      repositories(__PRIVACY__, ownerAffiliations: OWNER) {
+      repositories(privacy: PUBLIC, ownerAffiliations: OWNER) {
         totalCount
       }
       issues {
@@ -135,7 +136,7 @@ export async function fetchProfile(
   user: string,
   repos: ReposConfig,
 ): Promise<UserProfile> {
-  const query = PROFILE_QUERY.replace("__PRIVACY__", repoPrivacyFilter(repos));
+  const query = applyPublicFilter(PROFILE_QUERY, repos);
   const raw = await api.graphql(query, { login: user });
   const parsed = ProfileResponseSchema.safeParse(raw);
   if (!parsed.success) {

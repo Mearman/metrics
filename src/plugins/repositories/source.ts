@@ -7,7 +7,7 @@
 
 import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
-import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import { applyPublicFilter } from "../../repos/graphql.ts";
 import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
@@ -127,7 +127,7 @@ query($login: String!, $limit: Int!, $affiliations: [RepositoryAffiliation]) {
       first: $limit
       orderBy: { field: STARGAZERS, direction: DESC }
       ownerAffiliations: $affiliations
-      __PRIVACY__
+      privacy: PUBLIC
     ) {
       nodes {
         createdAt
@@ -274,10 +274,7 @@ export async function fetchRepositories(
 
   // Most starred repositories
   if (config.starred > 0) {
-    const starredQuery = STARRED_QUERY.replace(
-      "__PRIVACY__",
-      repoPrivacyFilter(ctx.repos),
-    );
+    const starredQuery = applyPublicFilter(STARRED_QUERY, ctx.repos);
     const raw = await ctx.api.graphql(starredQuery, {
       login: ctx.user,
       limit: Math.min(config.starred + 10, 100),

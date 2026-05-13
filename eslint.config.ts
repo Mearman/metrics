@@ -371,6 +371,8 @@ export default defineConfig(
       "@graphql-eslint/no-unused-fragments": "off",
       "@graphql-eslint/known-fragment-names": "off",
       "@graphql-eslint/no-fragment-cycles": "off",
+      // Compatibility issue with ESLint flat config
+      "@graphql-eslint/fields-on-correct-type": "off",
     },
   },
 );

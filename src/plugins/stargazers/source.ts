@@ -7,7 +7,8 @@
 
 import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
-import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import { applyPublicFilter } from "../../repos/graphql.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -41,23 +42,24 @@ export interface StargazersData {
 // GraphQL query
 // ---------------------------------------------------------------------------
 
-const QUERY = `
-query($login: String!, $limit: Int!) {
-  user(login: $login) {
-    repositories(
-      first: $limit
-      __PRIVACY__
-      ownerAffiliations: [OWNER]
-      orderBy: { field: STARGAZERS, direction: DESC }
-    ) {
-      nodes {
-        name
-        stargazerCount
-        isPrivate
+const QUERY = gql`
+  query ($login: String!, $limit: Int!) {
+    user(login: $login) {
+      repositories(
+        first: $limit
+        privacy: PUBLIC
+        ownerAffiliations: [OWNER]
+        orderBy: { field: STARGAZERS, direction: DESC }
+      ) {
+        nodes {
+          name
+          stargazerCount
+          isPrivate
+        }
       }
     }
   }
-}`;
+`;
 
 // ---------------------------------------------------------------------------
 // Zod response schema
@@ -85,7 +87,7 @@ export async function fetchStargazers(
   ctx: FetchContext,
   config: StargazersConfig,
 ): Promise<StargazersData> {
-  const query = QUERY.replace("__PRIVACY__", repoPrivacyFilter(ctx.repos));
+  const query = applyPublicFilter(QUERY, ctx.repos);
   const raw = await ctx.api.graphql(query, {
     login: ctx.user,
     limit: config.limit,

@@ -14,9 +14,10 @@ import * as path from "node:path";
 import * as os from "node:os";
 import { execFileSync } from "node:child_process";
 import type { DataSource } from "../types.ts";
-import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import { applyPublicFilter } from "../../repos/graphql.ts";
 import type { ReposConfig } from "../../repos/filter.ts";
 import { detectLanguage, shouldSkip, shouldSkipDir } from "./languages.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -68,12 +69,12 @@ const ResponseSchema = z.object({
   }),
 });
 
-const REPOS_QUERY = `
-  query($login: String!, $first: Int!) {
+const REPOS_QUERY = gql`
+  query ($login: String!, $first: Int!) {
     user(login: $login) {
       repositories(
         first: $first
-        __PRIVACY__
+        privacy: PUBLIC
         ownerAffiliations: OWNER
         orderBy: { field: UPDATED_AT, direction: DESC }
       ) {
@@ -256,10 +257,7 @@ export async function fetchLoc(
       };
     });
   } else {
-    const reposQuery = REPOS_QUERY.replace(
-      "__PRIVACY__",
-      repoPrivacyFilter(reposConfig),
-    );
+    const reposQuery = applyPublicFilter(REPOS_QUERY, reposConfig);
     const raw = await api.graphql(reposQuery, {
       login: user,
       first: limit,

@@ -7,8 +7,9 @@
 
 import * as z from "zod";
 import type { DataSource } from "../types.ts";
-import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import { applyPublicFilter } from "../../repos/graphql.ts";
 import type { ReposConfig } from "../../repos/filter.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -54,12 +55,12 @@ const ReposResponseSchema = z.object({
   }),
 });
 
-const REPOS_QUERY = `
-  query($login: String!, $first: Int!) {
+const REPOS_QUERY = gql`
+  query ($login: String!, $first: Int!) {
     user(login: $login) {
       repositories(
         first: $first
-        __PRIVACY__
+        privacy: PUBLIC
         ownerAffiliations: OWNER
         orderBy: { field: UPDATED_AT, direction: DESC }
       ) {
@@ -90,7 +91,7 @@ export async function fetchTraffic(
   limit: number,
   repos: ReposConfig,
 ): Promise<TrafficData> {
-  const query = REPOS_QUERY.replace("__PRIVACY__", repoPrivacyFilter(repos));
+  const query = applyPublicFilter(REPOS_QUERY, repos);
   const raw = await api.graphql(query, { login: user, first: 100 });
   const parsed = ReposResponseSchema.safeParse(raw);
   if (!parsed.success) {

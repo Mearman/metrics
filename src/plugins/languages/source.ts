@@ -8,20 +8,21 @@
 
 import * as z from "zod";
 import type { DataSource } from "../types.ts";
-import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import { applyPublicFilter } from "../../repos/graphql.ts";
 import type { ReposConfig } from "../../repos/filter.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // GraphQL query
 // ---------------------------------------------------------------------------
 
-const LANGUAGES_QUERY = `
-  query($login: String!, $first: Int!, $after: String) {
+const LANGUAGES_QUERY = gql`
+  query ($login: String!, $first: Int!, $after: String) {
     user(login: $login) {
       repositories(
         first: $first
         after: $after
-        __PRIVACY__
+        privacy: PUBLIC
         ownerAffiliations: OWNER
         orderBy: { field: UPDATED_AT, direction: DESC }
       ) {
@@ -134,8 +135,7 @@ export async function fetchLanguages(
   repos: ReposConfig,
   options?: { limit?: number },
 ): Promise<LanguagesData> {
-  const privacyFilter = repoPrivacyFilter(repos);
-  const query = LANGUAGES_QUERY.replace("__PRIVACY__", privacyFilter);
+  const query = applyPublicFilter(LANGUAGES_QUERY, repos);
   const repoLimit = options?.limit ?? 300;
   const aggregated = new Map<string, { size: number; colour: string }>();
   let hasNextPage = true;

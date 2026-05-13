@@ -8,7 +8,8 @@
 
 import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
-import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import { applyPublicFilter } from "../../repos/graphql.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -39,7 +40,7 @@ export interface DiscussionsData {
 // GraphQL queries
 // ---------------------------------------------------------------------------
 
-const QUERY = `
+const QUERY = gql`
   query ($login: String!) {
     user(login: $login) {
       repositoryDiscussionCategories(first: 10) {
@@ -52,18 +53,19 @@ const QUERY = `
   }
 `;
 
-const COUNT_QUERY = `
-query($login: String!) {
-  user(login: $login) {
-    repositories(first: 100, __PRIVACY__, ownerAffiliations: [OWNER]) {
-      nodes {
-        discussions(first: 1) {
-          totalCount
+const COUNT_QUERY = gql`
+  query ($login: String!) {
+    user(login: $login) {
+      repositories(first: 100, privacy: PUBLIC, ownerAffiliations: [OWNER]) {
+        nodes {
+          discussions(first: 1) {
+            totalCount
+          }
         }
       }
     }
   }
-}`;
+`;
 
 // ---------------------------------------------------------------------------
 // Zod response schemas
@@ -102,11 +104,8 @@ export async function fetchDiscussions(
   ctx: FetchContext,
   config: DiscussionsConfig,
 ): Promise<DiscussionsData> {
-  const query = QUERY.replace("__PRIVACY__", repoPrivacyFilter(ctx.repos));
-  const countQuery = COUNT_QUERY.replace(
-    "__PRIVACY__",
-    repoPrivacyFilter(ctx.repos),
-  );
+  const query = applyPublicFilter(QUERY, ctx.repos);
+
   // Get categories (only works on user-level, may fail gracefully)
   let categories: DiscussionCategory[] = [];
 
@@ -125,7 +124,7 @@ export async function fetchDiscussions(
   }
 
   // Count total discussions across repos
-  const rawCount = await ctx.api.graphql(countQuery, { login: ctx.user });
+  const rawCount = await ctx.api.graphql(COUNT_QUERY, { login: ctx.user });
   const parsedCount = CountResponseSchema.safeParse(rawCount);
   if (!parsedCount.success) {
     throw new Error(
