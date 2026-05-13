@@ -1,3 +1,9 @@
+## [1.20.0](https://github.com/Mearman/metrics/compare/v1.19.0...v1.20.0) (2026-05-13)
+
+### Features
+
+* fetch-aware data caching with zero type assertions ([444e329](https://github.com/Mearman/metrics/commit/444e3293a312dca54d155e09a786f67938cb802e))
+
 ## [1.19.0](https://github.com/Mearman/metrics/compare/v1.18.1...v1.19.0) (2026-05-13)
 
 ### Features
