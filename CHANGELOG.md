@@ -1,3 +1,13 @@
+## [1.24.0](https://github.com/Mearman/metrics/compare/v1.23.2...v1.24.0) (2026-05-13)
+
+### Features
+
+* add @graphql-eslint/eslint-plugin for static query validation ([a74f3c5](https://github.com/Mearman/metrics/commit/a74f3c5a356d94bf615ded97786b64f1a172f403))
+
+### Chores
+
+* update pnpm-lock.yaml for graphql-eslint dependencies ([9caa687](https://github.com/Mearman/metrics/commit/9caa6876010199e7b4a1d30b6c265d23d81dbff3))
+
 ## [1.23.2](https://github.com/Mearman/metrics/compare/v1.23.1...v1.23.2) (2026-05-13)
 
 ### Bug Fixes
