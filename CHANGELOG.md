@@ -1,3 +1,9 @@
+## [1.23.2](https://github.com/Mearman/metrics/compare/v1.23.1...v1.23.2) (2026-05-13)
+
+### Bug Fixes
+
+* align plugin config schemas with source.ts canonical schemas ([74ec22e](https://github.com/Mearman/metrics/commit/74ec22efed3c21cc9811392e7b38b932c56cc00f))
+
 ## [1.23.1](https://github.com/Mearman/metrics/compare/v1.23.0...v1.23.1) (2026-05-13)
 
 ### Bug Fixes
