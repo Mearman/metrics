@@ -118,6 +118,8 @@ export async function fetchGists(
 export const gistsSource: DataSource<GistsConfig, GistsData> = {
   id: "gists",
   configSchema: GistsConfig,
+  // Fetch is config-independent.
+  fetchKey: () => ({}),
   async fetch(ctx, config) {
     return await fetchGists(ctx, config);
   },

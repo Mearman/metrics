@@ -25,6 +25,8 @@ export const achievementsPlugin: Plugin<
   source: {
     id: "achievements",
     configSchema: AchievementsPluginConfig,
+    // Fetch is config-independent — display/threshold/limit/ignored are render-only.
+    fetchKey: () => ({}),
     async fetch(ctx) {
       return await fetchAchievements(ctx.api, ctx.user, ctx.repos);
     },

@@ -161,6 +161,8 @@ export const isocalendarSource: DataSource<IsocalendarConfig, IsocalendarData> =
   {
     id: "isocalendar",
     configSchema: IsocalendarConfig,
+    // Only duration affects the fetched date range.
+    fetchKey: (config) => ({ duration: config.duration }),
     async fetch(ctx, config) {
       return await fetchIsocalendar(ctx.api, ctx.user, config.duration);
     },

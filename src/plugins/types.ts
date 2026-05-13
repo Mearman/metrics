@@ -70,6 +70,16 @@ export interface DataSource<TConfig, TData> {
   configSchema: z.ZodType<TConfig>;
   /** Fetch data from GitHub APIs */
   fetch(ctx: FetchContext, config: TConfig): Promise<TData>;
+  /**
+   * Extract a cache key from config — only the fields that affect
+   * the fetched data (not render-only fields like thresholds or colours).
+   * If omitted, the full config is used as the cache key.
+   *
+   * Return a plain object with only the fetch-relevant fields.
+   * For config-independent fetches, return `{}` (the data is the same
+   * regardless of config).
+   */
+  fetchKey?: (config: TConfig) => Record<string, unknown>;
 }
 
 /** Renders data into visual elements. */

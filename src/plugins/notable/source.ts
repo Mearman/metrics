@@ -113,6 +113,8 @@ export async function fetchNotable(
 export const notableSource: DataSource<NotableConfig, NotableData> = {
   id: "notable",
   configSchema: NotableConfig,
+  // Only from affects how many orgs are fetched; types/self/contribution_types are render-only.
+  fetchKey: (config) => ({ from: config.from }),
   async fetch(ctx, config) {
     return await fetchNotable(ctx, config);
   },

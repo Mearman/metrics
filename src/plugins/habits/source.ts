@@ -270,6 +270,8 @@ export async function fetchHabits(
 export const habitsSource: DataSource<HabitsConfig, HabitsData> = {
   id: "habits",
   configSchema: HabitsConfig,
+  // Only days affects the fetched date range; charts/facts/from/trim/languages_limit are render-only.
+  fetchKey: (config) => ({ days: config.days }),
   async fetch(ctx, config) {
     return await fetchHabits(ctx.api, ctx.user, config.days);
   },

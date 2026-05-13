@@ -174,6 +174,8 @@ export async function fetchProfile(
 export const baseSource: DataSource<BasePluginConfig, UserProfile> = {
   id: "base",
   configSchema: BasePluginConfig,
+  // Fetch is config-independent — indepth is render-only.
+  fetchKey: () => ({}),
   async fetch(ctx) {
     return await fetchProfile(ctx.api, ctx.user, ctx.repos);
   },

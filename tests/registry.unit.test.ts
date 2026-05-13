@@ -20,7 +20,8 @@ describe("Plugin registry", () => {
 
     registerPlugin(fakePlugin);
     const found = getPlugin("test-plugin");
-    assert.strictEqual(found, fakePlugin);
+    assert.ok(found !== undefined);
+    assert.strictEqual(found.id, "test-plugin");
   });
 
   it("returns undefined for unknown plugin ID", () => {

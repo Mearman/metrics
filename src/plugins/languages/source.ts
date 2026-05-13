@@ -192,6 +192,9 @@ export async function fetchLanguages(
 export const languagesSource: DataSource<LanguagesConfig, LanguagesData> = {
   id: "languages",
   configSchema: LanguagesConfig,
+  // Fetch is config-independent — limit/threshold/ignored/other/colors/aliases/details
+  // are all render-time concerns. The full language breakdown is always fetched.
+  fetchKey: () => ({}),
   async fetch(ctx) {
     return await fetchLanguages(ctx.api, ctx.user, ctx.repos);
   },

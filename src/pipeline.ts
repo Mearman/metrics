@@ -168,7 +168,7 @@ export async function runPipeline(
       }
 
       // Parse plugin config through its Zod schema to apply defaults
-      const parsedConfig = plugin.source.configSchema.safeParse(pluginConfig);
+      const parsedConfig = plugin.configSchema.safeParse(pluginConfig);
       let resolvedConfig = parsedConfig.success
         ? parsedConfig.data
         : pluginConfig;
@@ -190,12 +190,15 @@ export async function runPipeline(
       }
 
       // Fetch data — use cache if available
-      const key = cacheKey(pluginId, resolvedConfig);
+      const key =
+        plugin.computeFetchKey !== undefined
+          ? `${pluginId}:${JSON.stringify(plugin.computeFetchKey(resolvedConfig))}`
+          : cacheKey(pluginId, resolvedConfig);
       let data = dataCache.get(key);
 
       if (data === undefined) {
         try {
-          data = await plugin.source.fetch(
+          data = await plugin.fetch(
             {
               api,
               user: username,
@@ -218,7 +221,7 @@ export async function runPipeline(
       }
 
       // Render (always re-render — theme/colours may differ per output)
-      const result = plugin.renderer.render(data, resolvedConfig, {
+      const result = plugin.render(data, resolvedConfig, {
         measure,
         theme,
         icons,

@@ -120,6 +120,8 @@ export const introductionSource: DataSource<
 > = {
   id: "introduction",
   configSchema: IntroductionConfig,
+  // Fetch is config-independent — text is render-only.
+  fetchKey: () => ({}),
   async fetch(ctx) {
     return await fetchIntroduction(ctx.api, ctx.user);
   },
