@@ -1,3 +1,9 @@
+## [1.21.0](https://github.com/Mearman/metrics/compare/v1.20.1...v1.21.0) (2026-05-13)
+
+### Features
+
+* per-plugin SVGs and preset combinations in default config ([47c1935](https://github.com/Mearman/metrics/commit/47c193514564034493ec1b8b2afd54546583537c))
+
 ## [1.20.1](https://github.com/Mearman/metrics/compare/v1.20.0...v1.20.1) (2026-05-13)
 
 ### Documentation
