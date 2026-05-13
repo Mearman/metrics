@@ -2,26 +2,16 @@
  * Habits plugin — composes source and renderer.
  */
 
-import * as z from "zod";
 import type { Plugin } from "../types.ts";
-import { fetchHabits, type HabitsData } from "./source.ts";
+import { fetchHabits, HabitsConfig, type HabitsData } from "./source.ts";
 import { renderHabits } from "./render.ts";
 
-const HabitsPluginConfig = z.object({
-  days: z.int().min(1).default(14),
-  from: z.int().min(1).default(200),
-  charts: z.boolean().default(false),
-  facts: z.boolean().default(false),
-});
-
-export const habitsPlugin: Plugin<
-  z.infer<typeof HabitsPluginConfig>,
-  HabitsData
-> = {
+export const habitsPlugin: Plugin<HabitsConfig, HabitsData> = {
   id: "habits",
   source: {
     id: "habits",
-    configSchema: HabitsPluginConfig,
+    configSchema: HabitsConfig,
+    fetchKey: (config) => ({ days: config.days }),
     async fetch(ctx, config) {
       return await fetchHabits(ctx.api, ctx.user, config.days);
     },

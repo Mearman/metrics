@@ -10,7 +10,8 @@ import { truncateText } from "../../render/layout/text.ts";
 import { shouldEnumerate } from "../../repos/filter.ts";
 import type { RepoProperties } from "../../repos/filter.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
-import type { LinesData } from "./source.ts";
+import type { LinesData, LinesConfig } from "./source.ts";
+import * as z from "zod";
 import { emptySection } from "../empty.ts";
 
 // ---------------------------------------------------------------------------
@@ -80,7 +81,7 @@ const MAX_LEGEND_LANGUAGES = 8;
  */
 export function renderLines(
   data: LinesData,
-  config: { sections?: string[]; repositories_limit?: number },
+  config: z.input<typeof LinesConfig>,
   ctx: RenderContext,
 ): RenderResult {
   const { colours, fontStack, sectionPadding: padding } = ctx.theme;
