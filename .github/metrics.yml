@@ -11,6 +11,9 @@ repos:
 
 mock_fallback: true
 
+# Generate mock-data sample SVGs for every plugin and preset
+samples: true
+
 # ============================================================
 # Individual plugin SVGs — one per plugin
 # ============================================================

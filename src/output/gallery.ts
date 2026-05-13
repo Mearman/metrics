@@ -1,14 +1,14 @@
 /**
  * Generate an index.html gallery page from pipeline outputs.
  *
- * Groups outputs into presets and individual plugins, renders
- * each SVG as an inline preview with a download link.
+ * Groups outputs into presets, individual plugins, and sample outputs,
+ * rendering each SVG as an inline preview with a download link.
  */
 
 export interface IndexEntry {
   path: string;
   label: string;
-  group: "preset" | "plugin";
+  group: string;
 }
 
 const PRESET_PATHS = new Set([
@@ -29,14 +29,50 @@ const PRESET_LABELS: Record<string, string> = {
   "output/activity-feed.svg": "Activity feed",
 };
 
+const VALID_GROUPS = new Set([
+  "preset",
+  "plugin",
+  "plugin-sample",
+  "preset-sample",
+]);
+
+/** Extract a valid IndexEntry group from a raw string. Defaults to "plugin". */
+function toGroup(raw: string): string {
+  if (VALID_GROUPS.has(raw)) {
+    return raw;
+  }
+  return "plugin";
+}
+
 /**
- * Categorise an output path as preset or plugin.
+ * Categorise an output result for gallery display.
  *
- * @internal exported for testing
+ * Uses pipeline-provided label/group metadata when available
+ * (from sample outputs), falls back to path-based heuristics.
  */
-export function categorise(path: string): IndexEntry {
+export function categorise(result: {
+  path: string;
+  label?: string | undefined;
+  group?: string | undefined;
+}): IndexEntry {
+  const path = result.path;
+
+  // Use pipeline metadata if available
+  if (result.label !== undefined && result.group !== undefined) {
+    return {
+      path,
+      label: result.label,
+      group: toGroup(result.group),
+    };
+  }
+
+  // Path-based fallback for non-sample outputs
   if (PRESET_PATHS.has(path)) {
-    return { path, label: PRESET_LABELS[path] ?? path, group: "preset" };
+    return {
+      path,
+      label: PRESET_LABELS[path] ?? path,
+      group: "preset",
+    };
   }
   // output/plugins/foo.svg → "Foo"
   const fileName = path.split("/").pop() ?? path;
@@ -55,10 +91,20 @@ export function categorise(path: string): IndexEntry {
  * Each SVG is shown as an inline preview with a link to the
  * standalone file.
  */
-export function generateIndex(outputs: string[], username: string): string {
-  const entries = outputs.map(categorise);
+export function generateIndex(
+  outputs: {
+    path: string;
+    byteSize?: number | undefined;
+    label?: string | undefined;
+    group?: string | undefined;
+  }[],
+  username: string,
+): string {
+  const entries = outputs.map((o) => categorise(o));
   const presets = entries.filter((e) => e.group === "preset");
   const plugins = entries.filter((e) => e.group === "plugin");
+  const pluginSamples = entries.filter((e) => e.group === "plugin-sample");
+  const presetSamples = entries.filter((e) => e.group === "preset-sample");
 
   const now = new Date().toISOString();
 
@@ -128,6 +174,8 @@ h2 { font-size: 1.1rem; font-weight: 600; color: #8b949e; margin: 2rem 0 1rem; b
 
 ${sectionHtml("Presets", presets)}
 ${sectionHtml("Plugins", plugins)}
+${sectionHtml("Sample presets", presetSamples)}
+${sectionHtml("Sample plugins", pluginSamples)}
 
 </body>
 </html>`;

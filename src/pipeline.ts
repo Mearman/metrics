@@ -14,6 +14,7 @@ import { svg, rect, line, g } from "./render/svg/builder.ts";
 import { getPlugin } from "./plugins/registry.ts";
 import { getMockData } from "./plugins/mock-registry.ts";
 import { registerAllPlugins } from "./plugins/register.ts";
+import { resolveSamplesConfig, generateSampleOutputs } from "./samples.ts";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -104,6 +105,12 @@ export interface PipelineResult {
 export interface OutputResult {
   path: string;
   byteSize: number;
+  /** Whether this was generated from mock data (sample output). */
+  sample?: boolean | undefined;
+  /** Human-readable label for gallery display. */
+  label?: string | undefined;
+  /** Gallery grouping: preset, plugin, plugin-sample, preset-sample. */
+  group?: string | undefined;
 }
 
 /** Cache key for plugin data: plugin ID + serialised config. */
@@ -138,7 +145,15 @@ export async function runPipeline(
   // with the same config is only fetched once per pipeline run.
   const dataCache = new Map<string, unknown>();
 
-  for (const output of config.outputs) {
+  // Collect all outputs: configured + sample
+  const samplesConfig = resolveSamplesConfig(config.samples);
+  const sampleEntries = samplesConfig.enabled
+    ? generateSampleOutputs(samplesConfig, config)
+    : [];
+  const sampleOutputs = sampleEntries.map((e) => e.output);
+  const allOutputs = [...config.outputs, ...sampleOutputs];
+
+  for (const output of allOutputs) {
     // Resolve theme: per-output override → root template
     const template = output.template ?? config.template;
     const theme = resolveTheme(template);
@@ -375,9 +390,17 @@ export async function runPipeline(
       }
     }
 
+    const isSample = sampleEntries.some((e) => e.output.path === output.path);
+    const sampleEntry = isSample
+      ? sampleEntries.find((e) => e.output.path === output.path)
+      : undefined;
+
     results.push({
       path: output.path,
       byteSize: new TextEncoder().encode(svgContent).byteLength,
+      sample: isSample || undefined,
+      label: sampleEntry?.label,
+      group: sampleEntry?.group,
     });
   }
 

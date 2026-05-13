@@ -158,6 +158,19 @@ export const RootConfig = z.object({
   colours: ColourOverrides,
   /** Global default for mock_fallback. Individual outputs can override. */
   mock_fallback: z.union([z.boolean(), z.array(z.string().trim())]).optional(),
+  /** Generate sample SVGs for every plugin and preset using mock data.
+   *  true — all samples to output/samples/
+   *  object — customise path, enable/disable plugins/presets */
+  samples: z
+    .union([
+      z.boolean(),
+      z.object({
+        path: z.string().trim().default("output/samples"),
+        plugins: z.boolean().default(true),
+        presets: z.boolean().default(true),
+      }),
+    ])
+    .optional(),
   outputs: z.array(OutputConfig).min(1),
 });
 

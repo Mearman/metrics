@@ -63,10 +63,7 @@ async function main(): Promise<void> {
 
   // Generate index.html gallery page
   const indexPath = "output/index.html";
-  const html = generateIndex(
-    result.outputs.map((o) => o.path),
-    configWithUser.user,
-  );
+  const html = generateIndex(result.outputs, configWithUser.user);
   await mkdir(dirname(indexPath), { recursive: true });
   await writeFile(indexPath, html, "utf-8");
   console.log(`  → ${indexPath}`);
