@@ -1,3 +1,9 @@
+## [1.30.1](https://github.com/Mearman/metrics/compare/v1.30.0...v1.30.1) (2026-05-13)
+
+### Bug Fixes
+
+* position skyline cityscape below section header ([801a7d9](https://github.com/Mearman/metrics/commit/801a7d98e725d3de26efa2019fe29073ecec5eda))
+
 ## [1.30.0](https://github.com/Mearman/metrics/compare/v1.29.0...v1.30.0) (2026-05-13)
 
 ### Features
