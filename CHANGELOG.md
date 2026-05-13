@@ -1,3 +1,9 @@
+## [1.30.0](https://github.com/Mearman/metrics/compare/v1.29.0...v1.30.0) (2026-05-13)
+
+### Features
+
+* add `samples` config flag for auto-generating mock-data SVGs ([cae5007](https://github.com/Mearman/metrics/commit/cae50078b467fed90760ac9f966c78b6c45bde8c))
+
 ## [1.29.0](https://github.com/Mearman/metrics/compare/v1.28.2...v1.29.0) (2026-05-13)
 
 ### Features
