@@ -1,3 +1,9 @@
+## [1.23.0](https://github.com/Mearman/metrics/compare/v1.22.2...v1.23.0) (2026-05-13)
+
+### Features
+
+* show informational text for empty plugins ([81ca2b9](https://github.com/Mearman/metrics/commit/81ca2b9d73910d50927e75ade8401eafaf4c7d24))
+
 ## [1.22.2](https://github.com/Mearman/metrics/compare/v1.22.1...v1.22.2) (2026-05-13)
 
 ### Bug Fixes
