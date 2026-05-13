@@ -1,3 +1,9 @@
+## [1.29.0](https://github.com/Mearman/metrics/compare/v1.28.2...v1.29.0) (2026-05-13)
+
+### Features
+
+* add octicon icons and accent underlines to all section headers ([c70de77](https://github.com/Mearman/metrics/commit/c70de7730784cf0fda17eb0bfd84b26545a8ba8d))
+
 ## [1.28.2](https://github.com/Mearman/metrics/compare/v1.28.1...v1.28.2) (2026-05-13)
 
 ### Bug Fixes
