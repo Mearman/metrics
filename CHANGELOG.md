@@ -1,3 +1,9 @@
+## [1.22.1](https://github.com/Mearman/metrics/compare/v1.22.0...v1.22.1) (2026-05-13)
+
+### Documentation
+
+* fix gallery page URL ([98c1bb9](https://github.com/Mearman/metrics/commit/98c1bb9e7942a0e0e0336ecfbd7f523a65bef06a))
+
 ## [1.22.0](https://github.com/Mearman/metrics/compare/v1.21.0...v1.22.0) (2026-05-13)
 
 ### Features
