@@ -1,3 +1,9 @@
+## [1.26.1](https://github.com/Mearman/metrics/compare/v1.26.0...v1.26.1) (2026-05-13)
+
+### Bug Fixes
+
+* align mock data shapes with actual plugin Data interfaces ([95df53a](https://github.com/Mearman/metrics/commit/95df53a1e7de58ba48195785c7b37d969af980d4))
+
 ## [1.26.0](https://github.com/Mearman/metrics/compare/v1.25.0...v1.26.0) (2026-05-13)
 
 ### Features
