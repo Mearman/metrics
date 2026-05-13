@@ -143,13 +143,18 @@ ${cards}
 }
 
 function cardHtml(entry: IndexEntry): string {
+  // Paths are relative to the output directory (the Pages root).
+  // Strip the leading "output/" so they resolve correctly.
+  const href = entry.path.startsWith("output/")
+    ? entry.path.slice("output/".length)
+    : entry.path;
   return `  <div class="card">
     <div class="card-header">
       <span class="card-name">${esc(entry.label)}</span>
-      <a href="${esc(entry.path)}" target="_blank">Open &rarr;</a>
+      <a href="${esc(href)}" target="_blank">Open &rarr;</a>
     </div>
     <div class="card-preview">
-      <img src="${esc(entry.path)}" alt="${esc(entry.label)} metrics" loading="lazy">
+      <img src="${esc(href)}" alt="${esc(entry.label)} metrics" loading="lazy">
     </div>
   </div>`;
 }

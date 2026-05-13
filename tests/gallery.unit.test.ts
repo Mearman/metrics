@@ -93,6 +93,16 @@ describe("Gallery page generation", () => {
       assert.ok(html.includes('loading="lazy"'));
     });
 
+    it("strips output/ prefix from paths", () => {
+      const html = generateIndex(
+        ["output/github-metrics.svg", "output/plugins/base.svg"],
+        "TestUser",
+      );
+      assert.ok(html.includes('src="github-metrics.svg"'));
+      assert.ok(html.includes('src="plugins/base.svg"'));
+      assert.ok(!html.includes('src="output/'));
+    });
+
     it("includes timestamp", () => {
       const html = generateIndex([], "TestUser");
       assert.ok(html.includes("Last updated:"));
