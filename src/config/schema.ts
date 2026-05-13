@@ -127,6 +127,11 @@ const OutputConfig = z.object({
    *  fetching from the API. Useful for showcase, demo, and gallery
    *  pages where you want every plugin to show realistic content. */
   mock: z.array(z.string().trim()).optional(),
+  /** Per-plugin custom mock data overrides. Keys are plugin IDs,
+   *  values are arbitrary data objects that replace the built-in
+   *  mock data. Takes precedence over the registry mock data.
+   *  Only used when the plugin ID is also in the `mock` list. */
+  mock_data: z.record(z.string(), z.unknown()).optional(),
   plugins: PluginsConfig,
 });
 

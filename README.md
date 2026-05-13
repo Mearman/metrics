@@ -351,6 +351,45 @@ outputs:
 
 When a plugin is in the `mock` list, the pipeline skips the API fetch and uses built-in placeholder data. Plugins not in the list fetch normally. If a plugin has no registered mock data, it falls back to fetching.
 
+#### Custom mock data
+
+Override the built-in mock data per plugin with `mock_data` — map plugin IDs to arbitrary data objects. Useful for customising demos with your own profile, repos, or stats.
+
+```yaml
+outputs:
+  - path: output/custom-demo.svg
+    mock: [base, languages]
+    mock_data:
+      base:
+        login: "your-username"
+        name: "Your Name"
+        avatarUrl: "https://avatars.githubusercontent.com/your-username"
+        bio: "Your custom bio"
+        company: "@your-company"
+        location: "Your city"
+        createdAt: "2020-01-01T00:00:00Z"
+        followers: 1500
+        following: 42
+        publicRepositories: 25
+        issues: 100
+        pullRequests: 200
+        totalCommits: 5000
+        totalPullRequestContributions: 200
+        totalIssueContributions: 100
+        totalRepositoryContributions: 30
+      languages:
+        total:
+          - { name: "Rust", colour: "#dea584", size: 500000 }
+          - { name: "TypeScript", colour: "#3178c6", size: 300000 }
+        totalBytes: 800000
+        otherBytes: 0
+    plugins:
+      base: {}
+      languages: { limit: 8 }
+```
+
+Custom `mock_data` takes precedence over the built-in registry mock data. Only applies to plugins listed in `mock`.
+
 ---
 
 ## Token tiers

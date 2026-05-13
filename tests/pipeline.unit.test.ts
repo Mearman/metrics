@@ -15,6 +15,7 @@ import type {
   Renderer,
 } from "../src/plugins/types.ts";
 import { registerPlugin, getPlugin } from "../src/plugins/registry.ts";
+import * as z from "zod";
 
 // ---------------------------------------------------------------------------
 // Mock plugin helpers
@@ -174,5 +175,58 @@ describe("Pipeline", () => {
     const output = result.outputs[0];
     assert.ok(output !== undefined);
     assert.ok(output.byteSize > 0);
+  });
+
+  it("uses custom mock_data over registry defaults", async () => {
+    // Register a plugin that tracks what data it received
+    let receivedData: unknown = null;
+    if (getPlugin("test-mock-override") !== undefined) {
+      // Already registered from a previous test run — skip
+    } else {
+      const source: DataSource<Record<string, unknown>, string> = {
+        id: "test-mock-override",
+        configSchema: z.object({}),
+        async fetch() {
+          return "fetched-value";
+        },
+      };
+      const renderer: Renderer<string, Record<string, unknown>> = {
+        render(data: unknown) {
+          receivedData = data;
+          return { height: 40, elements: [] };
+        },
+      };
+      registerPlugin({
+        id: "test-mock-override",
+        source,
+        renderer,
+      });
+    }
+
+    const customData = { custom: true, value: 42 };
+    const config = {
+      template: "classic",
+      timezone: "UTC",
+      outputs: [
+        {
+          path: "/tmp/metrics-test-mock-override.svg",
+          format: "svg",
+          mock: ["test-mock-override"],
+          mock_data: {
+            "test-mock-override": customData,
+          },
+          plugins: {
+            "test-mock-override": {},
+          },
+        },
+      ],
+    };
+
+    const result = await runPipeline(config as never, "fake-token", {
+      dryRun: true,
+    });
+    assert.strictEqual(result.outputs.length, 1);
+    // The renderer should have received the custom mock_data, not registry data
+    assert.deepStrictEqual(receivedData, customData);
   });
 });

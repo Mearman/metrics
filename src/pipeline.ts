@@ -196,7 +196,8 @@ export async function runPipeline(
       let data: unknown;
 
       if (useMock) {
-        data = getMockData(pluginId);
+        // Custom mock data takes precedence over registry defaults
+        data = output.mock_data?.[pluginId] ?? getMockData(pluginId);
         if (data === undefined) {
           console.warn(
             `Plugin "${pluginId}" has no mock data — fetching normally`,
