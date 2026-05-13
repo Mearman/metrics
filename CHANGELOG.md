@@ -1,3 +1,9 @@
+## [1.28.2](https://github.com/Mearman/metrics/compare/v1.28.1...v1.28.2) (2026-05-13)
+
+### Bug Fixes
+
+* decode HTML entities in RSS titles and remove emoji from stargazers ([27cf981](https://github.com/Mearman/metrics/commit/27cf981764391b5e88eb4ba44cf98adb77ad19d9)), closes [#038](https://github.com/Mearman/metrics/issues/038) [#038](https://github.com/Mearman/metrics/issues/038)
+
 ## [1.28.1](https://github.com/Mearman/metrics/compare/v1.28.0...v1.28.1) (2026-05-13)
 
 ### Bug Fixes
