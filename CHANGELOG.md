@@ -1,3 +1,9 @@
+## [1.19.0](https://github.com/Mearman/metrics/compare/v1.18.1...v1.19.0) (2026-05-13)
+
+### Features
+
+* multiple outputs with per-output template/colours and data caching ([066833c](https://github.com/Mearman/metrics/commit/066833c8c4adc12c891e6ee4014c78e8229ed15f))
+
 ## [1.18.1](https://github.com/Mearman/metrics/compare/v1.18.0...v1.18.1) (2026-05-12)
 
 ### Refactoring
