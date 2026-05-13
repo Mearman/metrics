@@ -130,8 +130,7 @@ outputs:
       languages:
         limit: 8
         threshold: 5
-        categories: [markup, programming]
-        recent_days: 14
+        details: [percentage]
       habits:
         days: 14
         from: 200
@@ -240,7 +239,9 @@ outputs:
 - `format` — `svg` or `png`
 - `order` — plugin rendering order
 
-**Data caching:** when multiple outputs use the same plugin with the same config, the API response is fetched only once and reused across outputs. Rendering always re-runs per output (the theme may differ).
+**Data caching:** plugins declare which config fields affect the API fetch (via `fetchKey`). When multiple outputs use the same plugin with different render-only config (e.g. `languages` with different `limit` or `threshold`), the API response is fetched only once. Rendering always re-runs per output (the theme may differ).
+
+Plugins with fetch-aware caching: `base`, `achievements`, `languages`, `gists`, `introduction` (fully independent), `habits` (by `days`), `isocalendar` (by `duration`), `notable` (by `from`). Other plugins use the full config as the cache key.
 
 ### Global user ignore list
 
@@ -280,7 +281,7 @@ outputs:
 | PAT with `public_repo` scope | Public data + higher rate limit | 5,000 req/hr | Create token, add as `METRICS_TOKEN` secret |
 | PAT with `repo` scope | Public + private data | 5,000 req/hr | Create token, add as `METRICS_TOKEN` secret |
 
-All 6 plugins work with `github.token` alone. A PAT gives higher rate limits and access to private repo data.
+All token-optional plugins work with `github.token` alone. Three plugins (sponsors, sponsorships, traffic) require a PAT. A PAT also gives higher rate limits and access to private repo data.
 
 ---
 
@@ -321,6 +322,7 @@ interface DataSource<TConfig, TData> {
   id: string
   configSchema: z.ZodType<TConfig>
   fetch(ctx: FetchContext, config: TConfig): Promise<TData>
+  fetchKey?: (config: TConfig) => Record<string, unknown>
 }
 
 interface Renderer<TData, TConfig> {
@@ -387,8 +389,6 @@ All colour fields are optional — only specify the ones you want to change.
 
 ## Plugins
 
-29 plugins implemented (2 not feasible).
-
 | Plugin       | ID              | Status | Description                            |
 |--------------|-----------------|--------|----------------------------------------|
 | Base         | `base`          | ✅     | User profile header, avatar, stats     |
@@ -415,7 +415,6 @@ All colour fields are optional — only specify the ones you want to change.
 | Licences     | `licenses`      | ✅     | Repository licence breakdown           |
 | LoC          | `loc`           | ✅     | Actual lines of code per repo          |
 | Projects     | `projects`      | ✅     | GitHub Projects v2 boards              |
-| Skyline      | `skyline`       | ✅     | 3D isometric contribution cityscape    |
 | Skyline      | `skyline`       | ✅     | 3D isometric contribution cityscape    |
 | Sponsors     | `sponsors`      | ✅     | GitHub Sponsors card (needs PAT)       |
 | Sponsorships | `sponsorships`  | ✅     | Active sponsorships (needs PAT)        |
@@ -566,6 +565,7 @@ notable:
   from: 5              # organisations to fetch (1+)
   types: organization  # all, organization, user
   self: false           # include own repositories
+  contribution_types: [commit]  # commit, pull_request, issue
 ```
 
 #### calendar
@@ -589,6 +589,7 @@ reactions:
   limit: 10             # top reactions (1–50)
   display: absolute     # absolute | relative
   details: []           # count, percentage
+  ignored: []           # usernames to exclude (e.g. bots)
 ```
 
 #### contributors
@@ -598,6 +599,7 @@ contributors:
   limit: 6              # top repos (1–20)
   contributors_per_repo: 8  # avatars per repo (1–50)
   threshold: 1          # min contributions per contributor
+  ignored: []           # usernames to exclude (e.g. bots)
 ```
 
 #### code
