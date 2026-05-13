@@ -1,3 +1,9 @@
+## [1.22.0](https://github.com/Mearman/metrics/compare/v1.21.0...v1.22.0) (2026-05-13)
+
+### Features
+
+* generate index.html gallery page for browsing outputs ([9d8352d](https://github.com/Mearman/metrics/commit/9d8352d1273f89fb3fc2d25bf283593829717ffc))
+
 ## [1.21.0](https://github.com/Mearman/metrics/compare/v1.20.1...v1.21.0) (2026-05-13)
 
 ### Features
