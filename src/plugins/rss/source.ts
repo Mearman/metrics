@@ -52,11 +52,32 @@ const parser = new XMLParser({
 
 /** Extract a text string from a parsed XML node. Handles both plain strings
  *  and fast-xml-parser wrapped nodes like `{ "#text": "value" }`. */
+/** Decode residual HTML entities left by the XML parser. */
+function decodeHtmlEntities(text: string): string {
+  // Numeric character references: &#NNN; or &#xHH;
+  let result = text.replace(/&#(x?[0-9a-fA-F]+);/g, (_match, hex: string) => {
+    const code = hex.startsWith("x")
+      ? Number.parseInt(hex.slice(1), 16)
+      : Number.parseInt(hex, 10);
+    return String.fromCodePoint(code);
+  });
+  // Common named entities
+  result = result.replace(/&amp;/g, "&");
+  result = result.replace(/&lt;/g, "<");
+  result = result.replace(/&gt;/g, ">");
+  result = result.replace(/&quot;/g, '"');
+  result = result.replace(/&apos;/g, "'");
+  return result;
+}
+
 function textOf(value: unknown): string {
-  if (typeof value === "string") return value.trim();
-  if (typeof value === "number") return String(value);
-  const inner = getString(value, "#text");
-  return inner ?? "";
+  const raw =
+    typeof value === "string"
+      ? value.trim()
+      : typeof value === "number"
+        ? String(value)
+        : (getString(value, "#text") ?? "");
+  return decodeHtmlEntities(raw);
 }
 
 /** Extract an href URL from a link element (Atom uses `@_href`). */

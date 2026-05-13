@@ -32,7 +32,7 @@ export function renderStargazers(
   const maxStars = Math.max(...data.repos.map((r) => r.stars), 1);
 
   elements.push(
-    text(padding, 14, `⭐ ${String(data.totalStars)} total stars`, {
+    text(padding, 14, `${String(data.totalStars)} total stars`, {
       fill: colours.text,
       "font-size": 14,
       "font-weight": 600,
