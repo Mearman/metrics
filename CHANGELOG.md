@@ -1,3 +1,9 @@
+## [1.23.1](https://github.com/Mearman/metrics/compare/v1.23.0...v1.23.1) (2026-05-13)
+
+### Bug Fixes
+
+* remove unused $since variable from reactions PRs query ([d8d2e74](https://github.com/Mearman/metrics/commit/d8d2e747df8b125eafcc442836b8f057296ca49b))
+
 ## [1.23.0](https://github.com/Mearman/metrics/compare/v1.22.2...v1.23.0) (2026-05-13)
 
 ### Features
