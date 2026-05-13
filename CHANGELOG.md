@@ -1,3 +1,9 @@
+## [1.26.0](https://github.com/Mearman/metrics/compare/v1.25.0...v1.26.0) (2026-05-13)
+
+### Features
+
+* add mock/placeholder data for all 29 plugins ([3195a59](https://github.com/Mearman/metrics/commit/3195a59b381a7dadcdf1afd1a944a559bb773bc6))
+
 ## [1.25.0](https://github.com/Mearman/metrics/compare/v1.24.0...v1.25.0) (2026-05-13)
 
 ### Features
