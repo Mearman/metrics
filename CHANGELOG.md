@@ -1,3 +1,9 @@
+## [1.28.0](https://github.com/Mearman/metrics/compare/v1.27.0...v1.28.0) (2026-05-13)
+
+### Features
+
+* add mock_fallback — substitute mock data when real data is empty ([1ec86f5](https://github.com/Mearman/metrics/commit/1ec86f539a65ecb7fae23e5a0f413c5488c985d9))
+
 ## [1.27.0](https://github.com/Mearman/metrics/compare/v1.26.1...v1.27.0) (2026-05-13)
 
 ### Features
