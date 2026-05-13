@@ -1,3 +1,9 @@
+## [1.28.1](https://github.com/Mearman/metrics/compare/v1.28.0...v1.28.1) (2026-05-13)
+
+### Bug Fixes
+
+* add isEmpty to inline-source plugins for mock fallback ([e517872](https://github.com/Mearman/metrics/commit/e51787272cba2ba1613f65b157417bceb7c1a025))
+
 ## [1.28.0](https://github.com/Mearman/metrics/compare/v1.27.0...v1.28.0) (2026-05-13)
 
 ### Features
