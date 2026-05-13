@@ -229,4 +229,59 @@ describe("Pipeline", () => {
     // The renderer should have received the custom mock_data, not registry data
     assert.deepStrictEqual(receivedData, customData);
   });
+
+  it("falls back to mock data when fetched data is empty", async () => {
+    let receivedData: unknown = null;
+    if (getPlugin("test-fallback") !== undefined) {
+      // skip
+    } else {
+      const source: DataSource<Record<string, unknown>, string[]> = {
+        id: "test-fallback",
+        configSchema: z.object({}),
+        async fetch() {
+          return []; // empty array = empty data
+        },
+        isEmpty(data) {
+          return data.length === 0;
+        },
+      };
+      const renderer: Renderer<string[], Record<string, unknown>> = {
+        render(data: unknown) {
+          receivedData = data;
+          return { height: 40, elements: [] };
+        },
+      };
+      registerPlugin({
+        id: "test-fallback",
+        source,
+        renderer,
+      });
+    }
+
+    const config = {
+      template: "classic",
+      timezone: "UTC",
+      mock_fallback: true,
+      outputs: [
+        {
+          path: "/tmp/metrics-test-fallback.svg",
+          format: "svg",
+          mock_data: {
+            "test-fallback": ["mock-item-1", "mock-item-2"],
+          },
+          plugins: {
+            "test-fallback": {},
+          },
+        },
+      ],
+    };
+
+    const result = await runPipeline(config as never, "fake-token", {
+      dryRun: true,
+    });
+    assert.strictEqual(result.outputs.length, 1);
+    // The renderer should have received registry mock data, not the empty array
+    assert.ok(Array.isArray(receivedData));
+    assert.ok(receivedData.length > 0);
+  });
 });

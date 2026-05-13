@@ -181,4 +181,8 @@ export const linesSource: DataSource<LinesConfig, LinesData> = {
   async fetch(ctx, config) {
     return await fetchLines(ctx.api, ctx.user, config.limit, ctx.repos);
   },
+
+  isEmpty(data) {
+    return data.repos.length === 0;
+  },
 };

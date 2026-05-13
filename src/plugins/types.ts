@@ -80,6 +80,14 @@ export interface DataSource<TConfig, TData> {
    * regardless of config).
    */
   fetchKey?: (config: TConfig) => Record<string, unknown>;
+  /**
+   * Check if fetched data is "empty" — no meaningful content to render.
+   * Used by the pipeline's mock_fallback feature: when data is empty
+   * and mock_fallback is enabled, the pipeline substitutes mock data.
+   *
+   * If omitted, the pipeline never falls back for this plugin.
+   */
+  isEmpty?: (data: TData) => boolean;
 }
 
 /** Renders data into visual elements. */

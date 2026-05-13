@@ -316,4 +316,8 @@ export const repositoriesSource: DataSource<
   async fetch(ctx, config) {
     return await fetchRepositories(ctx, config);
   },
+
+  isEmpty(data) {
+    return data.list.length === 0;
+  },
 };

@@ -324,4 +324,8 @@ export const locSource: DataSource<LocConfig, LocData> = {
       config.cache_dir,
     );
   },
+
+  isEmpty(data) {
+    return data.repos.length === 0;
+  },
 };

@@ -120,4 +120,8 @@ export const stargazersSource: DataSource<StargazersConfig, StargazersData> = {
   async fetch(ctx, config) {
     return await fetchStargazers(ctx, config);
   },
+
+  isEmpty(data) {
+    return data.repos.length === 0;
+  },
 };

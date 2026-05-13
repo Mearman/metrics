@@ -19,6 +19,9 @@ export const codePlugin: Plugin<CodeConfigType, CodeData> = {
     async fetch(ctx, config) {
       return await fetchCode(ctx.api, ctx.user, config);
     },
+    isEmpty(data) {
+      return data.snippet === null;
+    },
   },
   renderer: {
     render(data, config, ctx) {

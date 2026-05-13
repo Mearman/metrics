@@ -151,4 +151,8 @@ export const discussionsSource: DataSource<DiscussionsConfig, DiscussionsData> =
     async fetch(ctx, config) {
       return await fetchDiscussions(ctx, config);
     },
+
+    isEmpty(data) {
+      return data.totalCount === 0;
+    },
   };

@@ -158,4 +158,8 @@ export const licencesSource: DataSource<LicencesConfig, LicencesData> = {
   async fetch(ctx, config) {
     return await fetchLicences(ctx.api, ctx.user, config.limit, ctx.repos);
   },
+
+  isEmpty(data) {
+    return data.licences.length === 0 && data.unlicensed === 0;
+  },
 };

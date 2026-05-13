@@ -198,4 +198,8 @@ export const languagesSource: DataSource<LanguagesConfig, LanguagesData> = {
   async fetch(ctx) {
     return await fetchLanguages(ctx.api, ctx.user, ctx.repos);
   },
+
+  isEmpty(data) {
+    return data.total.length === 0;
+  },
 };

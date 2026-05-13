@@ -144,4 +144,8 @@ export const sponsorshipsSource: DataSource<
       config.limit,
     );
   },
+
+  isEmpty(data) {
+    return data.sponsorships.length === 0;
+  },
 };

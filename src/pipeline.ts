@@ -193,6 +193,11 @@ export async function runPipeline(
       // Fetch data — use mock if requested, otherwise use cache or API
       const mockList = output.mock ?? [];
       let useMock = mockList.includes(pluginId);
+      const mockFallbackSetting = output.mock_fallback ?? config.mock_fallback;
+      const mockFallbackEnabled =
+        mockFallbackSetting === true ||
+        (Array.isArray(mockFallbackSetting) &&
+          mockFallbackSetting.includes(pluginId));
       let data: unknown;
 
       if (useMock) {
@@ -233,6 +238,22 @@ export async function runPipeline(
               `Plugin "${pluginId}" fetch failed: ${message} — skipping`,
             );
             continue;
+          }
+        }
+
+        // Mock fallback: if fetched data is empty, substitute mock data
+        if (
+          mockFallbackEnabled &&
+          data !== undefined &&
+          plugin.isEmpty?.(data) === true
+        ) {
+          const fallback =
+            output.mock_data?.[pluginId] ?? getMockData(pluginId);
+          if (fallback !== undefined) {
+            console.log(
+              `Plugin "${pluginId}" data is empty — using mock fallback`,
+            );
+            data = fallback;
           }
         }
       }

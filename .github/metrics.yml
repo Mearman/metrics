@@ -9,6 +9,8 @@ repos:
     - match: { visibility: private }
       action: count
 
+mock_fallback: true
+
 # ============================================================
 # Individual plugin SVGs — one per plugin
 # ============================================================

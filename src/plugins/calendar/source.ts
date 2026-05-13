@@ -164,4 +164,8 @@ export const calendarSource: DataSource<CalendarConfig, CalendarData> = {
   async fetch(ctx, config) {
     return await fetchCalendar(ctx, config);
   },
+
+  isEmpty(data) {
+    return data.years.length === 0;
+  },
 };

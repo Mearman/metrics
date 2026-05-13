@@ -169,4 +169,8 @@ export const sponsorsSource: DataSource<SponsorsConfig, SponsorsData> = {
   async fetch(ctx, config) {
     return await fetchSponsors(ctx.api, ctx.user, config.size);
   },
+
+  isEmpty(data) {
+    return data.sponsors.length === 0 && data.goal === null;
+  },
 };

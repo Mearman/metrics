@@ -390,6 +390,33 @@ outputs:
 
 Custom `mock_data` takes precedence over the built-in registry mock data. Only applies to plugins listed in `mock`.
 
+#### Mock fallback
+
+Automatically substitute mock data when a plugin's real data is empty (e.g. no sponsors, no discussions). Set at root level to apply globally, or per-output.
+
+```yaml
+# Global — applies to all outputs
+mock_fallback: true
+
+outputs:
+  - path: output/github-metrics.svg
+    plugins:
+      sponsors: { sections: [goal, list] }
+      discussions: { categories: true }
+```
+
+```yaml
+# Per-output — only specific plugins
+outputs:
+  - path: output/github-metrics.svg
+    mock_fallback: [sponsors, discussions]
+    plugins:
+      sponsors: { sections: [goal, list] }
+      discussions: { categories: true }
+```
+
+When `mock_fallback` is enabled, the pipeline fetches normally first. If the fetched data is "empty" (defined by each plugin), it substitutes mock data from `mock_data` or the built-in registry. If neither is available, the real (empty) data is used as-is.
+
 ---
 
 ## Token tiers

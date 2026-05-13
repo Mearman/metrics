@@ -132,6 +132,11 @@ const OutputConfig = z.object({
    *  mock data. Takes precedence over the registry mock data.
    *  Only used when the plugin ID is also in the `mock` list. */
   mock_data: z.record(z.string(), z.unknown()).optional(),
+  /** Fall back to mock data when a plugin's fetched data is "empty".
+   *  - `true` applies to all plugins with an `isEmpty` function.
+   *  - An array of plugin IDs applies only to those plugins.
+   *  Mock data source: `mock_data[pluginId]` → registry → skip. */
+  mock_fallback: z.union([z.boolean(), z.array(z.string().trim())]).optional(),
   plugins: PluginsConfig,
 });
 
@@ -151,6 +156,8 @@ export const RootConfig = z.object({
   users_ignored: z.array(z.string().trim()).default([]),
   /** Custom colour overrides — merge into the theme's colours */
   colours: ColourOverrides,
+  /** Global default for mock_fallback. Individual outputs can override. */
+  mock_fallback: z.union([z.boolean(), z.array(z.string().trim())]).optional(),
   outputs: z.array(OutputConfig).min(1),
 });
 

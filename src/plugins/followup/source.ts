@@ -197,4 +197,8 @@ export const followupSource: DataSource<FollowupConfig, FollowupData> = {
   async fetch(ctx, config) {
     return await fetchFollowup(ctx, config);
   },
+
+  isEmpty(data) {
+    return data.sections.length === 0;
+  },
 };

@@ -32,6 +32,8 @@ export interface ErasedPlugin {
   fetch(ctx: FetchContext, config: unknown): Promise<unknown>;
   /** Compute a fetch-specific cache key. Config is Zod-parsed. */
   computeFetchKey?(config: unknown): Record<string, unknown>;
+  /** Check if fetched data is empty. Used by mock_fallback. */
+  isEmpty?(data: unknown): boolean;
   /** Render data. Delegates to the original typed renderer. */
   render(data: unknown, config: unknown, ctx: RenderContext): RenderResult;
 }
@@ -56,6 +58,7 @@ class PluginAdapter<TConfig, TData> implements ErasedPlugin {
   private readonly fetchKeyFn:
     | ((config: TConfig) => Record<string, unknown>)
     | undefined;
+  private readonly isEmptyFn: ((data: TData) => boolean) | undefined;
 
   constructor(plugin: Plugin<TConfig, TData>) {
     this.id = plugin.id;
@@ -64,6 +67,7 @@ class PluginAdapter<TConfig, TData> implements ErasedPlugin {
     this.source = plugin.source;
     this.renderer = plugin.renderer;
     this.fetchKeyFn = plugin.source.fetchKey ?? undefined;
+    this.isEmptyFn = plugin.source.isEmpty ?? undefined;
   }
 
   async fetch(ctx: FetchContext, config: unknown): Promise<unknown> {
@@ -107,6 +111,21 @@ class PluginAdapter<TConfig, TData> implements ErasedPlugin {
       return { _invalid: JSON.stringify(config) };
     }
     return this.fetchKeyFn(parsed.data);
+  }
+
+  isEmpty(data: unknown): boolean {
+    if (this.isEmptyFn === undefined) {
+      return false;
+    }
+    // Widen through a bivariant interface method — same pattern as
+    // renderTyped. The data invariant holds by construction.
+    interface UnknownDataChecker {
+      check(d: unknown): boolean;
+    }
+    const widened: UnknownDataChecker = {
+      check: this.isEmptyFn,
+    };
+    return widened.check(data);
   }
 
   get hasFetchKey(): boolean {

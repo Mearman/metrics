@@ -30,6 +30,9 @@ export const achievementsPlugin: Plugin<
     async fetch(ctx) {
       return await fetchAchievements(ctx.api, ctx.user, ctx.repos);
     },
+    isEmpty(data) {
+      return data.achievements.length === 0;
+    },
   },
   renderer: {
     render(data, config, ctx) {

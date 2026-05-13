@@ -129,4 +129,8 @@ export const projectsSource: DataSource<ProjectsConfig, ProjectsData> = {
   async fetch(ctx, config) {
     return await fetchProjects(ctx.api, ctx.user, config.limit);
   },
+
+  isEmpty(data) {
+    return data.projects.length === 0;
+  },
 };

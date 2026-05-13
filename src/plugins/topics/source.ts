@@ -154,4 +154,8 @@ export const topicsSource: DataSource<TopicsConfig, TopicsData> = {
   async fetch(ctx, config) {
     return await fetchTopics(ctx.api, ctx.user, config.limit, ctx.repos);
   },
+
+  isEmpty(data) {
+    return data.topics.length === 0;
+  },
 };

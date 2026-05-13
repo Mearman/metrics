@@ -369,4 +369,8 @@ export const activitySource: DataSource<ActivityConfig, ActivityData> = {
   async fetch(ctx, config) {
     return await fetchActivity(ctx, config);
   },
+
+  isEmpty(data) {
+    return data.events.length === 0;
+  },
 };
