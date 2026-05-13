@@ -243,6 +243,62 @@ outputs:
 
 Plugins with fetch-aware caching: `base`, `achievements`, `languages`, `gists`, `introduction` (fully independent), `habits` (by `days`), `isocalendar` (by `duration`), `notable` (by `from`). Other plugins use the full config as the cache key.
 
+### Per-plugin SVGs and presets
+
+The default `.github/metrics.yml` generates a standalone SVG for each plugin, plus several preset combinations. This lets you pick individual panels for your profile README without rendering everything at once.
+
+**Individual plugins** — one plugin per SVG:
+
+```
+output/plugins/base.svg
+output/plugins/introduction.svg
+output/plugins/achievements.svg
+output/plugins/isocalendar.svg
+output/plugins/calendar.svg
+output/plugins/skyline.svg
+output/plugins/languages.svg
+output/plugins/lines.svg
+output/plugins/code.svg
+output/plugins/habits.svg
+output/plugins/activity.svg
+output/plugins/notable.svg
+output/plugins/reactions.svg
+output/plugins/repositories.svg
+output/plugins/stars.svg
+output/plugins/followup.svg
+output/plugins/stargazers.svg
+output/plugins/contributors.svg
+output/plugins/topics.svg
+output/plugins/licenses.svg
+output/plugins/traffic.svg
+output/plugins/people.svg
+output/plugins/gists.svg
+output/plugins/discussions.svg
+output/plugins/sponsors.svg
+output/plugins/sponsorships.svg
+output/plugins/projects.svg
+output/plugins/rss.svg
+```
+
+**Preset combinations:**
+
+| Preset | File | Contents |
+|--------|------|----------|
+| Full dashboard | `output/github-metrics.svg` | All `github.token`-compatible plugins |
+| Compact profile | `output/compact.svg` | Base header, top languages, half-year calendar — light theme |
+| Contribution landscape | `output/contributions.svg` | Calendar, heatmap, habits, skyline |
+| Code & languages | `output/code-languages.svg` | Languages, lines, licences, topics |
+| Social graph | `output/social.svg` | People, stargazers, contributors, sponsors |
+| Activity feed | `output/activity-feed.svg` | Activity, reactions, discussions, notable |
+
+Embed any combination in your profile README:
+
+```markdown
+![Metrics](https://<username>.github.io/metrics/github-metrics.svg)
+![Languages](https://<username>.github.io/metrics/plugins/languages.svg)
+![Calendar](https://<username>.github.io/metrics/contributions.svg)
+```
+
 ### Global user ignore list
 
 Use `users_ignored` to filter out bot accounts and specific users across plugins:

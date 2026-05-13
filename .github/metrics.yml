@@ -9,13 +9,194 @@ repos:
     - match: { visibility: private }
       action: count
 
-# Multiple outputs are supported — add more entries to produce
-# separate SVGs/PNGs with different plugins, templates, or colours.
-# Per-output template and colours override the root settings.
+# ============================================================
+# Individual plugin SVGs — one per plugin
+# ============================================================
 
 outputs:
+  # ── Profile & identity ─────────────────────────────────────
+
+  - path: output/plugins/base.svg
+    plugins:
+      base:
+        sections: [header, activity, community, repositories, metadata]
+        indepth: true
+
+  - path: output/plugins/introduction.svg
+    plugins:
+      introduction: {}
+
+  - path: output/plugins/achievements.svg
+    plugins:
+      achievements:
+        display: detailed
+        secrets: true
+        threshold: C
+
+  # ── Contribution visualisations ─────────────────────────────
+
+  - path: output/plugins/isocalendar.svg
+    plugins:
+      isocalendar:
+        duration: full-year
+
+  - path: output/plugins/calendar.svg
+    plugins:
+      calendar:
+        years: 3
+
+  - path: output/plugins/skyline.svg
+    plugins:
+      skyline:
+        max_height: 100
+
+  # ── Language & code ─────────────────────────────────────────
+
+  - path: output/plugins/languages.svg
+    plugins:
+      languages:
+        limit: 8
+        threshold: 1
+        details: [percentage]
+
+  - path: output/plugins/lines.svg
+    plugins:
+      lines:
+        limit: 4
+
+  - path: output/plugins/code.svg
+    plugins:
+      code: {}
+
+  # loc is opt-in — clones repos, significantly increases CI time
+  # - path: output/plugins/loc.svg
+  #   plugins:
+  #     loc:
+  #       limit: 4
+  #       cache_dir: ~/.cache/metrics-loc
+
+  # ── Activity & habits ───────────────────────────────────────
+
+  - path: output/plugins/habits.svg
+    plugins:
+      habits:
+        days: 14
+        from: 200
+        charts: true
+        facts: true
+
+  - path: output/plugins/activity.svg
+    plugins:
+      activity:
+        limit: 5
+        days: 14
+
+  - path: output/plugins/notable.svg
+    plugins:
+      notable:
+        from: 5
+
+  - path: output/plugins/reactions.svg
+    plugins:
+      reactions:
+        limit: 10
+        days: 30
+
+  # ── Repositories ────────────────────────────────────────────
+
+  - path: output/plugins/repositories.svg
+    plugins:
+      repositories:
+        pinned: 4
+        starred: 2
+
+  - path: output/plugins/stars.svg
+    plugins:
+      stars:
+        limit: 4
+
+  - path: output/plugins/followup.svg
+    plugins:
+      followup:
+        sections: [repositories, user]
+        archived: true
+
+  - path: output/plugins/stargazers.svg
+    plugins:
+      stargazers:
+        limit: 6
+        days: 14
+
+  - path: output/plugins/contributors.svg
+    plugins:
+      contributors:
+        limit: 4
+        contributors_per_repo: 6
+
+  - path: output/plugins/topics.svg
+    plugins:
+      topics:
+        limit: 15
+
+  - path: output/plugins/licenses.svg
+    plugins:
+      licenses:
+        limit: 8
+
+  - path: output/plugins/traffic.svg
+    plugins:
+      traffic:
+        limit: 4
+
+  # ── Social ──────────────────────────────────────────────────
+
+  - path: output/plugins/people.svg
+    plugins:
+      people:
+        limit: 14
+        types: [followers, following]
+
+  - path: output/plugins/gists.svg
+    plugins:
+      gists: {}
+
+  - path: output/plugins/discussions.svg
+    plugins:
+      discussions:
+        categories: true
+
+  - path: output/plugins/sponsors.svg
+    plugins:
+      sponsors:
+        sections: [goal, list]
+
+  - path: output/plugins/sponsorships.svg
+    plugins:
+      sponsorships:
+        limit: 20
+
+  - path: output/plugins/projects.svg
+    plugins:
+      projects:
+        limit: 4
+        descriptions: true
+
+  # ── External feeds ──────────────────────────────────────────
+
+  - path: output/plugins/rss.svg
+    plugins:
+      rss:
+        source: https://github.blog/feed/
+        limit: 4
+
+  # ============================================================
+  # Preset combinations
+  # ============================================================
+
+  # ── Full dashboard (the default) ────────────────────────────
+  # Everything that works with github.token, minus slow plugins.
+
   - path: output/github-metrics.svg
-    format: svg
     plugins:
       base:
         sections: [header, activity, community, repositories, metadata]
@@ -26,66 +207,114 @@ outputs:
       languages:
         limit: 8
         threshold: 1
-        ignored: []
-        other: false
         details: [percentage]
       habits:
         days: 14
         from: 200
         charts: true
         facts: true
-        trim: false
       achievements:
         display: detailed
         secrets: true
         threshold: C
-        limit: 0
       lines:
         limit: 4
       repositories:
         pinned: 4
         starred: 2
-        forks: false
       activity:
         limit: 5
         days: 14
-        ignored: []
       stars:
         limit: 4
       followup:
         sections: [repositories, user]
-        archived: true
       stargazers:
         limit: 6
-        days: 14
       people:
         limit: 14
         types: [followers, following]
-      gists: {}
-      discussions:
-        categories: true
-      notable:
-        from: 5
-      calendar:
-        years: 1
-      reactions:
-        limit: 10
-      contributors:
-        limit: 4
-        contributors_per_repo: 6
-      code: {}
       topics:
         limit: 15
       licenses:
         limit: 8
-      # loc:  # opt-in — clones repos, adds ~2min to CI
-      #   limit: 4
-      #   cache_dir: ~/.cache/metrics-loc
-      projects:
+
+  # ── Compact profile ─────────────────────────────────────────
+  # Lightweight card for sidebar embedding — fast to generate,
+  # small file size.
+
+  - path: output/compact.svg
+    template: light
+    plugins:
+      base:
+        sections: [header]
+      languages:
+        limit: 5
+        details: [percentage]
+      isocalendar:
+        duration: half-year
+
+  # ── Contribution landscape ───────────────────────────────────
+  # Visual contribution history — calendar, heatmap, skyline.
+
+  - path: output/contributions.svg
+    plugins:
+      isocalendar:
+        duration: full-year
+      calendar:
+        years: 3
+      habits:
+        days: 14
+        charts: true
+        facts: true
+
+  # ── Code & languages ─────────────────────────────────────────
+  # Language breakdown, code sizes, licence spread.
+
+  - path: output/code-languages.svg
+    plugins:
+      languages:
+        limit: 10
+        threshold: 1
+        details: [percentage]
+      lines:
         limit: 4
-      sponsors: {}
-      sponsorships: {}
-      traffic:
+      licenses:
+        limit: 8
+      topics:
+        limit: 20
+
+  # ── Social graph ─────────────────────────────────────────────
+  # Followers, stargazers, contributors, sponsors.
+
+  - path: output/social.svg
+    plugins:
+      people:
+        limit: 24
+        types: [followers, following]
+      stargazers:
+        limit: 6
+      contributors:
         limit: 4
-      skyline:
-        max_height: 100
+        contributors_per_repo: 6
+      sponsors:
+        sections: [goal, list]
+      sponsorships:
+        limit: 20
+
+  # ── Activity feed ────────────────────────────────────────────
+  # Recent events, reactions, discussions, notable contributions.
+
+  - path: output/activity-feed.svg
+    plugins:
+      activity:
+        limit: 10
+        days: 14
+        timestamps: true
+      reactions:
+        limit: 10
+        days: 30
+      discussions:
+        categories: true
+      notable:
+        from: 5
