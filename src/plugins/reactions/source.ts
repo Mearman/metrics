@@ -9,6 +9,7 @@
 
 import * as z from "zod";
 import type { ApiClient } from "../types.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -74,7 +75,7 @@ const ItemSchema = z.object({
   reactionGroups: z.array(
     z.object({
       content: z.string().trim(),
-      users: z.object({ totalCount: z.number() }),
+      reactors: z.object({ totalCount: z.number() }),
     }),
   ),
 });
@@ -122,14 +123,14 @@ function parseReactions(groups: z.infer<typeof ItemSchema>["reactionGroups"]) {
 
   for (const group of groups) {
     const key = REACTION_MAP[group.content];
-    if (key === "+1") plusOne = group.users.totalCount;
-    else if (key === "-1") minusOne = group.users.totalCount;
-    else if (key === "laugh") laugh = group.users.totalCount;
-    else if (key === "hooray") hooray = group.users.totalCount;
-    else if (key === "confused") confused = group.users.totalCount;
-    else if (key === "heart") heart = group.users.totalCount;
-    else if (key === "rocket") rocket = group.users.totalCount;
-    else if (key === "eyes") eyes = group.users.totalCount;
+    if (key === "+1") plusOne = group.reactors.totalCount;
+    else if (key === "-1") minusOne = group.reactors.totalCount;
+    else if (key === "laugh") laugh = group.reactors.totalCount;
+    else if (key === "hooray") hooray = group.reactors.totalCount;
+    else if (key === "confused") confused = group.reactors.totalCount;
+    else if (key === "heart") heart = group.reactors.totalCount;
+    else if (key === "rocket") rocket = group.reactors.totalCount;
+    else if (key === "eyes") eyes = group.reactors.totalCount;
   }
 
   return {
@@ -176,18 +177,28 @@ export async function fetchReactions(
   let scanned = 0;
 
   // Fetch issues
-  const issuesQuery = `
-    query($login: String!, $since: DateTime!) {
+  const issuesQuery = gql`
+    query ($login: String!, $since: DateTime!) {
       user(login: $login) {
-        issues(first: 100, orderBy: {field: UPDATED_AT, direction: DESC}, filterBy: {since: $since}) {
+        issues(
+          first: 100
+          orderBy: { field: UPDATED_AT, direction: DESC }
+          filterBy: { since: $since }
+        ) {
           nodes {
             title
             url
-            repository { nameWithOwner }
-            reactions { totalCount }
+            repository {
+              nameWithOwner
+            }
+            reactions {
+              totalCount
+            }
             reactionGroups {
               content
-              users { totalCount }
+              reactors {
+                totalCount
+              }
             }
           }
         }
@@ -223,18 +234,27 @@ export async function fetchReactions(
   }
 
   // Fetch pull requests
-  const prsQuery = `
-    query($login: String!) {
+  const prsQuery = gql`
+    query ($login: String!) {
       user(login: $login) {
-        pullRequests(first: 100, orderBy: {field: UPDATED_AT, direction: DESC}) {
+        pullRequests(
+          first: 100
+          orderBy: { field: UPDATED_AT, direction: DESC }
+        ) {
           nodes {
             title
             url
-            repository { nameWithOwner }
-            reactions { totalCount }
+            repository {
+              nameWithOwner
+            }
+            reactions {
+              totalCount
+            }
             reactionGroups {
               content
-              users { totalCount }
+              reactors {
+                totalCount
+              }
             }
           }
         }

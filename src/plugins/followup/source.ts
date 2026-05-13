@@ -9,6 +9,7 @@
 import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
 import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -61,16 +62,27 @@ query($login: String!, $limit: Int!) {
   }
 }`;
 
-const USER_QUERY = `
-query($login: String!) {
-  user(login: $login) {
-    openIssues: issues(states: [OPEN], first: 0) { totalCount }
-    closedIssues: issues(states: [CLOSED], first: 0) { totalCount }
-    openPRs: pullRequests(states: [OPEN], first: 0) { totalCount }
-    mergedPRs: pullRequests(states: [MERGED], first: 0) { totalCount }
-    closedPRs: pullRequests(states: [CLOSED], first: 0) { totalCount }
+const USER_QUERY = gql`
+  query ($login: String!) {
+    user(login: $login) {
+      openIssues: issues(states: [OPEN], first: 0) {
+        totalCount
+      }
+      closedIssues: issues(states: [CLOSED], first: 0) {
+        totalCount
+      }
+      openPRs: pullRequests(states: [OPEN], first: 0) {
+        totalCount
+      }
+      mergedPRs: pullRequests(states: [MERGED], first: 0) {
+        totalCount
+      }
+      closedPRs: pullRequests(states: [CLOSED], first: 0) {
+        totalCount
+      }
+    }
   }
-}`;
+`;
 
 // ---------------------------------------------------------------------------
 // Zod response schemas

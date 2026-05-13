@@ -7,6 +7,7 @@
 
 import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -39,23 +40,30 @@ export interface StarsData {
 // GraphQL query
 // ---------------------------------------------------------------------------
 
-const STARS_QUERY = `
-query($login: String!, $limit: Int!) {
-  user(login: $login) {
-    starredRepositories(first: $limit, orderBy: { field: STARRED_AT, direction: DESC }) {
-      edges {
-        starredAt
-        node {
-          description
-          forkCount
-          nameWithOwner
-          stargazerCount
-          primaryLanguage { name color }
+const STARS_QUERY = gql`
+  query ($login: String!, $limit: Int!) {
+    user(login: $login) {
+      starredRepositories(
+        first: $limit
+        orderBy: { field: STARRED_AT, direction: DESC }
+      ) {
+        edges {
+          starredAt
+          node {
+            description
+            forkCount
+            nameWithOwner
+            stargazerCount
+            primaryLanguage {
+              name
+              color
+            }
+          }
         }
       }
     }
   }
-}`;
+`;
 
 // ---------------------------------------------------------------------------
 // Zod response schema

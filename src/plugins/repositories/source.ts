@@ -8,6 +8,7 @@
 import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
 import { repoPrivacyFilter } from "../../repos/graphql.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -55,47 +56,69 @@ export interface RepositoriesData {
 // GraphQL queries
 // ---------------------------------------------------------------------------
 
-const PINNED_QUERY = `
-query($login: String!, $limit: Int!) {
-  user(login: $login) {
-    pinnedItems(types: REPOSITORY, first: $limit) {
-      edges {
-        node {
-          ... on Repository {
-            createdAt
-            description
-            forkCount
-            isFork
-            isPrivate
-            issues { totalCount }
-            nameWithOwner
-            licenseInfo { spdxId name }
-            pullRequests { totalCount }
-            stargazerCount
-            primaryLanguage { name color }
+const PINNED_QUERY = gql`
+  query ($login: String!, $limit: Int!) {
+    user(login: $login) {
+      pinnedItems(types: REPOSITORY, first: $limit) {
+        edges {
+          node {
+            ... on Repository {
+              createdAt
+              description
+              forkCount
+              isFork
+              isPrivate
+              issues {
+                totalCount
+              }
+              nameWithOwner
+              licenseInfo {
+                spdxId
+                name
+              }
+              pullRequests {
+                totalCount
+              }
+              stargazerCount
+              primaryLanguage {
+                name
+                color
+              }
+            }
           }
         }
       }
     }
   }
-}`;
+`;
 
-const REPO_QUERY = `
-query($owner: String!, $name: String!) {
-  repository(owner: $owner, name: $name) {
-    createdAt
-    description
-    forkCount
-    isFork
-    isPrivate
-    issues { totalCount }
-    nameWithOwner
-    licenseInfo { spdxId name }
-    pullRequests { totalCount }
-    stargazerCount
-    primaryLanguage { name color }
+const REPO_QUERY = gql`
+  query ($owner: String!, $name: String!) {
+    repository(owner: $owner, name: $name) {
+      createdAt
+      description
+      forkCount
+      isFork
+      isPrivate
+      issues {
+        totalCount
+      }
+      nameWithOwner
+      licenseInfo {
+        spdxId
+        name
+      }
+      pullRequests {
+        totalCount
+      }
+      stargazerCount
+      primaryLanguage {
+        name
+        color
+      }
+    }
   }
-}`;
+`;
 
 const STARRED_QUERY = `
 query($login: String!, $limit: Int!, $affiliations: [RepositoryAffiliation]) {

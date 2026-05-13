@@ -5,6 +5,7 @@ import eslintConfigPrettier from "eslint-config-prettier/flat";
 import eslintPluginPrettier from "eslint-plugin-prettier";
 import eslintPluginZod from "eslint-plugin-zod";
 import { configs } from "typescript-eslint";
+import graphqlPlugin from "@graphql-eslint/eslint-plugin";
 
 // ---------------------------------------------------------------------------
 // Custom rules
@@ -337,4 +338,39 @@ export default defineConfig(
   },
 
   eslintConfigPrettier,
+
+  // ── GraphQL linting ──────────────────────────────────────────────────
+  // Extract GraphQL queries from /* GraphQL */-tagged template literals
+  // in TypeScript source files, then validate them against the GitHub
+  // schema. Catches unused variables, unknown fields, type mismatches.
+  {
+    files: ["src/**/*.ts"],
+    processor: graphqlPlugin.processor,
+  },
+  {
+    files: ["**/*.graphql"],
+    languageOptions: {
+      parser: graphqlPlugin.parser,
+      parserOptions: {
+        graphQLConfig: {
+          schema: "graphql-schema.json",
+        },
+      },
+    },
+    plugins: {
+      "@graphql-eslint": graphqlPlugin,
+    },
+    rules: {
+      ...graphqlPlugin.configs["flat/operations-recommended"].rules,
+      // Our queries are anonymous — this is fine for inline template literals
+      "@graphql-eslint/no-anonymous-operations": "off",
+      // Naming convention doesn't suit our query-per-plugin style
+      "@graphql-eslint/naming-convention": "off",
+      // These rules require sibling documents config (cross-file analysis)
+      "@graphql-eslint/require-selections": "off",
+      "@graphql-eslint/no-unused-fragments": "off",
+      "@graphql-eslint/known-fragment-names": "off",
+      "@graphql-eslint/no-fragment-cycles": "off",
+    },
+  },
 );

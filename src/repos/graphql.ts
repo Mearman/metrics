@@ -27,4 +27,4 @@ export const REPO_FIELDS = `
   owner { login }
   repositoryTopics(first: 20) { nodes { topic { name } } }
   primaryLanguage { name }
-` as const;
+`;

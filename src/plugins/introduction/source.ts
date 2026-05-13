@@ -10,6 +10,7 @@
 
 import * as z from "zod";
 import type { DataSource } from "../types.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -25,8 +26,8 @@ export type IntroductionConfig = z.infer<typeof IntroductionConfig>;
 // GraphQL query
 // ---------------------------------------------------------------------------
 
-const PROFILE_QUERY = `
-  query($login: String!) {
+const PROFILE_QUERY = gql`
+  query ($login: String!) {
     user(login: $login) {
       name
       login
@@ -39,7 +40,7 @@ const PROFILE_QUERY = `
       createdAt
     }
   }
-` as const;
+`;
 
 // ---------------------------------------------------------------------------
 // Zod response schema

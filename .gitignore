@@ -39,3 +39,6 @@ Thumbs.db
 
 # Build output
 *.tgz
+
+# Generated GitHub GraphQL schema for linting
+graphql-schema.json

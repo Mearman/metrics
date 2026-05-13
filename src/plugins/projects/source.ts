@@ -9,6 +9,7 @@
 
 import * as z from "zod";
 import type { DataSource } from "../types.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -62,8 +63,8 @@ export interface ProjectsData {
 // GraphQL query
 // ---------------------------------------------------------------------------
 
-const QUERY = `
-  query($login: String!, $first: Int!) {
+const QUERY = gql`
+  query ($login: String!, $first: Int!) {
     user(login: $login) {
       projectsV2(first: $first) {
         totalCount

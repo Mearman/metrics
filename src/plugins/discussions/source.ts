@@ -40,16 +40,17 @@ export interface DiscussionsData {
 // ---------------------------------------------------------------------------
 
 const QUERY = `
-query($login: String!) {
-  user(login: $login) {
-    repositoryDiscussionCategories(first: 10) {
-      nodes {
-        name
-        discussionCount
+  query ($login: String!) {
+    user(login: $login) {
+      repositoryDiscussionCategories(first: 10) {
+        nodes {
+          name
+          discussionCount
+        }
       }
     }
   }
-}`;
+`;
 
 const COUNT_QUERY = `
 query($login: String!) {

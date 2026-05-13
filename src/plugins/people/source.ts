@@ -7,6 +7,7 @@
 
 import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -45,31 +46,33 @@ export interface PeopleData {
 // GraphQL queries
 // ---------------------------------------------------------------------------
 
-const FOLLOWERS_QUERY = `
-query($login: String!, $limit: Int!) {
-  user(login: $login) {
-    followers(first: $limit) {
-      totalCount
-      nodes {
-        login
-        avatarUrl
+const FOLLOWERS_QUERY = gql`
+  query ($login: String!, $limit: Int!) {
+    user(login: $login) {
+      followers(first: $limit) {
+        totalCount
+        nodes {
+          login
+          avatarUrl
+        }
       }
     }
   }
-}`;
+`;
 
-const FOLLOWING_QUERY = `
-query($login: String!, $limit: Int!) {
-  user(login: $login) {
-    following(first: $limit) {
-      totalCount
-      nodes {
-        login
-        avatarUrl
+const FOLLOWING_QUERY = gql`
+  query ($login: String!, $limit: Int!) {
+    user(login: $login) {
+      following(first: $limit) {
+        totalCount
+        nodes {
+          login
+          avatarUrl
+        }
       }
     }
   }
-}`;
+`;
 
 // ---------------------------------------------------------------------------
 // Zod response schemas

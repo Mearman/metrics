@@ -7,13 +7,14 @@
 
 import * as z from "zod";
 import type { DataSource } from "../types.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // GraphQL query
 // ---------------------------------------------------------------------------
 
-const HABITS_QUERY = `
-  query($login: String!, $from: DateTime!, $to: DateTime!) {
+const HABITS_QUERY = gql`
+  query ($login: String!, $from: DateTime!, $to: DateTime!) {
     user(login: $login) {
       contributionsCollection(from: $from, to: $to) {
         totalCommitContributions
@@ -29,7 +30,7 @@ const HABITS_QUERY = `
       }
     }
   }
-` as const;
+`;
 
 // ---------------------------------------------------------------------------
 // Config

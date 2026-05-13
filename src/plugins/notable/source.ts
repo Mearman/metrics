@@ -7,6 +7,7 @@
 
 import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -46,18 +47,19 @@ export interface NotableData {
 // GraphQL query
 // ---------------------------------------------------------------------------
 
-const QUERY = `
-query($login: String!, $limit: Int!) {
-  user(login: $login) {
-    organizations(first: $limit) {
-      nodes {
-        name
-        avatarUrl
-        url
+const QUERY = gql`
+  query ($login: String!, $limit: Int!) {
+    user(login: $login) {
+      organizations(first: $limit) {
+        nodes {
+          name
+          avatarUrl
+          url
+        }
       }
     }
   }
-}`;
+`;
 
 // ---------------------------------------------------------------------------
 // Zod response schema

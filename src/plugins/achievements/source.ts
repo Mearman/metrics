@@ -26,7 +26,7 @@ const ACHIEVEMENTS_QUERY = `
       watching { totalCount }
     }
   }
-` as const;
+`;
 
 export interface AchievementStats {
   followers: number;

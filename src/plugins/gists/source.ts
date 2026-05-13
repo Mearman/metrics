@@ -7,6 +7,7 @@
 
 import * as z from "zod";
 import type { FetchContext, DataSource } from "../types.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -32,21 +33,28 @@ export interface GistsData {
 // GraphQL query
 // ---------------------------------------------------------------------------
 
-const QUERY = `
-query($login: String!, $limit: Int!) {
-  user(login: $login) {
-    gists(first: $limit) {
-      totalCount
-      nodes {
-        isFork
-        stargazerCount
-        forks { totalCount }
-        comments { totalCount }
-        files { name }
+const QUERY = gql`
+  query ($login: String!, $limit: Int!) {
+    user(login: $login) {
+      gists(first: $limit) {
+        totalCount
+        nodes {
+          isFork
+          stargazerCount
+          forks {
+            totalCount
+          }
+          comments {
+            totalCount
+          }
+          files {
+            name
+          }
+        }
       }
     }
   }
-}`;
+`;
 
 // ---------------------------------------------------------------------------
 // Zod response schema

@@ -6,6 +6,7 @@
 
 import * as z from "zod";
 import type { DataSource } from "../types.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -60,17 +61,25 @@ export interface SponsorshipsData {
 // GraphQL query
 // ---------------------------------------------------------------------------
 
-const QUERY = `
-  query($login: String!, $size: Int!, $first: Int!) {
+const QUERY = gql`
+  query ($login: String!, $size: Int!, $first: Int!) {
     user(login: $login) {
       sponsorshipsAsSponsor(first: $first) {
         totalCount
         nodes {
           sponsorEntity {
-            ... on User { login avatarUrl(size: $size) }
-            ... on Organization { login avatarUrl(size: $size) }
+            ... on User {
+              login
+              avatarUrl(size: $size)
+            }
+            ... on Organization {
+              login
+              avatarUrl(size: $size)
+            }
           }
-          tier { monthlyPriceInDollars }
+          tier {
+            monthlyPriceInDollars
+          }
         }
       }
     }

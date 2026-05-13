@@ -7,13 +7,14 @@
 
 import * as z from "zod";
 import type { DataSource } from "../types.ts";
+import { gql } from "../../util/gql.ts";
 
 // ---------------------------------------------------------------------------
 // GraphQL query
 // ---------------------------------------------------------------------------
 
-const ISCALENDAR_QUERY = `
-  query($login: String!, $from: DateTime!, $to: DateTime!) {
+const ISCALENDAR_QUERY = gql`
+  query ($login: String!, $from: DateTime!, $to: DateTime!) {
     user(login: $login) {
       contributionsCollection(from: $from, to: $to) {
         contributionCalendar {
@@ -29,7 +30,7 @@ const ISCALENDAR_QUERY = `
       }
     }
   }
-` as const;
+`;
 
 // ---------------------------------------------------------------------------
 // Config
