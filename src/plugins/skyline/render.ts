@@ -248,9 +248,10 @@ export function renderSkyline(
   const sceneLocalTop = gridCy - halfH - maxHeight - SIN30 * cellH;
   const sceneLocalBottom = gridCy + halfH + maxHeight + SIN30 * cellH;
 
-  // Centre the scene in the content area.
+  // Centre the scene in the content area. The content area starts
+  // at X=margin within the card, so add margin to the computed offset.
   const centreOffset = Math.max(0, (targetWidth - sceneActualWidth) / 2);
-  const offsetX = centreOffset - sceneMinX;
+  const offsetX = ctx.theme.margin + centreOffset - sceneMinX;
 
   // Centre the scene vertically within the section after the header.
   const topPad = 10;
