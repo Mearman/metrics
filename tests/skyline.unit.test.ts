@@ -205,13 +205,12 @@ describe("skyline renderer", () => {
     assert.ok(result.elements.length > 0);
   });
 
-  it("includes SMIL animateTransform for rocking animation", () => {
+  it("has no animation elements", () => {
     const data: IsocalendarData = {
       weeks: makeWeeks(4, () => 5),
       totalContributions: 140,
     };
     const result = renderSkyline(data, {}, ctx);
-    // Check for SMIL animateTransform element
     const allElements: SvgElement[] = [];
     function collectAll(elements: SvgElement[]): void {
       for (const el of elements) {
@@ -221,10 +220,7 @@ describe("skyline renderer", () => {
     }
     collectAll(result.elements);
     const animEl = allElements.find((el) => el.tag === "animateTransform");
-    assert.ok(
-      animEl,
-      "Should include <animateTransform> for rocking animation",
-    );
+    assert.equal(animEl, undefined, "Should not include <animateTransform>");
   });
 
   it("includes skyline-scene class on inner group", () => {

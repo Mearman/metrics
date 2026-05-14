@@ -352,19 +352,6 @@ export function renderSkyline(
 
   // Wrap all buildings in a group with the offset transform.
   // SMIL animateTransform provides a gentle rocking animation
-  // (±1.5° over 12s) that conveys 3D depth. SMIL works when
-  // the SVG is viewed directly; CSS animations are disabled
-  // when SVG is loaded as an <img> element.
-  // Rotation pivot: the geometric centre of the ground-plane diamond,
-  // which is also the centre of the bar grid (gridCx, gridCy).
-  const pivotX = String(gridCx);
-  const pivotY = String(groundCy);
-
-  // Structure: the translate is on the skyline-scene group itself.
-  // The animateTransform uses additive="sum" so the rotation
-  // composes with (rather than replaces) the static translate.
-  // Without additive="sum", SMIL defaults to replace mode which
-  // discards the translate at t=0, collapsing the scene to (0,0).
   elements.push(
     g(
       {
@@ -372,17 +359,6 @@ export function renderSkyline(
         transform: `translate(${String(offsetX)},${String(sceneOriginY)})`,
       },
       ...buildingElements,
-      {
-        tag: "animateTransform",
-        attrs: {
-          attributeName: "transform",
-          type: "rotate",
-          additive: "sum",
-          values: `${String(-1.5)} ${pivotX} ${pivotY}; ${String(1.5)} ${pivotX} ${pivotY}; ${String(-1.5)} ${pivotX} ${pivotY}`,
-          dur: "12s",
-          repeatCount: "indefinite",
-        },
-      },
     ),
   );
 
