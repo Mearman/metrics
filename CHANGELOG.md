@@ -1,3 +1,9 @@
+## [1.30.11](https://github.com/Mearman/metrics/compare/v1.30.10...v1.30.11) (2026-05-14)
+
+### Bug Fixes
+
+* account for building heights in skyline bounding box ([46bbc3b](https://github.com/Mearman/metrics/commit/46bbc3b349955cd22f0cc1866d4b22dbc32240b0))
+
 ## [1.30.10](https://github.com/Mearman/metrics/compare/v1.30.9...v1.30.10) (2026-05-14)
 
 ### Bug Fixes
