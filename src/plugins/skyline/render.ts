@@ -169,7 +169,7 @@ export function renderSkyline(
   config: { max_height?: number },
   ctx: RenderContext,
 ): RenderResult {
-  const { colours, sectionPadding: padding } = ctx.theme;
+  const { colours } = ctx.theme;
   const maxHeight = config.max_height ?? 100;
 
   const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
@@ -229,30 +229,31 @@ export function renderSkyline(
   // Compute the bounding box of the isometric scene
   // The scene spans from (0,0) to roughly:
   //   right-most point: (totalWeeks * COS30 * cellW, ...)
-  //   bottom-most point: (..., (totalWeeks + totalRows) * SIN30 * cellH)
-  const sceneWidth = (totalWeeks + totalRows) * COS30 * cellW;
-  const sceneDepth = (totalWeeks + totalRows) * SIN30 * cellH;
+  // Compute the bounding box of the isometric scene.
+  // Isometric projection: sx = (col - row) * COS30 * cellW, sy = (col + row) * SIN30 * cellH
+  // Grid spans col=[0..totalWeeks-1], row=[0..totalRows-1].
+  // (col - row) ranges from (0 - (totalRows-1)) to (totalWeeks-1 - 0),
+  // so the scene extends into negative X.
+  const sceneMinX = (0 - (totalRows - 1)) * COS30 * cellW - COS30 * cellW;
+  const sceneMaxX =
+    (totalWeeks - 1) * COS30 * cellW + COS30 * cellW + COS30 * cellW;
+  const sceneActualWidth = sceneMaxX - sceneMinX;
 
-  // Offset so the scene is centred in the content area
-  const offsetX = Math.max(padding, (targetWidth - sceneWidth) / 2);
-
-  // Compute the scene's actual vertical extent in local coords.
-  // Buildings extend upward (negative Y) by their height from the grid
-  // position. Side faces extend downward to groundOy = gridY + maxHeight.
-  // The ground plane adds one cell of padding on each side.
+  // Vertical extent: buildings go up, ground faces go down.
   const sceneLocalTop = -maxHeight - SIN30 * cellH;
   const sceneLocalBottom =
     (totalWeeks + totalRows) * SIN30 * cellH + maxHeight + SIN30 * cellH;
 
-  // Place the scene so the topmost building just clears the header underline.
-  // sceneOriginY is where local Y=0 maps to in section coords.
-  // sceneLocalTop in absolute coords = sceneOriginY + sceneLocalTop.
-  // We want: sceneOriginY + sceneLocalTop >= contentY + 2
-  // So: sceneOriginY >= contentY + 2 - sceneLocalTop
-  const sceneOriginY = Math.max(
-    contentY + 2 - sceneLocalTop,
-    contentY + maxHeight + 6,
-  );
+  // Centre the scene in the content area.
+  // sceneMinX is negative, so we shift right by |sceneMinX| to
+  // bring the left edge to X=0, then centre the full width.
+  const centreOffset = Math.max(0, (targetWidth - sceneActualWidth) / 2);
+  const offsetX = centreOffset - sceneMinX;
+
+  // Place the scene so the topmost point clears the header underline.
+  // In local coords, the topmost point is at sceneLocalTop (negative).
+  // We want: sceneOriginY + sceneLocalTop >= contentY + 4
+  const sceneOriginY = contentY + 4 - sceneLocalTop;
 
   const buildingElements: import("../../render/svg/builder.ts").SvgElement[] =
     [];
@@ -365,8 +366,8 @@ export function renderSkyline(
   // (±1.5° over 12s) that conveys 3D depth. SMIL works when
   // the SVG is viewed directly; CSS animations are disabled
   // when SVG is loaded as an <img> element.
-  const sceneCentreX = String(sceneWidth / 2);
-  const sceneCentreY = String((sceneDepth + maxHeight) / 2);
+  const sceneCentreX = String((sceneMinX + sceneMaxX) / 2);
+  const sceneCentreY = String((sceneLocalTop + sceneLocalBottom) / 2);
   const innerGroup = g(
     {
       class: "skyline-scene",
