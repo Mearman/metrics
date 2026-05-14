@@ -59,7 +59,6 @@ function resolveColour(
 ): string {
   if (scheme === "monochrome") return MONOCHROME[level];
   if (scheme === "neon") return NEON[level];
-  // Default: use calendar contribution colours
   return cal[level];
 }
 
@@ -75,18 +74,98 @@ interface Building {
 }
 
 // ---------------------------------------------------------------------------
+// Month/quarter boundary detection
+// ---------------------------------------------------------------------------
+
+/** A gap between month blocks, drawn as a road on the ground plane. */
+interface Road {
+  /** Effective column index where the road starts */
+  effectiveCol: number;
+  /** Width of the road in cells */
+  width: number;
+  /** Whether this is a quarter boundary (highway) or month boundary (road) */
+  quarter: boolean;
+}
+
+/**
+ * Analyse the week dates to find month and quarter boundaries.
+ * Returns a per-column offset (how many extra cells to add before
+ * each column) and a list of road descriptors for drawing.
+ */
+function computeRoads(
+  data: IsocalendarData,
+  monthGap: number,
+  quarterGap: number,
+): { colOffset: number[]; roads: Road[] } {
+  const totalWeeks = data.weeks.length;
+  const colOffset = new Array<number>(totalWeeks).fill(0);
+  const roads: Road[] = [];
+  let accum = 0;
+
+  for (let col = 1; col < totalWeeks; col++) {
+    const week = data.weeks[col];
+    if (week === undefined) continue;
+    // Use the first day of the week to determine which month it belongs to
+    const firstDay = week.contributionDays[0];
+    if (firstDay === undefined) continue;
+
+    const prevWeek = data.weeks[col - 1];
+    if (prevWeek === undefined) continue;
+    const prevLastDay =
+      prevWeek.contributionDays[prevWeek.contributionDays.length - 1];
+    if (prevLastDay === undefined) continue;
+
+    const prevMonth = prevLastDay.date.slice(5, 7);
+    const currMonth = firstDay.date.slice(5, 7);
+
+    if (prevMonth !== currMonth) {
+      const prevQ = Math.ceil(parseInt(prevMonth) / 3);
+      const currQ = Math.ceil(parseInt(currMonth) / 3);
+      const isQuarter = prevQ !== currQ;
+      const gap = isQuarter ? quarterGap : monthGap;
+
+      accum += gap;
+      roads.push({
+        effectiveCol: col + accum - gap,
+        width: gap,
+        quarter: isQuarter,
+      });
+    }
+    colOffset[col] = accum;
+  }
+
+  return { colOffset, roads };
+}
+
+// ---------------------------------------------------------------------------
 // Building face paths
 // ---------------------------------------------------------------------------
 
+/**
+ * Map logical column index to effective column (with road gaps).
+ * Returns a function that maps (col, row) → screen coordinates.
+ */
+function makeIsoMap(
+  colOffset: number[],
+  cellW: number,
+  cellH: number,
+): (col: number, row: number) => { sx: number; sy: number } {
+  return (col: number, row: number) => ({
+    sx: (col + (colOffset[col] ?? 0) - row) * COS30 * cellW,
+    sy: (col + (colOffset[col] ?? 0) + row) * SIN30 * cellH,
+  });
+}
+
 function topFacePoints(
+  map: (col: number, row: number) => { sx: number; sy: number },
   col: number,
   row: number,
   height: number,
   cellW: number,
   cellH: number,
 ): string {
-  const ox = (col - row) * COS30 * cellW;
-  const oy = (col + row) * SIN30 * cellH - height;
+  const { sx: ox, sy: baseY } = map(col, row);
+  const oy = baseY - height;
   const front = `${r(ox)},${r(oy + SIN30 * cellH)}`;
   const right = `${r(ox + COS30 * cellW)},${r(oy)}`;
   const back = `${r(ox)},${r(oy - SIN30 * cellH)}`;
@@ -95,6 +174,7 @@ function topFacePoints(
 }
 
 function rightFacePoints(
+  map: (col: number, row: number) => { sx: number; sy: number },
   col: number,
   row: number,
   height: number,
@@ -102,9 +182,9 @@ function rightFacePoints(
   cellW: number,
   cellH: number,
 ): string {
-  const ox = (col - row) * COS30 * cellW;
-  const oy = (col + row) * SIN30 * cellH - height;
-  const groundOy = (col + row) * SIN30 * cellH + maxHeight;
+  const { sx: ox, sy: baseY } = map(col, row);
+  const oy = baseY - height;
+  const groundOy = baseY + maxHeight;
   const topRight = `${r(ox + COS30 * cellW)},${r(oy)}`;
   const topFront = `${r(ox)},${r(oy + SIN30 * cellH)}`;
   const groundFront = `${r(ox)},${r(groundOy + SIN30 * cellH)}`;
@@ -113,6 +193,7 @@ function rightFacePoints(
 }
 
 function leftFacePoints(
+  map: (col: number, row: number) => { sx: number; sy: number },
   col: number,
   row: number,
   height: number,
@@ -120,9 +201,9 @@ function leftFacePoints(
   cellW: number,
   cellH: number,
 ): string {
-  const ox = (col - row) * COS30 * cellW;
-  const oy = (col + row) * SIN30 * cellH - height;
-  const groundOy = (col + row) * SIN30 * cellH + maxHeight;
+  const { sx: ox, sy: baseY } = map(col, row);
+  const oy = baseY - height;
+  const groundOy = baseY + maxHeight;
   const topLeft = `${r(ox - COS30 * cellW)},${r(oy)}`;
   const topFront = `${r(ox)},${r(oy + SIN30 * cellH)}`;
   const groundFront = `${r(ox)},${r(groundOy + SIN30 * cellH)}`;
@@ -135,7 +216,7 @@ function leftFacePoints(
 // ---------------------------------------------------------------------------
 
 function gridLines(
-  lastCol: number,
+  lastEffectiveCol: number,
   lastRow: number,
   maxHeight: number,
   cellW: number,
@@ -143,14 +224,9 @@ function gridLines(
   strokeColour: string,
 ): SvgElement[] {
   const elements: SvgElement[] = [];
-  const attrs = {
-    stroke: strokeColour,
-    "stroke-width": 0.25,
-    fill: "none",
-  };
+  const attrs = { stroke: strokeColour, "stroke-width": 0.25, fill: "none" };
 
-  // Column lines (every 4th column to avoid visual noise)
-  for (let col = 0; col <= lastCol; col += 4) {
+  for (let col = 0; col <= lastEffectiveCol; col += 4) {
     const startX = (col - 0) * COS30 * cellW;
     const startY = (col + 0) * SIN30 * cellH + maxHeight;
     const endX = (col - lastRow) * COS30 * cellW;
@@ -160,15 +236,80 @@ function gridLines(
     );
   }
 
-  // Row lines (every other row)
   for (let row = 0; row <= lastRow; row += 2) {
     const startX = (0 - row) * COS30 * cellW;
     const startY = (0 + row) * SIN30 * cellH + maxHeight;
-    const endX = (lastCol - row) * COS30 * cellW;
-    const endY = (lastCol + row) * SIN30 * cellH + maxHeight;
+    const endX = (lastEffectiveCol - row) * COS30 * cellW;
+    const endY = (lastEffectiveCol + row) * SIN30 * cellH + maxHeight;
     elements.push(
       path(`M${r(startX)},${r(startY)} L${r(endX)},${r(endY)}`, attrs),
     );
+  }
+
+  return elements;
+}
+
+// ---------------------------------------------------------------------------
+// Road/highway rendering
+// ---------------------------------------------------------------------------
+
+function roadPaths(
+  roads: Road[],
+  lastRow: number,
+  maxHeight: number,
+  cellW: number,
+  cellH: number,
+  roadColour: string,
+  highwayColour: string,
+): SvgElement[] {
+  const elements: SvgElement[] = [];
+
+  for (const road of roads) {
+    const col = road.effectiveCol;
+    // Road is a strip between col and col + road.width
+    // Draw as a parallelogram from row=0 to row=lastRow at ground level
+    const midCol = col + road.width / 2;
+    const colour = road.quarter ? highwayColour : roadColour;
+
+    // Top edge (back-left to back-right)
+    const tlx = (col - 0) * COS30 * cellW;
+    const tly = (col + 0) * SIN30 * cellH + maxHeight;
+    const trx = (midCol - 0) * COS30 * cellW;
+    const try_ = (midCol + 0) * SIN30 * cellH + maxHeight;
+
+    // Bottom edge (front-left to front-right)
+    const blx = (col - lastRow) * COS30 * cellW;
+    const bly = (col + lastRow) * SIN30 * cellH + maxHeight;
+    const brx = (midCol - lastRow) * COS30 * cellW;
+    const bry = (midCol + lastRow) * SIN30 * cellH + maxHeight;
+
+    elements.push(
+      path(
+        `M${r(tlx)},${r(tly)} L${r(trx)},${r(try_)} L${r(brx)},${r(bry)} L${r(blx)},${r(bly)} Z`,
+        {
+          fill: colour,
+          stroke: colour,
+          "stroke-width": road.quarter ? 0.5 : 0.25,
+        },
+      ),
+    );
+
+    // Dashed centre line for highways
+    if (road.quarter) {
+      const cx1 = (col + road.width * 0.25 - 0) * COS30 * cellW;
+      const cy1 = (col + road.width * 0.25 + 0) * SIN30 * cellH + maxHeight;
+      const cx2 = (col + road.width * 0.25 - lastRow) * COS30 * cellW;
+      const cy2 =
+        (col + road.width * 0.25 + lastRow) * SIN30 * cellH + maxHeight;
+      elements.push(
+        path(`M${r(cx1)},${r(cy1)} L${r(cx2)},${r(cy2)}`, {
+          stroke: darken(highwayColour, 0.3),
+          "stroke-width": 0.5,
+          "stroke-dasharray": "3 2",
+          fill: "none",
+        }),
+      );
+    }
   }
 
   return elements;
@@ -180,6 +321,7 @@ function gridLines(
 
 function buildingShadows(
   buildings: Building[],
+  colOffset: number[],
   maxCount: number,
   maxHeight: number,
   cellW: number,
@@ -189,15 +331,15 @@ function buildingShadows(
   const elements: SvgElement[] = [];
   const shadowDx = 2;
   const shadowDy = 1;
+  const map = makeIsoMap(colOffset, cellW, cellH);
 
   for (const building of buildings) {
     if (building.count === 0) continue;
     const height = Math.max((building.count / maxCount) * maxHeight, 3);
     const shadowLen = (height / maxHeight) * 6;
     const { col, row } = building;
-
-    const ox = (col - row) * COS30 * cellW;
-    const groundOy = (col + row) * SIN30 * cellH + maxHeight;
+    const { sx: ox, sy: baseY } = map(col, row);
+    const groundOy = baseY + maxHeight;
 
     const p1 = `${r(ox - COS30 * cellW)},${r(groundOy)}`;
     const p2 = `${r(ox + COS30 * cellW)},${r(groundOy)}`;
@@ -244,11 +386,6 @@ function sameKey(a: BucketKey, b: BucketKey): boolean {
   );
 }
 
-/**
- * Merge consecutive path elements that share the same visual
- * attributes into compound paths. Reduces element count from
- * potentially 1000+ face paths to a handful of compound paths.
- */
 function mergePaths(elements: SvgElement[]): SvgElement[] {
   const result: SvgElement[] = [];
   let currentKey: BucketKey | undefined;
@@ -299,12 +436,17 @@ function mergePaths(elements: SvgElement[]): SvgElement[] {
 
 export function renderSkyline(
   data: IsocalendarData,
-  config: { max_height?: number; colour_scheme?: string },
+  config: {
+    max_height?: number;
+    colour_scheme?: string;
+    roads?: boolean;
+  },
   ctx: RenderContext,
 ): RenderResult {
   const { colours } = ctx.theme;
   const maxHeight = config.max_height ?? 100;
   const colourScheme = config.colour_scheme ?? "contributions";
+  const enableRoads = config.roads ?? false;
   const cal = calendarColours(ctx.theme);
 
   const elements: SvgElement[] = [];
@@ -317,13 +459,30 @@ export function renderSkyline(
   const totalWeeks = data.weeks.length;
   const totalRows = 7;
   const targetWidth = ctx.contentWidth;
+
+  // Compute road gaps if enabled
+  const monthGap = 0.8; // cells
+  const quarterGap = 1.5; // cells
+  const { colOffset, roads } = enableRoads
+    ? computeRoads(data, monthGap, quarterGap)
+    : { colOffset: new Array<number>(totalWeeks).fill(0), roads: [] };
+
+  // Effective last column (with gaps accumulated)
+  const lastCol = totalWeeks - 1;
+  const lastRow = totalRows - 1;
+  const effectiveLastCol = lastCol + (colOffset[lastCol] ?? 0);
+
+  // Compute cell size to fit the effective width
   const cellW = Math.max(
-    Math.floor(targetWidth / ((totalWeeks + totalRows) * COS30)),
+    Math.floor(targetWidth / ((effectiveLastCol + totalRows) * COS30)),
     3,
   );
   const cellH = cellW * SIN30;
 
-  // Find maximum contribution count for height scaling
+  // Iso coordinate map
+  const iso = makeIsoMap(colOffset, cellW, cellH);
+
+  // Find maximum contribution count
   let maxCount = 0;
   for (const week of data.weeks) {
     for (const day of week.contributionDays) {
@@ -340,19 +499,20 @@ export function renderSkyline(
     return "L4";
   }
 
-  // Grid geometry
-  const lastCol = totalWeeks - 1;
-  const lastRow = totalRows - 1;
+  // Ground-plane corners (using effective coordinates)
   const dcolX = COS30 * cellW;
   const dcolY = SIN30 * cellH;
   const drowX = -COS30 * cellW;
   const drowY = SIN30 * cellH;
 
   const gpBack = { x: 0, y: maxHeight };
-  const gpRight = { x: lastCol * dcolX, y: lastCol * dcolY + maxHeight };
+  const gpRight = {
+    x: effectiveLastCol * dcolX,
+    y: effectiveLastCol * dcolY + maxHeight,
+  };
   const gpFront = {
-    x: lastCol * dcolX + lastRow * drowX,
-    y: lastCol * dcolY + lastRow * drowY + maxHeight,
+    x: effectiveLastCol * dcolX + lastRow * drowX,
+    y: effectiveLastCol * dcolY + lastRow * drowY + maxHeight,
   };
   const gpLeft = { x: lastRow * drowX, y: lastRow * drowY + maxHeight };
 
@@ -393,7 +553,7 @@ export function renderSkyline(
 
   const buildingElements: SvgElement[] = [];
 
-  // Collect and sort buildings back-to-front
+  // Collect and sort buildings
   const buildings: Building[] = [];
   for (let col = 0; col < totalWeeks; col++) {
     const week = data.weeks[col];
@@ -419,10 +579,10 @@ export function renderSkyline(
     }),
   );
 
-  // Faint grid lines within the ground plane
+  // Grid lines
   buildingElements.push(
     ...gridLines(
-      lastCol,
+      effectiveLastCol,
       lastRow,
       maxHeight,
       cellW,
@@ -431,10 +591,26 @@ export function renderSkyline(
     ),
   );
 
-  // Shadows projected onto the ground plane
+  // Roads/highways
+  if (roads.length > 0) {
+    buildingElements.push(
+      ...roadPaths(
+        roads,
+        lastRow,
+        maxHeight,
+        cellW,
+        cellH,
+        darken(cal.L0, 0.15),
+        darken(cal.L0, 0.3),
+      ),
+    );
+  }
+
+  // Shadows
   buildingElements.push(
     ...buildingShadows(
       buildings,
+      colOffset,
       maxCount,
       maxHeight,
       cellW,
@@ -443,7 +619,7 @@ export function renderSkyline(
     ),
   );
 
-  // Render building faces and ambient occlusion lines
+  // Render building faces
   const rawFaces: SvgElement[] = [];
 
   for (const building of buildings) {
@@ -453,37 +629,34 @@ export function renderSkyline(
     const level = contributionLevel(count);
     const colour = resolveColour(colourScheme, level, cal);
     const height = Math.max((count / maxCount) * maxHeight, 3);
-    const groundOy = (col + row) * SIN30 * cellH + maxHeight;
-    const ox = (col - row) * COS30 * cellW;
+    const { sx: ox, sy: baseY } = iso(col, row);
+    const groundOy = baseY + maxHeight;
 
-    // Top face (lightest)
     rawFaces.push(
-      path(topFacePoints(col, row, height, cellW, cellH), {
+      path(topFacePoints(iso, col, row, height, cellW, cellH), {
         fill: lighten(colour, 0.3),
         stroke: darken(colour, 0.3),
         "stroke-width": 0.5,
       }),
     );
 
-    // Right face (medium)
     rawFaces.push(
-      path(rightFacePoints(col, row, height, maxHeight, cellW, cellH), {
+      path(rightFacePoints(iso, col, row, height, maxHeight, cellW, cellH), {
         fill: colour,
         stroke: darken(colour, 0.3),
         "stroke-width": 0.5,
       }),
     );
 
-    // Left face (darkest)
     rawFaces.push(
-      path(leftFacePoints(col, row, height, maxHeight, cellW, cellH), {
+      path(leftFacePoints(iso, col, row, height, maxHeight, cellW, cellH), {
         fill: darken(colour, 0.2),
         stroke: darken(colour, 0.4),
         "stroke-width": 0.5,
       }),
     );
 
-    // Ambient occlusion: thin dark lines at the building base
+    // Ambient occlusion lines
     const aoStroke = darken(cal.L0, 0.6);
     const baseFront = `${r(ox)},${r(groundOy + SIN30 * cellH)}`;
     const baseRight = `${r(ox + COS30 * cellW)},${r(groundOy)}`;
@@ -506,7 +679,6 @@ export function renderSkyline(
     );
   }
 
-  // Merge same-style paths for performance
   buildingElements.push(...mergePaths(rawFaces));
 
   elements.push(

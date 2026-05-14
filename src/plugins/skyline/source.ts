@@ -27,6 +27,8 @@ export const SkylineConfig = z.object({
   colour_scheme: z
     .enum(["contributions", "monochrome", "neon"])
     .default("contributions"),
+  /** Show roads at month boundaries and highways at quarter boundaries */
+  roads: z.boolean().default(false),
 });
 export type SkylineConfig = z.infer<typeof SkylineConfig>;
 
