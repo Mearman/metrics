@@ -1,3 +1,9 @@
+## [1.30.7](https://github.com/Mearman/metrics/compare/v1.30.6...v1.30.7) (2026-05-14)
+
+### Bug Fixes
+
+* position ground-plane diamond at building-base level ([897d429](https://github.com/Mearman/metrics/commit/897d4298efca73705f3b69cd9e028341341aa4d3))
+
 ## [1.30.6](https://github.com/Mearman/metrics/compare/v1.30.5...v1.30.6) (2026-05-14)
 
 ### Bug Fixes
