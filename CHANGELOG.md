@@ -1,3 +1,9 @@
+## [1.30.10](https://github.com/Mearman/metrics/compare/v1.30.9...v1.30.10) (2026-05-14)
+
+### Bug Fixes
+
+* use parallelogram ground plane matching grid shape ([a39a9c4](https://github.com/Mearman/metrics/commit/a39a9c486249c529a2a3ff83cb62e666a8928674))
+
 ## [1.30.9](https://github.com/Mearman/metrics/compare/v1.30.8...v1.30.9) (2026-05-14)
 
 ### Bug Fixes
