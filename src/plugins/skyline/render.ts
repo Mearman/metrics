@@ -394,7 +394,7 @@ export function renderSkyline(
     ),
   );
 
-  const totalHeight = sceneOriginY + sceneLocalBottom + 20;
+  const totalHeight = sceneOriginY + sceneLocalBottom + 24;
 
   return { height: totalHeight, elements };
 }
