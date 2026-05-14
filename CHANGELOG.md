@@ -1,3 +1,9 @@
+## [1.31.0](https://github.com/Mearman/metrics/compare/v1.30.11...v1.31.0) (2026-05-14)
+
+### Features
+
+* skyline visual and code quality improvements ([396c7bf](https://github.com/Mearman/metrics/commit/396c7bf903746688eadba06e26e81c2c1c750aeb))
+
 ## [1.30.11](https://github.com/Mearman/metrics/compare/v1.30.10...v1.30.11) (2026-05-14)
 
 ### Bug Fixes
