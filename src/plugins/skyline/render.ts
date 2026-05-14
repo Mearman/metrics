@@ -283,12 +283,16 @@ export function renderSkyline(
   // Sort by draw order (ascending) — farther buildings drawn first
   buildings.sort((a, b) => a.drawOrder - b.drawOrder);
 
-  // Ground-plane diamond — centred on the same grid origin as the bars.
+  // Ground-plane diamond — centred at the building-base level.
+  // Building side faces extend down to gridY + maxHeight, so the
+  // ground plane must sit at that level, shifted down from the
+  // grid centre by maxHeight.
+  const groundCy = gridCy + maxHeight;
   const groundPath = [
-    `M${r(gridCx)},${r(gridCy - halfH)}`,
-    `L${r(gridCx + halfW)},${r(gridCy)}`,
-    `L${r(gridCx)},${r(gridCy + halfH)}`,
-    `L${r(gridCx - halfW)},${r(gridCy)}`,
+    `M${r(gridCx)},${r(groundCy - halfH)}`,
+    `L${r(gridCx + halfW)},${r(groundCy)}`,
+    `L${r(gridCx)},${r(groundCy + halfH)}`,
+    `L${r(gridCx - halfW)},${r(groundCy)}`,
     "Z",
   ].join(" ");
 
@@ -353,7 +357,7 @@ export function renderSkyline(
   // Rotation pivot: the geometric centre of the ground-plane diamond,
   // which is also the centre of the bar grid (gridCx, gridCy).
   const pivotX = String(gridCx);
-  const pivotY = String(gridCy);
+  const pivotY = String(groundCy);
 
   // Structure: the translate is on the skyline-scene group itself.
   // The animateTransform uses additive="sum" so the rotation
