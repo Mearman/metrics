@@ -1,3 +1,9 @@
+## [1.30.5](https://github.com/Mearman/metrics/compare/v1.30.4...v1.30.5) (2026-05-14)
+
+### Bug Fixes
+
+* skyline animateTransform clobbers translate and centring ([9edb4a3](https://github.com/Mearman/metrics/commit/9edb4a34417bd868473b1529da12d5e947eb30cb))
+
 ## [1.30.4](https://github.com/Mearman/metrics/compare/v1.30.3...v1.30.4) (2026-05-14)
 
 ### Bug Fixes
