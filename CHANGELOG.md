@@ -1,3 +1,9 @@
+## [1.30.8](https://github.com/Mearman/metrics/compare/v1.30.7...v1.30.8) (2026-05-14)
+
+### Bug Fixes
+
+* centre skyline diamond horizontally in the card ([5bc168d](https://github.com/Mearman/metrics/commit/5bc168df68570974bacdee2a975ce804aab7a0f2))
+
 ## [1.30.7](https://github.com/Mearman/metrics/compare/v1.30.6...v1.30.7) (2026-05-14)
 
 ### Bug Fixes
