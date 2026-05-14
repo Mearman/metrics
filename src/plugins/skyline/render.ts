@@ -13,28 +13,18 @@
  */
 
 import { g, path } from "../../render/svg/builder.ts";
+import type { SvgElement } from "../../render/svg/builder.ts";
 import type { RenderResult, RenderContext } from "../types.ts";
 import type { IsocalendarData } from "../isocalendar/source.ts";
 import { sectionHeader } from "../../render/svg/header.ts";
+import { lighten, darken, calendarColours } from "../../util/colour.ts";
+import type { CalendarLevel } from "../../util/colour.ts";
 
 // ---------------------------------------------------------------------------
-// Isometric projection
+// Isometric projection constants
 // ---------------------------------------------------------------------------
 
-/**
- * Project a 3D point to 2D isometric coordinates.
- *
- * Isometric projection: rotate 45° around the vertical axis,
- * then tilt 35.264° (arctan(1/√2)) forward.
- *
- * Simplified 2D projection:
- *   screen_x = (col - row) * cos30 * cellWidth
- *   screen_y = (col + row) * sin30 * cellHeight - height
- *
- * We use cos(30°) ≈ 0.866 and sin(30°) = 0.5 as the standard
- * isometric ratios.
- */
-const COS30 = Math.cos(Math.PI / 6); // ≈ 0.866
+const COS30 = Math.cos(Math.PI / 6);
 const SIN30 = 0.5;
 
 /** Round a coordinate value to 2 decimal places for clean SVG paths. */
@@ -43,41 +33,51 @@ function r(n: number): string {
 }
 
 // ---------------------------------------------------------------------------
-// Colour helpers
+// Colour schemes
 // ---------------------------------------------------------------------------
 
-/** Lighten a hex colour by a fixed amount (0–1). */
-function lighten(hex: string, amount: number): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  const lr = Math.min(255, Math.round(r + (255 - r) * amount));
-  const lg = Math.min(255, Math.round(g + (255 - g) * amount));
-  const lb = Math.min(255, Math.round(b + (255 - b) * amount));
-  return `#${lr.toString(16).padStart(2, "0")}${lg.toString(16).padStart(2, "0")}${lb.toString(16).padStart(2, "0")}`;
+const MONOCHROME: Record<CalendarLevel, string> = {
+  L0: "#1a1a2e",
+  L1: "#2d3a4a",
+  L2: "#3d5a6e",
+  L3: "#4d7a92",
+  L4: "#5d9ab6",
+};
+
+const NEON: Record<CalendarLevel, string> = {
+  L0: "#0d0d0d",
+  L1: "#ff006e",
+  L2: "#fb5607",
+  L3: "#ffbe0b",
+  L4: "#8338ec",
+};
+
+function resolveColour(
+  scheme: string,
+  level: CalendarLevel,
+  cal: Record<CalendarLevel, string>,
+): string {
+  if (scheme === "monochrome") return MONOCHROME[level];
+  if (scheme === "neon") return NEON[level];
+  // Default: use calendar contribution colours
+  return cal[level];
 }
 
-/** Darken a hex colour by a fixed amount (0–1). */
-function darken(hex: string, amount: number): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  const dr = Math.max(0, Math.round(r * (1 - amount)));
-  const dg = Math.max(0, Math.round(g * (1 - amount)));
-  const db = Math.max(0, Math.round(b * (1 - amount)));
-  return `#${dr.toString(16).padStart(2, "0")}${dg.toString(16).padStart(2, "0")}${db.toString(16).padStart(2, "0")}`;
+// ---------------------------------------------------------------------------
+// Building type
+// ---------------------------------------------------------------------------
+
+interface Building {
+  col: number;
+  row: number;
+  count: number;
+  drawOrder: number;
 }
 
 // ---------------------------------------------------------------------------
-// Building rendering
+// Building face paths
 // ---------------------------------------------------------------------------
 
-/**
- * Compute the four 2D points of a building's top face.
- *
- * The top face is a diamond (parallelogram in isometric projection)
- * at the building's peak height.
- */
 function topFacePoints(
   col: number,
   row: number,
@@ -87,21 +87,13 @@ function topFacePoints(
 ): string {
   const ox = (col - row) * COS30 * cellW;
   const oy = (col + row) * SIN30 * cellH - height;
-
-  // Four corners of the diamond (top face)
   const front = `${r(ox)},${r(oy + SIN30 * cellH)}`;
   const right = `${r(ox + COS30 * cellW)},${r(oy)}`;
   const back = `${r(ox)},${r(oy - SIN30 * cellH)}`;
   const left = `${r(ox - COS30 * cellW)},${r(oy)}`;
-
   return `M${left} L${back} L${right} L${front} Z`;
 }
 
-/**
- * Compute the 2D path of a building's right face.
- *
- * The right face connects the top-right edge down to ground level.
- */
 function rightFacePoints(
   col: number,
   row: number,
@@ -113,23 +105,13 @@ function rightFacePoints(
   const ox = (col - row) * COS30 * cellW;
   const oy = (col + row) * SIN30 * cellH - height;
   const groundOy = (col + row) * SIN30 * cellH + maxHeight;
-
-  // Top face right edge: right → front
   const topRight = `${r(ox + COS30 * cellW)},${r(oy)}`;
   const topFront = `${r(ox)},${r(oy + SIN30 * cellH)}`;
-
-  // Ground level: same X positions, ground Y
   const groundFront = `${r(ox)},${r(groundOy + SIN30 * cellH)}`;
   const groundRight = `${r(ox + COS30 * cellW)},${r(groundOy)}`;
-
   return `M${topRight} L${topFront} L${groundFront} L${groundRight} Z`;
 }
 
-/**
- * Compute the 2D path of a building's left face.
- *
- * The left face connects the top-left edge down to ground level.
- */
 function leftFacePoints(
   col: number,
   row: number,
@@ -141,61 +123,205 @@ function leftFacePoints(
   const ox = (col - row) * COS30 * cellW;
   const oy = (col + row) * SIN30 * cellH - height;
   const groundOy = (col + row) * SIN30 * cellH + maxHeight;
-
-  // Top face left edge: left → front
   const topLeft = `${r(ox - COS30 * cellW)},${r(oy)}`;
   const topFront = `${r(ox)},${r(oy + SIN30 * cellH)}`;
-
-  // Ground level
   const groundFront = `${r(ox)},${r(groundOy + SIN30 * cellH)}`;
   const groundLeft = `${r(ox - COS30 * cellW)},${r(groundOy)}`;
-
   return `M${topLeft} L${topFront} L${groundFront} L${groundLeft} Z`;
+}
+
+// ---------------------------------------------------------------------------
+// Ground-plane grid lines
+// ---------------------------------------------------------------------------
+
+function gridLines(
+  lastCol: number,
+  lastRow: number,
+  maxHeight: number,
+  cellW: number,
+  cellH: number,
+  strokeColour: string,
+): SvgElement[] {
+  const elements: SvgElement[] = [];
+  const attrs = {
+    stroke: strokeColour,
+    "stroke-width": 0.25,
+    fill: "none",
+  };
+
+  // Column lines (every 4th column to avoid visual noise)
+  for (let col = 0; col <= lastCol; col += 4) {
+    const startX = (col - 0) * COS30 * cellW;
+    const startY = (col + 0) * SIN30 * cellH + maxHeight;
+    const endX = (col - lastRow) * COS30 * cellW;
+    const endY = (col + lastRow) * SIN30 * cellH + maxHeight;
+    elements.push(
+      path(`M${r(startX)},${r(startY)} L${r(endX)},${r(endY)}`, attrs),
+    );
+  }
+
+  // Row lines (every other row)
+  for (let row = 0; row <= lastRow; row += 2) {
+    const startX = (0 - row) * COS30 * cellW;
+    const startY = (0 + row) * SIN30 * cellH + maxHeight;
+    const endX = (lastCol - row) * COS30 * cellW;
+    const endY = (lastCol + row) * SIN30 * cellH + maxHeight;
+    elements.push(
+      path(`M${r(startX)},${r(startY)} L${r(endX)},${r(endY)}`, attrs),
+    );
+  }
+
+  return elements;
+}
+
+// ---------------------------------------------------------------------------
+// Building shadows
+// ---------------------------------------------------------------------------
+
+function buildingShadows(
+  buildings: Building[],
+  maxCount: number,
+  maxHeight: number,
+  cellW: number,
+  cellH: number,
+  shadowColour: string,
+): SvgElement[] {
+  const elements: SvgElement[] = [];
+  const shadowDx = 2;
+  const shadowDy = 1;
+
+  for (const building of buildings) {
+    if (building.count === 0) continue;
+    const height = Math.max((building.count / maxCount) * maxHeight, 3);
+    const shadowLen = (height / maxHeight) * 6;
+    const { col, row } = building;
+
+    const ox = (col - row) * COS30 * cellW;
+    const groundOy = (col + row) * SIN30 * cellH + maxHeight;
+
+    const p1 = `${r(ox - COS30 * cellW)},${r(groundOy)}`;
+    const p2 = `${r(ox + COS30 * cellW)},${r(groundOy)}`;
+    const p3 = `${r(ox + COS30 * cellW + shadowDx * shadowLen)},${r(groundOy + shadowDy * shadowLen)}`;
+    const p4 = `${r(ox - COS30 * cellW + shadowDx * shadowLen)},${r(groundOy + shadowDy * shadowLen)}`;
+
+    elements.push(
+      path(`M${p1} L${p2} L${p3} L${p4} Z`, {
+        fill: shadowColour,
+        opacity: "0.15",
+      }),
+    );
+  }
+
+  return elements;
+}
+
+// ---------------------------------------------------------------------------
+// Path merging for performance
+// ---------------------------------------------------------------------------
+
+interface BucketKey {
+  fill: string;
+  stroke: string;
+  strokeWidth: string;
+  opacity: string;
+}
+
+function bucketKey(attrs: Record<string, string | number>): BucketKey {
+  return {
+    fill: String(attrs.fill ?? ""),
+    stroke: String(attrs.stroke ?? ""),
+    strokeWidth: String(attrs["stroke-width"] ?? ""),
+    opacity: String(attrs.opacity ?? ""),
+  };
+}
+
+function sameKey(a: BucketKey, b: BucketKey): boolean {
+  return (
+    a.fill === b.fill &&
+    a.stroke === b.stroke &&
+    a.strokeWidth === b.strokeWidth &&
+    a.opacity === b.opacity
+  );
+}
+
+/**
+ * Merge consecutive path elements that share the same visual
+ * attributes into compound paths. Reduces element count from
+ * potentially 1000+ face paths to a handful of compound paths.
+ */
+function mergePaths(elements: SvgElement[]): SvgElement[] {
+  const result: SvgElement[] = [];
+  let currentKey: BucketKey | undefined;
+  let currentD = "";
+
+  function flush(): void {
+    if (currentKey === undefined || currentD === "") return;
+    const attrs: Record<string, string | number> = {};
+    if (currentKey.fill) attrs.fill = currentKey.fill;
+    if (currentKey.stroke) attrs.stroke = currentKey.stroke;
+    if (currentKey.strokeWidth) attrs["stroke-width"] = currentKey.strokeWidth;
+    if (currentKey.opacity) attrs.opacity = currentKey.opacity;
+    attrs.d = currentD;
+    result.push({ tag: "path", attrs });
+    currentKey = undefined;
+    currentD = "";
+  }
+
+  for (const el of elements) {
+    if (el.tag !== "path" || el.text) {
+      flush();
+      result.push(el);
+      continue;
+    }
+    const d = el.attrs.d;
+    if (typeof d !== "string") {
+      flush();
+      result.push(el);
+      continue;
+    }
+    const key = bucketKey(el.attrs);
+    if (currentKey !== undefined && sameKey(currentKey, key)) {
+      currentD += " " + d;
+    } else {
+      flush();
+      currentKey = key;
+      currentD = d;
+    }
+  }
+  flush();
+
+  return result;
 }
 
 // ---------------------------------------------------------------------------
 // Main renderer
 // ---------------------------------------------------------------------------
 
-/**
- * Render the isometric skyline.
- *
- * @param data - Contribution calendar data (same as isocalendar)
- * @param config - Plugin config (max_height, year)
- * @param ctx - Render context (theme, measurements)
- */
 export function renderSkyline(
   data: IsocalendarData,
-  config: { max_height?: number },
+  config: { max_height?: number; colour_scheme?: string },
   ctx: RenderContext,
 ): RenderResult {
   const { colours } = ctx.theme;
   const maxHeight = config.max_height ?? 100;
+  const colourScheme = config.colour_scheme ?? "contributions";
+  const cal = calendarColours(ctx.theme);
 
-  const elements: import("../../render/svg/builder.ts").SvgElement[] = [];
+  const elements: SvgElement[] = [];
 
-  // Header with icon
   const { elements: headerElems, contentY } = sectionHeader("Skyline", ctx, {
     pluginId: "skyline",
   });
   elements.push(...headerElems);
 
-  // Compute cell sizes to fit within content width
   const totalWeeks = data.weeks.length;
   const totalRows = 7;
-
-  // Each cell occupies cellW in the isometric X direction and
-  // cellH in the isometric Y direction. The total projected width
-  // is approximately (weeks + rows) * COS30 * cellW. We want this
-  // to fit within contentWidth with some padding.
   const targetWidth = ctx.contentWidth;
-  // Total projected width ≈ (weeks + rows) * COS30 * cellW
-  // Solve for cellW: cellW = targetWidth / ((weeks + rows) * COS30)
   const cellW = Math.max(
     Math.floor(targetWidth / ((totalWeeks + totalRows) * COS30)),
     3,
   );
-  const cellH = cellW * SIN30; // Keep aspect ratio
+  const cellH = cellW * SIN30;
 
   // Find maximum contribution count for height scaling
   let maxCount = 0;
@@ -204,36 +330,17 @@ export function renderSkyline(
       if (day.count > maxCount) maxCount = day.count;
     }
   }
-  if (maxCount === 0) maxCount = 1; // Avoid division by zero
+  if (maxCount === 0) maxCount = 1;
 
-  // Map contribution levels to colours
-  const calendarColours = colours.calendar;
-
-  // Tuple with const assertion — TypeScript knows all 5 elements exist
-  const [colour0, colour1, colour2, colour3, colour4] = [
-    calendarColours.L0,
-    calendarColours.L1,
-    calendarColours.L2,
-    calendarColours.L3,
-    calendarColours.L4,
-  ] as const;
-
-  function contributionColour(count: number): string {
-    if (count === 0) return colour0;
-    if (count <= maxCount * 0.25) return colour1;
-    if (count <= maxCount * 0.5) return colour2;
-    if (count <= maxCount * 0.75) return colour3;
-    return colour4;
+  function contributionLevel(count: number): CalendarLevel {
+    if (count === 0) return "L0";
+    if (count <= maxCount * 0.25) return "L1";
+    if (count <= maxCount * 0.5) return "L2";
+    if (count <= maxCount * 0.75) return "L3";
+    return "L4";
   }
 
-  // Grid geometry.
-  // The grid is a rectangle in (col, row) space: col=[0..lastCol], row=[0..lastRow].
-  // In isometric projection each axis maps to a screen direction:
-  //   column step: dcol = (+COS30*cellW, +SIN30*cellH)
-  //   row step:    drow = (-COS30*cellW, +SIN30*cellH)
-  // The grid footprint at ground level is a parallelogram whose four
-  // corners are the corner cell centres shifted down by maxHeight
-  // (where building bases sit).
+  // Grid geometry
   const lastCol = totalWeeks - 1;
   const lastRow = totalRows - 1;
   const dcolX = COS30 * cellW;
@@ -241,24 +348,14 @@ export function renderSkyline(
   const drowX = -COS30 * cellW;
   const drowY = SIN30 * cellH;
 
-  // Corner cell centres at ground level
-  // Cell (col,row) → screen: cx=(col-row)*COS30*cellW, cy=(col+row)*SIN30*cellH + maxHeight
   const gpBack = { x: 0, y: maxHeight };
-  const gpRight = {
-    x: lastCol * dcolX,
-    y: lastCol * dcolY + maxHeight,
-  };
+  const gpRight = { x: lastCol * dcolX, y: lastCol * dcolY + maxHeight };
   const gpFront = {
     x: lastCol * dcolX + lastRow * drowX,
     y: lastCol * dcolY + lastRow * drowY + maxHeight,
   };
-  const gpLeft = {
-    x: lastRow * drowX,
-    y: lastRow * drowY + maxHeight,
-  };
+  const gpLeft = { x: lastRow * drowX, y: lastRow * drowY + maxHeight };
 
-  // Expand each corner outward by one cell in each of the two
-  // outward directions to create padding around the grid.
   const pad = 1;
   const corners = [
     {
@@ -279,43 +376,25 @@ export function renderSkyline(
     },
   ];
 
-  // Bounding box of the isometric scene.
-  // Horizontal: ground-plane parallelogram width.
-  // Vertical: building tops (grid-level minus maxHeight) through
-  // ground-plane bottom (already includes maxHeight).
   const cornerXs = corners.map((c) => c.x);
   const cornerYs = corners.map((c) => c.y);
   const sceneMinX = Math.min(...cornerXs);
   const sceneMaxX = Math.max(...cornerXs);
   const sceneActualWidth = sceneMaxX - sceneMinX;
-  // Building tops: cell (0,0) grid Y = 0, minus maxHeight,
-  // minus one cell for the top-face diamond vertex.
   const sceneLocalTop = -maxHeight - SIN30 * cellH;
   const sceneLocalBottom = Math.max(...cornerYs) + SIN30 * cellH;
 
-  // Centre the scene in the content area. The content area starts
-  // at X=margin within the card, so add margin to the computed offset.
   const centreOffset = Math.max(0, (targetWidth - sceneActualWidth) / 2);
   const offsetX = ctx.theme.margin + centreOffset - sceneMinX;
 
-  // Centre the scene vertically within the section after the header.
   const topPad = 10;
   const sceneOriginY = contentY + topPad - sceneLocalTop;
   const totalHeight = sceneOriginY + sceneLocalBottom + topPad;
 
-  const buildingElements: import("../../render/svg/builder.ts").SvgElement[] =
-    [];
+  const buildingElements: SvgElement[] = [];
 
-  // Collect and sort buildings back-to-front.
-  interface Building {
-    col: number;
-    row: number;
-    count: number;
-    drawOrder: number;
-  }
-
+  // Collect and sort buildings back-to-front
   const buildings: Building[] = [];
-
   for (let col = 0; col < totalWeeks; col++) {
     const week = data.weeks[col];
     if (week === undefined) continue;
@@ -325,54 +404,70 @@ export function renderSkyline(
       buildings.push({ col, row, count: day.count, drawOrder: col + row });
     }
   }
-
-  // Sort by draw order (ascending) — farther buildings drawn first
   buildings.sort((a, b) => a.drawOrder - b.drawOrder);
 
-  // Ground-plane parallelogram — matches the rectangular grid shape.
-  // Edges are parallel to the column and row axis directions.
+  // Ground-plane parallelogram
   const groundPathParts = corners.map(
     (c, i) => `${i === 0 ? "M" : "L"}${r(c.x)},${r(c.y)}`,
   );
   groundPathParts.push("Z");
-  const groundPath = groundPathParts.join(" ");
-
-  buildingElements.unshift(
-    path(groundPath, {
-      fill: colours.calendar.L0,
+  buildingElements.push(
+    path(groundPathParts.join(" "), {
+      fill: cal.L0,
       stroke: colours.border,
       "stroke-width": 0.5,
     }),
   );
 
+  // Faint grid lines within the ground plane
+  buildingElements.push(
+    ...gridLines(
+      lastCol,
+      lastRow,
+      maxHeight,
+      cellW,
+      cellH,
+      darken(colours.border, 0.3),
+    ),
+  );
+
+  // Shadows projected onto the ground plane
+  buildingElements.push(
+    ...buildingShadows(
+      buildings,
+      maxCount,
+      maxHeight,
+      cellW,
+      cellH,
+      darken(cal.L0, 0.5),
+    ),
+  );
+
+  // Render building faces and ambient occlusion lines
+  const rawFaces: SvgElement[] = [];
+
   for (const building of buildings) {
     const { col, row, count } = building;
-
-    // Skip zero-contribution cells — the ground plane already
-    // provides the spatial context for empty cells.
     if (count === 0) continue;
 
-    const colour = contributionColour(count);
-    // Active contribution buildings scale to max_height proportionally
+    const level = contributionLevel(count);
+    const colour = resolveColour(colourScheme, level, cal);
     const height = Math.max((count / maxCount) * maxHeight, 3);
+    const groundOy = (col + row) * SIN30 * cellH + maxHeight;
+    const ox = (col - row) * COS30 * cellW;
 
     // Top face (lightest)
-    const topFill = lighten(colour, 0.3);
-    const topStroke = darken(colour, 0.3);
-    const topPath = topFacePoints(col, row, height, cellW, cellH);
-    buildingElements.push(
-      path(topPath, {
-        fill: topFill,
-        stroke: topStroke,
+    rawFaces.push(
+      path(topFacePoints(col, row, height, cellW, cellH), {
+        fill: lighten(colour, 0.3),
+        stroke: darken(colour, 0.3),
         "stroke-width": 0.5,
       }),
     );
 
-    // Side faces
     // Right face (medium)
-    const rPath = rightFacePoints(col, row, height, maxHeight, cellW, cellH);
-    buildingElements.push(
-      path(rPath, {
+    rawFaces.push(
+      path(rightFacePoints(col, row, height, maxHeight, cellW, cellH), {
         fill: colour,
         stroke: darken(colour, 0.3),
         "stroke-width": 0.5,
@@ -380,18 +475,40 @@ export function renderSkyline(
     );
 
     // Left face (darkest)
-    const lPath = leftFacePoints(col, row, height, maxHeight, cellW, cellH);
-    buildingElements.push(
-      path(lPath, {
+    rawFaces.push(
+      path(leftFacePoints(col, row, height, maxHeight, cellW, cellH), {
         fill: darken(colour, 0.2),
         stroke: darken(colour, 0.4),
         "stroke-width": 0.5,
       }),
     );
+
+    // Ambient occlusion: thin dark lines at the building base
+    const aoStroke = darken(cal.L0, 0.6);
+    const baseFront = `${r(ox)},${r(groundOy + SIN30 * cellH)}`;
+    const baseRight = `${r(ox + COS30 * cellW)},${r(groundOy)}`;
+    const baseLeft = `${r(ox - COS30 * cellW)},${r(groundOy)}`;
+    rawFaces.push(
+      path(`M${baseFront} L${baseRight}`, {
+        stroke: aoStroke,
+        "stroke-width": 0.75,
+        fill: "none",
+        opacity: "0.3",
+      }),
+    );
+    rawFaces.push(
+      path(`M${baseFront} L${baseLeft}`, {
+        stroke: aoStroke,
+        "stroke-width": 0.75,
+        fill: "none",
+        opacity: "0.3",
+      }),
+    );
   }
 
-  // Wrap all buildings in a group with the offset transform.
-  // SMIL animateTransform provides a gentle rocking animation
+  // Merge same-style paths for performance
+  buildingElements.push(...mergePaths(rawFaces));
+
   elements.push(
     g(
       {

@@ -23,6 +23,10 @@ export const SkylineConfig = z.object({
   year: z.int().min(0).max(2099).default(0),
   /** Maximum building height in pixels */
   max_height: z.int().min(20).max(200).default(100),
+  /** Colour scheme: contributions (default), night, monochrome, neon */
+  colour_scheme: z
+    .enum(["contributions", "monochrome", "neon"])
+    .default("contributions"),
 });
 export type SkylineConfig = z.infer<typeof SkylineConfig>;
 

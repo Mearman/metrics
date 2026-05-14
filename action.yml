@@ -276,6 +276,9 @@ inputs:
   plugin_skyline_max_height:
     description: "Maximum building height in pixels"
     default: "100"
+  plugin_skyline_colour_scheme:
+    description: "Colour scheme: contributions, monochrome, neon"
+    default: "contributions"
 
   plugin_rss:
     description: "Enable rss: display items from an RSS/Atom feed"
@@ -352,6 +355,7 @@ runs:
         METRICS_PLUGIN_SKYLINE: ${{ inputs.plugin_skyline }}
         METRICS_PLUGIN_SKYLINE_YEAR: ${{ inputs.plugin_skyline_year }}
         METRICS_PLUGIN_SKYLINE_MAX_HEIGHT: ${{ inputs.plugin_skyline_max_height }}
+        METRICS_PLUGIN_SKYLINE_COLOUR_SCHEME: ${{ inputs.plugin_skyline_colour_scheme }}
         METRICS_PLUGIN_RSS: ${{ inputs.plugin_rss }}
         METRICS_PLUGIN_RSS_SOURCE: ${{ inputs.plugin_rss_source }}
         METRICS_PLUGIN_RSS_LIMIT: ${{ inputs.plugin_rss_limit }}
