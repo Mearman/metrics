@@ -1,3 +1,9 @@
+## [1.30.2](https://github.com/Mearman/metrics/compare/v1.30.1...v1.30.2) (2026-05-14)
+
+### Bug Fixes
+
+* correct skyline section height to include full isometric scene ([5f823e1](https://github.com/Mearman/metrics/commit/5f823e13c2d7cccf8e58b2def139c8312df4520d))
+
 ## [1.30.1](https://github.com/Mearman/metrics/compare/v1.30.0...v1.30.1) (2026-05-13)
 
 ### Bug Fixes
