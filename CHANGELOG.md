@@ -1,3 +1,9 @@
+## [1.30.4](https://github.com/Mearman/metrics/compare/v1.30.3...v1.30.4) (2026-05-14)
+
+### Bug Fixes
+
+* reduce bottom padding on skyline for visual balance ([9c966d1](https://github.com/Mearman/metrics/commit/9c966d1b44d40cdd76b484ca1235218f57991396))
+
 ## [1.30.3](https://github.com/Mearman/metrics/compare/v1.30.2...v1.30.3) (2026-05-14)
 
 ### Bug Fixes
