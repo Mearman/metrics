@@ -1,3 +1,9 @@
+## [1.30.3](https://github.com/Mearman/metrics/compare/v1.30.2...v1.30.3) (2026-05-14)
+
+### Bug Fixes
+
+* properly centre isometric skyline and compute bounding box ([f3e64e7](https://github.com/Mearman/metrics/commit/f3e64e778ce436f90fe66f10c5cd7ee98e6e96fc))
+
 ## [1.30.2](https://github.com/Mearman/metrics/compare/v1.30.1...v1.30.2) (2026-05-14)
 
 ### Bug Fixes
