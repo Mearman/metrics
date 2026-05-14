@@ -279,14 +279,19 @@ export function renderSkyline(
     },
   ];
 
-  // Bounding box of the isometric scene (parallelogram + building heights).
-  const allX = corners.map((c) => c.x);
-  const allY = corners.map((c) => c.y);
-  const sceneMinX = Math.min(...allX);
-  const sceneMaxX = Math.max(...allX);
+  // Bounding box of the isometric scene.
+  // Horizontal: ground-plane parallelogram width.
+  // Vertical: building tops (grid-level minus maxHeight) through
+  // ground-plane bottom (already includes maxHeight).
+  const cornerXs = corners.map((c) => c.x);
+  const cornerYs = corners.map((c) => c.y);
+  const sceneMinX = Math.min(...cornerXs);
+  const sceneMaxX = Math.max(...cornerXs);
   const sceneActualWidth = sceneMaxX - sceneMinX;
-  const sceneLocalTop = Math.min(...allY) - maxHeight - SIN30 * cellH;
-  const sceneLocalBottom = Math.max(...allY) + SIN30 * cellH;
+  // Building tops: cell (0,0) grid Y = 0, minus maxHeight,
+  // minus one cell for the top-face diamond vertex.
+  const sceneLocalTop = -maxHeight - SIN30 * cellH;
+  const sceneLocalBottom = Math.max(...cornerYs) + SIN30 * cellH;
 
   // Centre the scene in the content area. The content area starts
   // at X=margin within the card, so add margin to the computed offset.
