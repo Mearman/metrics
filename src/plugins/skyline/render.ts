@@ -226,27 +226,67 @@ export function renderSkyline(
     return colour4;
   }
 
-  // Grid geometry: centre and half-extents derived from the same
-  // (col, row) → (x, y) mapping used for bars and ground plane.
-  // The grid spans col=[0..totalWeeks-1], row=[0..totalRows-1].
-  // Isometric cell centre at (col, row):
-  //   cx = (col - row) * COS30 * cellW
-  //   cy = (col + row) * SIN30 * cellH
+  // Grid geometry.
+  // The grid is a rectangle in (col, row) space: col=[0..lastCol], row=[0..lastRow].
+  // In isometric projection each axis maps to a screen direction:
+  //   column step: dcol = (+COS30*cellW, +SIN30*cellH)
+  //   row step:    drow = (-COS30*cellW, +SIN30*cellH)
+  // The grid footprint at ground level is a parallelogram whose four
+  // corners are the corner cell centres shifted down by maxHeight
+  // (where building bases sit).
   const lastCol = totalWeeks - 1;
   const lastRow = totalRows - 1;
-  const gridCx = ((lastCol - lastRow) / 2) * COS30 * cellW;
-  const gridCy = ((lastCol + lastRow) / 2) * SIN30 * cellH;
-  const halfW = ((lastCol + lastRow) / 2) * COS30 * cellW + COS30 * cellW;
-  const halfH = ((lastCol + lastRow) / 2) * SIN30 * cellH + SIN30 * cellH;
+  const dcolX = COS30 * cellW;
+  const dcolY = SIN30 * cellH;
+  const drowX = -COS30 * cellW;
+  const drowY = SIN30 * cellH;
 
-  // Bounding box of the isometric scene.
-  // Horizontal: ground-plane diamond left to right.
-  // Vertical: tallest building top through lowest ground face.
-  const sceneMinX = gridCx - halfW;
-  const sceneMaxX = gridCx + halfW;
+  // Corner cell centres at ground level
+  // Cell (col,row) → screen: cx=(col-row)*COS30*cellW, cy=(col+row)*SIN30*cellH + maxHeight
+  const gpBack = { x: 0, y: maxHeight };
+  const gpRight = {
+    x: lastCol * dcolX,
+    y: lastCol * dcolY + maxHeight,
+  };
+  const gpFront = {
+    x: lastCol * dcolX + lastRow * drowX,
+    y: lastCol * dcolY + lastRow * drowY + maxHeight,
+  };
+  const gpLeft = {
+    x: lastRow * drowX,
+    y: lastRow * drowY + maxHeight,
+  };
+
+  // Expand each corner outward by one cell in each of the two
+  // outward directions to create padding around the grid.
+  const pad = 1;
+  const corners = [
+    {
+      x: gpBack.x - pad * dcolX - pad * drowX,
+      y: gpBack.y - pad * dcolY - pad * drowY,
+    },
+    {
+      x: gpRight.x + pad * dcolX - pad * drowX,
+      y: gpRight.y + pad * dcolY - pad * drowY,
+    },
+    {
+      x: gpFront.x + pad * dcolX + pad * drowX,
+      y: gpFront.y + pad * dcolY + pad * drowY,
+    },
+    {
+      x: gpLeft.x - pad * dcolX + pad * drowX,
+      y: gpLeft.y - pad * dcolY + pad * drowY,
+    },
+  ];
+
+  // Bounding box of the isometric scene (parallelogram + building heights).
+  const allX = corners.map((c) => c.x);
+  const allY = corners.map((c) => c.y);
+  const sceneMinX = Math.min(...allX);
+  const sceneMaxX = Math.max(...allX);
   const sceneActualWidth = sceneMaxX - sceneMinX;
-  const sceneLocalTop = gridCy - halfH - maxHeight - SIN30 * cellH;
-  const sceneLocalBottom = gridCy + halfH + maxHeight + SIN30 * cellH;
+  const sceneLocalTop = Math.min(...allY) - maxHeight - SIN30 * cellH;
+  const sceneLocalBottom = Math.max(...allY) + SIN30 * cellH;
 
   // Centre the scene in the content area. The content area starts
   // at X=margin within the card, so add margin to the computed offset.
@@ -284,18 +324,13 @@ export function renderSkyline(
   // Sort by draw order (ascending) — farther buildings drawn first
   buildings.sort((a, b) => a.drawOrder - b.drawOrder);
 
-  // Ground-plane diamond — centred at the building-base level.
-  // Building side faces extend down to gridY + maxHeight, so the
-  // ground plane must sit at that level, shifted down from the
-  // grid centre by maxHeight.
-  const groundCy = gridCy + maxHeight;
-  const groundPath = [
-    `M${r(gridCx)},${r(groundCy - halfH)}`,
-    `L${r(gridCx + halfW)},${r(groundCy)}`,
-    `L${r(gridCx)},${r(groundCy + halfH)}`,
-    `L${r(gridCx - halfW)},${r(groundCy)}`,
-    "Z",
-  ].join(" ");
+  // Ground-plane parallelogram — matches the rectangular grid shape.
+  // Edges are parallel to the column and row axis directions.
+  const groundPathParts = corners.map(
+    (c, i) => `${i === 0 ? "M" : "L"}${r(c.x)},${r(c.y)}`,
+  );
+  groundPathParts.push("Z");
+  const groundPath = groundPathParts.join(" ");
 
   buildingElements.unshift(
     path(groundPath, {
