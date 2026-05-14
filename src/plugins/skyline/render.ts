@@ -235,12 +235,24 @@ export function renderSkyline(
 
   // Offset so the scene is centred in the content area
   const offsetX = Math.max(padding, (targetWidth - sceneWidth) / 2);
-  // Scene origin (ground level for building at row=0) in local coords
-  // is at Y=0. Buildings extend upward (negative Y) by their height.
-  // The tallest building reaches Y = -maxHeight in local coords.
-  // We place the scene origin at contentY + maxHeight so the tallest
-  // building top aligns with contentY (just below the header).
-  const sceneOriginY = contentY + maxHeight + 6;
+
+  // Compute the scene's actual vertical extent in local coords.
+  // Buildings extend upward (negative Y) by their height from the grid
+  // position. Side faces extend downward to groundOy = gridY + maxHeight.
+  // The ground plane adds one cell of padding on each side.
+  const sceneLocalTop = -maxHeight - SIN30 * cellH;
+  const sceneLocalBottom =
+    (totalWeeks + totalRows) * SIN30 * cellH + maxHeight + SIN30 * cellH;
+
+  // Place the scene so the topmost building just clears the header underline.
+  // sceneOriginY is where local Y=0 maps to in section coords.
+  // sceneLocalTop in absolute coords = sceneOriginY + sceneLocalTop.
+  // We want: sceneOriginY + sceneLocalTop >= contentY + 2
+  // So: sceneOriginY >= contentY + 2 - sceneLocalTop
+  const sceneOriginY = Math.max(
+    contentY + 2 - sceneLocalTop,
+    contentY + maxHeight + 6,
+  );
 
   const buildingElements: import("../../render/svg/builder.ts").SvgElement[] =
     [];
@@ -381,7 +393,7 @@ export function renderSkyline(
     ),
   );
 
-  const totalHeight = sceneOriginY + sceneDepth + 20;
+  const totalHeight = sceneOriginY + sceneLocalBottom + 20;
 
   return { height: totalHeight, elements };
 }
