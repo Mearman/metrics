@@ -1,3 +1,9 @@
+## [1.32.0](https://github.com/Mearman/metrics/compare/v1.31.0...v1.32.0) (2026-05-14)
+
+### Features
+
+* add roads mode with month/quarter boundary gaps ([4217c38](https://github.com/Mearman/metrics/commit/4217c38146cc191fa01e223c985bdf33fa6ccb8f))
+
 ## [1.31.0](https://github.com/Mearman/metrics/compare/v1.30.11...v1.31.0) (2026-05-14)
 
 ### Features
