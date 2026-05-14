@@ -1,3 +1,9 @@
+## [1.30.6](https://github.com/Mearman/metrics/compare/v1.30.5...v1.30.6) (2026-05-14)
+
+### Bug Fixes
+
+* align ground-plane diamond with bar grid centre ([4180944](https://github.com/Mearman/metrics/commit/41809440ef68501915226721c1315b111f43019d))
+
 ## [1.30.5](https://github.com/Mearman/metrics/compare/v1.30.4...v1.30.5) (2026-05-14)
 
 ### Bug Fixes
