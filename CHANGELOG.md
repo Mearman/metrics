@@ -1,3 +1,9 @@
+## [1.30.9](https://github.com/Mearman/metrics/compare/v1.30.8...v1.30.9) (2026-05-14)
+
+### Bug Fixes
+
+* remove skyline rocking animation ([c2c3e8b](https://github.com/Mearman/metrics/commit/c2c3e8bd96dc60ccf1f57d14c327535fdada2fce))
+
 ## [1.30.8](https://github.com/Mearman/metrics/compare/v1.30.7...v1.30.8) (2026-05-14)
 
 ### Bug Fixes
