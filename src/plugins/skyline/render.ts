@@ -250,10 +250,15 @@ export function renderSkyline(
   const centreOffset = Math.max(0, (targetWidth - sceneActualWidth) / 2);
   const offsetX = centreOffset - sceneMinX;
 
-  // Place the scene so the topmost point clears the header underline.
-  // In local coords, the topmost point is at sceneLocalTop (negative).
-  // We want: sceneOriginY + sceneLocalTop >= contentY + 4
-  const sceneOriginY = contentY + 4 - sceneLocalTop;
+  // Centre the scene vertically within the section after the header.
+  // sceneOriginY is where local Y=0 lands in section coords.
+  // Scene extends from (sceneOriginY + sceneLocalTop) to
+  // (sceneOriginY + sceneLocalBottom) in section coords.
+  // We want equal top/bottom padding around the scene within the
+  // section (excluding the header area).
+  const topPad = 10;
+  const sceneOriginY = contentY + topPad - sceneLocalTop;
+  const totalHeight = sceneOriginY + sceneLocalBottom + topPad;
 
   const buildingElements: import("../../render/svg/builder.ts").SvgElement[] =
     [];
@@ -366,35 +371,38 @@ export function renderSkyline(
   // (±1.5° over 12s) that conveys 3D depth. SMIL works when
   // the SVG is viewed directly; CSS animations are disabled
   // when SVG is loaded as an <img> element.
-  const sceneCentreX = String((sceneMinX + sceneMaxX) / 2);
-  const sceneCentreY = String((sceneLocalTop + sceneLocalBottom) / 2);
-  const innerGroup = g(
-    {
-      class: "skyline-scene",
-    },
-    ...buildingElements,
-    {
-      tag: "animateTransform",
-      attrs: {
-        attributeName: "transform",
-        type: "rotate",
-        values: `${String(-1.5)} ${sceneCentreX} ${sceneCentreY}; ${String(1.5)} ${sceneCentreX} ${sceneCentreY}; ${String(-1.5)} ${sceneCentreX} ${sceneCentreY}`,
-        dur: "12s",
-        repeatCount: "indefinite",
-      },
-    },
-  );
+  // Rotation pivot: the geometric centre of the isometric ground-plane
+  // diamond. The diamond vertices (in scene-local coords) average to:
+  //   x = (180.13 + 367.19 + 180.13 + -6.93) / 4 = 180.13
+  //   y = (-2 + 59 + 120 + 59) / 4 = 59
+  const pivotX = String((COS30 * cellW * (totalWeeks - 1)) / 2);
+  const pivotY = String(((totalWeeks - 1 + totalRows - 1) * SIN30 * cellH) / 2);
 
+  // Structure: the translate is on the skyline-scene group itself.
+  // The animateTransform uses additive="sum" so the rotation
+  // composes with (rather than replaces) the static translate.
+  // Without additive="sum", SMIL defaults to replace mode which
+  // discards the translate at t=0, collapsing the scene to (0,0).
   elements.push(
     g(
       {
+        class: "skyline-scene",
         transform: `translate(${String(offsetX)},${String(sceneOriginY)})`,
       },
-      innerGroup,
+      ...buildingElements,
+      {
+        tag: "animateTransform",
+        attrs: {
+          attributeName: "transform",
+          type: "rotate",
+          additive: "sum",
+          values: `${String(-1.5)} ${pivotX} ${pivotY}; ${String(1.5)} ${pivotX} ${pivotY}; ${String(-1.5)} ${pivotX} ${pivotY}`,
+          dur: "12s",
+          repeatCount: "indefinite",
+        },
+      },
     ),
   );
-
-  const totalHeight = sceneOriginY + sceneLocalBottom + 24;
 
   return { height: totalHeight, elements };
 }

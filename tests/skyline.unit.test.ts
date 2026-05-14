@@ -138,7 +138,7 @@ describe("skyline renderer", () => {
 
     // Should contain groups wrapping the buildings
     const groups = collectGroups(result.elements);
-    assert.ok(groups.length >= 2, "Should contain groups for buildings");
+    assert.ok(groups.length >= 1, "Should contain groups for buildings");
 
     // Paths should be nested inside groups
     const paths = collectPaths(result.elements);
