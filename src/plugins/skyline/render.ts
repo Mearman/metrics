@@ -226,36 +226,33 @@ export function renderSkyline(
     return colour4;
   }
 
-  // Compute the bounding box of the isometric scene
-  // The scene spans from (0,0) to roughly:
-  //   right-most point: (totalWeeks * COS30 * cellW, ...)
-  // Compute the bounding box of the isometric scene.
-  // Isometric projection: sx = (col - row) * COS30 * cellW, sy = (col + row) * SIN30 * cellH
-  // Grid spans col=[0..totalWeeks-1], row=[0..totalRows-1].
-  // (col - row) ranges from (0 - (totalRows-1)) to (totalWeeks-1 - 0),
-  // so the scene extends into negative X.
-  const sceneMinX = (0 - (totalRows - 1)) * COS30 * cellW - COS30 * cellW;
-  const sceneMaxX =
-    (totalWeeks - 1) * COS30 * cellW + COS30 * cellW + COS30 * cellW;
-  const sceneActualWidth = sceneMaxX - sceneMinX;
+  // Grid geometry: centre and half-extents derived from the same
+  // (col, row) → (x, y) mapping used for bars and ground plane.
+  // The grid spans col=[0..totalWeeks-1], row=[0..totalRows-1].
+  // Isometric cell centre at (col, row):
+  //   cx = (col - row) * COS30 * cellW
+  //   cy = (col + row) * SIN30 * cellH
+  const lastCol = totalWeeks - 1;
+  const lastRow = totalRows - 1;
+  const gridCx = ((lastCol - lastRow) / 2) * COS30 * cellW;
+  const gridCy = ((lastCol + lastRow) / 2) * SIN30 * cellH;
+  const halfW = ((lastCol + lastRow) / 2) * COS30 * cellW + COS30 * cellW;
+  const halfH = ((lastCol + lastRow) / 2) * SIN30 * cellH + SIN30 * cellH;
 
-  // Vertical extent: buildings go up, ground faces go down.
-  const sceneLocalTop = -maxHeight - SIN30 * cellH;
-  const sceneLocalBottom =
-    (totalWeeks + totalRows) * SIN30 * cellH + maxHeight + SIN30 * cellH;
+  // Bounding box of the isometric scene.
+  // Horizontal: ground-plane diamond left to right.
+  // Vertical: tallest building top through lowest ground face.
+  const sceneMinX = gridCx - halfW;
+  const sceneMaxX = gridCx + halfW;
+  const sceneActualWidth = sceneMaxX - sceneMinX;
+  const sceneLocalTop = gridCy - halfH - maxHeight - SIN30 * cellH;
+  const sceneLocalBottom = gridCy + halfH + maxHeight + SIN30 * cellH;
 
   // Centre the scene in the content area.
-  // sceneMinX is negative, so we shift right by |sceneMinX| to
-  // bring the left edge to X=0, then centre the full width.
   const centreOffset = Math.max(0, (targetWidth - sceneActualWidth) / 2);
   const offsetX = centreOffset - sceneMinX;
 
   // Centre the scene vertically within the section after the header.
-  // sceneOriginY is where local Y=0 lands in section coords.
-  // Scene extends from (sceneOriginY + sceneLocalTop) to
-  // (sceneOriginY + sceneLocalBottom) in section coords.
-  // We want equal top/bottom padding around the scene within the
-  // section (excluding the header area).
   const topPad = 10;
   const sceneOriginY = contentY + topPad - sceneLocalTop;
   const totalHeight = sceneOriginY + sceneLocalBottom + topPad;
@@ -263,12 +260,7 @@ export function renderSkyline(
   const buildingElements: import("../../render/svg/builder.ts").SvgElement[] =
     [];
 
-  // Render buildings back-to-front: iterate weeks (columns) from
-  // left to right, and days (rows) from top to bottom. In
-  // isometric view, buildings with higher (col + row) overlap
-  // those with lower, so we render in ascending (col + row) order.
-  //
-  // Collect all buildings then sort by draw order.
+  // Collect and sort buildings back-to-front.
   interface Building {
     col: number;
     row: number;
@@ -284,32 +276,19 @@ export function renderSkyline(
     for (let row = 0; row < week.contributionDays.length; row++) {
       const day = week.contributionDays[row];
       if (day === undefined) continue;
-      buildings.push({
-        col,
-        row,
-        count: day.count,
-        drawOrder: col + row,
-      });
+      buildings.push({ col, row, count: day.count, drawOrder: col + row });
     }
   }
 
   // Sort by draw order (ascending) — farther buildings drawn first
   buildings.sort((a, b) => a.drawOrder - b.drawOrder);
 
-  // Render a ground plane — a single isometric rectangle that
-  // forms the floor of the cityscape. This gives spatial context
-  // without needing every zero-contribution cell to be visible.
-  const gpLeft = -COS30 * cellW;
-  const gpRight = totalWeeks * COS30 * cellW + COS30 * cellW;
-  const gpBack = (0 + 0) * SIN30 * cellH - SIN30 * cellH;
-  const gpFront = (totalWeeks + totalRows) * SIN30 * cellH + SIN30 * cellH;
-
-  // Ground plane diamond
+  // Ground-plane diamond — centred on the same grid origin as the bars.
   const groundPath = [
-    `M${r((totalWeeks / 2) * COS30 * cellW)},${r(gpBack)}`,
-    `L${r(gpRight)},${r(((totalWeeks + totalRows) / 2) * SIN30 * cellH)}`,
-    `L${r((totalWeeks / 2) * COS30 * cellW)},${r(gpFront)}`,
-    `L${r(gpLeft)},${r(((totalWeeks + totalRows) / 2) * SIN30 * cellH)}`,
+    `M${r(gridCx)},${r(gridCy - halfH)}`,
+    `L${r(gridCx + halfW)},${r(gridCy)}`,
+    `L${r(gridCx)},${r(gridCy + halfH)}`,
+    `L${r(gridCx - halfW)},${r(gridCy)}`,
     "Z",
   ].join(" ");
 
@@ -371,12 +350,10 @@ export function renderSkyline(
   // (±1.5° over 12s) that conveys 3D depth. SMIL works when
   // the SVG is viewed directly; CSS animations are disabled
   // when SVG is loaded as an <img> element.
-  // Rotation pivot: the geometric centre of the isometric ground-plane
-  // diamond. The diamond vertices (in scene-local coords) average to:
-  //   x = (180.13 + 367.19 + 180.13 + -6.93) / 4 = 180.13
-  //   y = (-2 + 59 + 120 + 59) / 4 = 59
-  const pivotX = String((COS30 * cellW * (totalWeeks - 1)) / 2);
-  const pivotY = String(((totalWeeks - 1 + totalRows - 1) * SIN30 * cellH) / 2);
+  // Rotation pivot: the geometric centre of the ground-plane diamond,
+  // which is also the centre of the bar grid (gridCx, gridCy).
+  const pivotX = String(gridCx);
+  const pivotY = String(gridCy);
 
   // Structure: the translate is on the skyline-scene group itself.
   // The animateTransform uses additive="sum" so the rotation
